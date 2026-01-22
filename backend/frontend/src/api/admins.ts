@@ -1,0 +1,35 @@
+import apiClient from '@/lib/api-client';
+
+export interface AdminUser {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    active: boolean;
+}
+
+export const adminsApi = {
+    getAll: async (): Promise<AdminUser[]> => {
+        const { data } = await apiClient.get<AdminUser[]>('/api/admins');
+        return data;
+    },
+    create: async (data: Omit<AdminUser, 'id' | 'active'> & { password?: string }): Promise<AdminUser> => {
+        const { data: response } = await apiClient.post<AdminUser>('/api/admins', data);
+        return response;
+    },
+    updateStatus: async (id: string, active: boolean): Promise<AdminUser> => {
+        const { data } = await apiClient.patch<AdminUser>(`/api/admins/${id}/status`, { active });
+        return data;
+    },
+    updateRole: async (id: string, role: string): Promise<AdminUser> => {
+        const { data } = await apiClient.patch<AdminUser>(`/api/admins/${id}/role`, { role });
+        return data;
+    },
+    updatePassword: async (id: string, password: string): Promise<AdminUser> => {
+        const { data } = await apiClient.patch<AdminUser>(`/api/admins/${id}/password`, { password });
+        return data;
+    },
+    delete: async (id: string): Promise<void> => {
+        await apiClient.delete(`/api/admins/${id}`);
+    }
+};

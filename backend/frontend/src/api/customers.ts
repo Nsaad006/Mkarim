@@ -1,0 +1,20 @@
+import apiClient from '@/lib/api-client';
+
+export interface Customer {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+    city: string;
+    ordersCount: number;
+    totalSpent: number;
+    lastOrderDate: string;
+}
+
+export const customersApi = {
+    // Get all unique customers derived from orders
+    getAll: async (): Promise<Customer[]> => {
+        const { data } = await apiClient.get<Customer[]>('/api/customers');
+        return data;
+    },
+};

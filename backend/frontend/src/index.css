@@ -1,0 +1,250 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* MKARIM SOLUTION - Tech/Gaming Dark Theme */
+    --background: 220 20% 7%;
+    --foreground: 0 0% 98%;
+
+    --card: 220 18% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Brand Red */
+    --primary: 4 82% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Slate */
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 55%;
+
+    --accent: 220 15% 20%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 15%;
+    --ring: 4 82% 56%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --glow-primary: 4 82% 56%;
+    --surface-elevated: 220 18% 12%;
+    --surface-glass: 220 20% 8%;
+    --text-muted: 220 10% 60%;
+    --success: 142 76% 45%;
+    --warning: 38 92% 50%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(4 82% 56%) 0%, hsl(350 80% 45%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(220 20% 10%) 0%, hsl(220 20% 5%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(220 18% 12%) 0%, hsl(220 18% 8%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsla(4 82% 56% / 0.15) 0%, hsla(220 20% 7% / 0.9) 50%);
+
+    /* Shadows */
+    --shadow-glow: 0 0 40px hsla(4, 82%, 56%, 0.3);
+    --shadow-card: 0 4px 20px hsla(0, 0%, 0%, 0.4);
+    --shadow-elevated: 0 8px 30px hsla(0, 0%, 0%, 0.5);
+
+    /* Sidebar */
+    --sidebar-background: 220 20% 7%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 4 82% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 4 82% 56%;
+  }
+
+  .dark {
+    /* Same as root - dark by default */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Outfit', system-ui, sans-serif;
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
+  }
+
+  .bg-gradient-primary {
+    background-image: var(--gradient-primary);
+  }
+
+  .bg-gradient-card {
+    background-image: var(--gradient-card);
+  }
+
+  .bg-glass {
+    @apply bg-card/80 backdrop-blur-xl;
+  }
+
+  .glow-primary {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .card-elevated {
+    @apply bg-card rounded-xl;
+    box-shadow: var(--shadow-card);
+  }
+
+  .section-padding {
+    @apply px-4 sm:px-6 lg:px-8 py-12 md:py-20;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Trust badge styling */
+  .trust-badge {
+    @apply flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary/50 border border-border text-sm;
+  }
+
+  /* Product card hover effect */
+  .product-card {
+    @apply relative overflow-hidden rounded-xl bg-card border border-border transition-all duration-300;
+  }
+
+  .product-card:hover {
+    @apply border-primary/50;
+    box-shadow: 0 0 30px hsla(4, 82%, 56%, 0.15);
+    transform: translateY(-4px);
+  }
+
+  /* CTA Button glow effect */
+  .btn-glow {
+    @apply relative overflow-hidden;
+  }
+
+  .btn-glow::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, hsla(0, 0%, 100%, 0.2) 0%, transparent 50%);
+  }
+
+  .btn-glow:hover::before {
+    @apply opacity-100;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px hsla(4, 82%, 56%, 0.3);
+    }
+
+    50% {
+      box-shadow: 0 0 40px hsla(4, 82%, 56%, 0.5);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Admin Gaming Theme */
+  .bg-gaming-admin {
+    background-color: #020817;
+    background-image:
+      linear-gradient(rgba(155, 135, 245, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(155, 135, 245, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gaming-glow-top {
+    position: absolute;
+    top: -10%;
+    right: -10%;
+    width: 50%;
+    height: 50%;
+    background: radial-gradient(circle, rgba(155, 135, 245, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .gaming-glow-bottom {
+    position: absolute;
+    bottom: -10%;
+    left: -10%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(235, 68, 50, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
