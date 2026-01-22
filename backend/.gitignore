@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+
+# Uploads (keep directory structure, ignore files)
+uploads/**/*
+!uploads/.gitkeep
+!uploads/products/.gitkeep

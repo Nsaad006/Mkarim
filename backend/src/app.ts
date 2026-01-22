@@ -1,0 +1,59 @@
+import express from 'express';
+import path from 'path';
+import cors from 'cors';
+import helmet from 'helmet';
+import productsRouter from './routes/products';
+import ordersRouter from './routes/orders';
+import citiesRouter from './routes/cities';
+import categoriesRouter from './routes/categories';
+import settingsRouter from './routes/settings';
+import authRouter from './routes/auth';
+import customersRouter from './routes/customers';
+import adminsRouter from './routes/admins';
+import statsRouter from './routes/stats';
+import contactsRouter from './routes/contacts';
+import uploadRouter from './routes/upload';
+
+const app = express();
+
+// Serve uploaded files BEFORE helmet to avoid CSP issues
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Middleware
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }  // Allow cross-origin images
+}));
+app.use(cors({
+    origin: [process.env.FRONTEND_URL || 'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082', 'http://localhost:5173'],
+    credentials: true
+}));
+app.use(express.json());
+
+// Routes
+app.use('/api/products', productsRouter);
+app.use('/api/orders', ordersRouter);
+app.use('/api/cities', citiesRouter);
+app.use('/api/categories', categoriesRouter);
+app.use('/api/settings', settingsRouter);
+app.use('/api/customers', customersRouter);
+app.use('/api/admins', adminsRouter);
+app.use('/api/stats', statsRouter);
+app.use('/api/contacts', contactsRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/upload', uploadRouter);
+
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Error handling
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.stack);
+    res.status(500).json({
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
+
+export default app;

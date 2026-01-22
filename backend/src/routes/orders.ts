@@ -1,0 +1,199 @@
+import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
+import { z } from 'zod';
+import prisma from '../lib/prisma';
+import { authenticate, authorize } from './auth';
+
+const router = Router();
+
+// Validation schema for Moroccan phone numbers
+const phoneRegex = /^(\+212|0)[5-7]\d{8}$/;
+
+const createOrderSchema = z.object({
+    items: z.array(z.object({
+        productId: z.string(),
+        quantity: z.number().int().positive()
+    })).min(1),
+    customerName: z.string().min(2),
+    email: z.string().email().optional().or(z.literal('')),  // Optional email
+    phone: z.string().regex(phoneRegex, 'Invalid Moroccan phone number'),
+    city: z.string().min(2),
+    address: z.string().min(5)
+});
+
+// Generate order number
+function generateOrderNumber(): string {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `ORD-${timestamp}${random}`;
+}
+
+// POST /api/orders - Create new COD order (Multi-item)
+router.post('/', async (req, res) => {
+    try {
+        // Validate request body
+        const validatedData = createOrderSchema.parse(req.body);
+
+        // Find products and calculate total
+        let total = 0;
+        const orderItems = [];
+
+        for (const item of validatedData.items) {
+            const product = await prisma.product.findUnique({
+                where: { id: item.productId }
+            });
+
+            if (!product) {
+                return res.status(404).json({ error: `Product ${item.productId} not found` });
+            }
+            if (!product.inStock || product.quantity < item.quantity) {
+                return res.status(400).json({ error: `Insufficient stock for ${product.name}` });
+            }
+
+            total += product.price * item.quantity;
+
+            orderItems.push({
+                productId: item.productId,
+                quantity: item.quantity,
+                price: product.price
+            });
+
+            // Decrement stock
+            await prisma.product.update({
+                where: { id: item.productId },
+                data: {
+                    quantity: product.quantity - item.quantity,
+                    inStock: product.quantity - item.quantity > 0
+                }
+            });
+        }
+
+        const newOrder = await prisma.order.create({
+            data: {
+                orderNumber: generateOrderNumber(),
+                customerName: validatedData.customerName,
+                email: validatedData.email || null,  // Save email if provided
+                phone: validatedData.phone,
+                city: validatedData.city,
+                address: validatedData.address,
+                total: total,
+                status: 'PENDING',
+                items: {
+                    create: orderItems
+                }
+            },
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        res.status(201).json(newOrder);
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({
+                error: 'Validation failed',
+                details: error.issues
+            });
+        }
+
+        console.error('Error creating order:', error);
+        res.status(500).json({ error: (error as Error).message || 'Failed to create order' });
+    }
+});
+
+// GET /api/orders - List all orders (admin/editor/viewer)
+router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer']), async (req: Request, res: Response) => {
+    try {
+        const { status, city } = req.query;
+
+        const where: Prisma.OrderWhereInput = {};
+
+        if (status) {
+            where.status = String(status) as import('@prisma/client').OrderStatus;
+        }
+
+        if (city) {
+            where.city = String(city);
+        }
+
+        const orders = await prisma.order.findMany({
+            where,
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        res.json(orders);
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+});
+
+// GET /api/orders/:id - Get order details (admin/editor/viewer)
+router.get('/:id', authenticate, authorize(['super_admin', 'editor', 'viewer']), async (req: Request, res: Response) => {
+    try {
+        const id = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
+
+        const order = await prisma.order.findUnique({
+            where: { id },
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        res.json(order);
+    } catch (error) {
+        console.error('Error fetching order:', error);
+        res.status(500).json({ error: 'Failed to fetch order' });
+    }
+});
+
+// PATCH /api/orders/:id/status - Update order status (super_admin/editor)
+router.patch('/:id/status', authenticate, authorize(['super_admin', 'editor']), async (req: Request, res: Response) => {
+    try {
+        const id = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
+        const { status } = req.body;
+
+        const updatedOrder = await prisma.order.update({
+            where: { id },
+            data: { status },
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        res.json(updatedOrder);
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        if ((error as Prisma.PrismaClientKnownRequestError).code === 'P2025') {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        res.status(500).json({ error: 'Failed to update order status' });
+    }
+});
+
+export default router;

@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  description   String
+  price         Int
+  originalPrice Int?
+  image         String   // Primary image (first in images array)
+  images        String[] @default([])  // All product images (max 6)
+  categoryId    String
+  inStock       Boolean  @default(true)
+  quantity      Int      @default(0)
+  badge         String?
+  specs         String[] // Array of specs
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  category      Category    @relation(fields: [categoryId], references: [id])
+  orderItems    OrderItem[]
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  products  Product[]
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  orderNumber  String      @unique
+  customerName String
+  email        String?     // Optional customer email
+  phone        String
+  city         String
+  address      String
+  status       OrderStatus @default(PENDING)
+  total        Int
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  items        OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Int     // Price at time of purchase
+  
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+model City {
+  id           String  @id @default(uuid())
+  name         String  @unique
+  shippingFee  Int
+  deliveryTime String
+  active       Boolean @default(true)
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("editor")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Contact {
+  id        String        @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  status    ContactStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+enum ContactStatus {
+  NEW
+  READ
+  REPLIED
+  ARCHIVED
+}
+
+model Settings {
+  id                String   @id @default(uuid())
+  // Store Settings
+  storeName         String   @default("MKARIM")
+  storeAvailability Boolean  @default(true)
+  codEnabled        Boolean  @default(true)
+  whatsappNumber    String   @default("+212600000000")
+  currency          String   @default("DH")
+  
+  // Contact Information
+  contactAddress    String   @default("Casablanca, Maroc")
+  contactPhone      String   @default("+212600000000")
+  contactEmail      String   @default("contact@mkarim.ma")
+  contactHours      String   @default("Lun - Sam: 9h - 19h")
+  
+  // Footer Content
+  footerDescription String   @default("Votre destination pour les meilleurs PC et accessoires gaming au Maroc. Qualité garantie, livraison rapide.")
+  footerCopyright   String   @default("© 2024 MKARIM. Tous droits réservés.")
+  
+  // About Page Content
+  aboutTitle        String   @default("À Propos de MKARIM")
+  aboutDescription  String   @default("MKARIM est votre partenaire de confiance pour tous vos besoins en matériel informatique et gaming au Maroc.")
+  aboutMission      String   @default("Notre mission est de fournir des produits de haute qualité à des prix compétitifs avec un service client exceptionnel.")
+  
+  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now())
+}

@@ -1,0 +1,68 @@
+import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
+import prisma from '../lib/prisma';
+import { authenticate, authorize } from './auth';
+
+const router = Router();
+
+// GET /api/cities - List all active cities
+router.get('/', async (req, res) => {
+    try {
+        const cities = await prisma.city.findMany({
+            where: { active: true }
+        });
+        res.json(cities);
+    } catch (error) {
+        console.error('Error fetching cities:', error);
+        res.status(500).json({ error: 'Failed to fetch cities' });
+    }
+});
+
+// POST /api/cities - Create city (super_admin/editor)
+router.post('/', authenticate, authorize(['super_admin', 'editor']), async (req: Request, res: Response) => {
+    try {
+        const { name, shippingFee, deliveryTime, active } = req.body;
+
+        const newCity = await prisma.city.create({
+            data: {
+                name,
+                shippingFee: Number(shippingFee),
+                deliveryTime,
+                active: active ?? true
+            }
+        });
+
+        res.status(201).json(newCity);
+    } catch (error) {
+        console.error('Error creating city:', error);
+        res.status(500).json({ error: 'Failed to create city' });
+    }
+});
+
+// PUT /api/cities/:id - Update city (super_admin/editor)
+router.put('/:id', authenticate, authorize(['super_admin', 'editor']), async (req: Request, res: Response) => {
+    try {
+        const id = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
+        const { name, shippingFee, deliveryTime, active } = req.body;
+
+        const updatedCity = await prisma.city.update({
+            where: { id },
+            data: {
+                ...(name && { name }),
+                ...(shippingFee !== undefined && { shippingFee: Number(shippingFee) }),
+                ...(deliveryTime && { deliveryTime }),
+                ...(active !== undefined && { active })
+            }
+        });
+
+        res.json(updatedCity);
+    } catch (error) {
+        console.error('Error updating city:', error);
+        if ((error as Prisma.PrismaClientKnownRequestError).code === 'P2025') {
+            return res.status(404).json({ error: 'City not found' });
+        }
+        res.status(500).json({ error: 'Failed to update city' });
+    }
+});
+
+export default router;
