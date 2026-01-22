@@ -103,12 +103,9 @@ const CategoriesSection = () => {
                   <div className="w-12 h-12 md:w-14 md:h-14 mx-auto mb-3 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary/20 transition-colors flex-shrink-0">
                     <IconComponent className="w-6 h-6 md:w-7 md:h-7 text-primary" />
                   </div>
-                  <h3 className="font-medium text-sm md:text-base mb-1 group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 className="font-medium text-sm md:text-base mb-1 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem] flex items-center justify-center">
                     {category.name}
                   </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {category.productsCount || 0} produit{(category.productsCount || 0) !== 1 ? 's' : ''}
-                  </p>
                 </Link>
               </motion.div>
             );
