@@ -1,5 +1,6 @@
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProductCard from "./ProductCard";
 import { productsApi } from "@/api/products";
@@ -17,41 +18,66 @@ const FeaturedProducts = () => {
     queryFn: () => productsApi.getAll({ inStock: true }),
   });
 
-  const sectionTitle = settings?.featuredTitle || "Produits Populaires";
-  const sectionSubtitle = settings?.featuredSubtitle || "Découvrez nos meilleures ventes et produits les plus appréciés";
+  const sectionTitle = settings?.featuredTitle || "LES INCONTOURNABLES";
+  const sectionSubtitle = settings?.featuredSubtitle || "Sélectionnés spécialement pour les performances ultimes.";
 
   const featuredProducts = products.slice(0, 8);
 
   return (
-    <section className="section-padding bg-card/50">
-      <div className="container-custom">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
-          <div>
-            <h2 className="font-display text-3xl md:text-4xl font-bold mb-2">
-              {sectionTitle.includes("<span") ? (
-                <span dangerouslySetInnerHTML={{ __html: sectionTitle }} className="inline" />
-              ) : sectionTitle}
-            </h2>
-            <p className="text-muted-foreground">
-              {sectionSubtitle}
-            </p>
+    <section className="section-padding relative bg-zinc-950/50">
+      {/* Subtle Grid Background */}
+      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
+
+      <div className="container-custom relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
+          <div className="max-w-2xl">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="font-display text-4xl md:text-5xl font-black mb-4 tracking-tighter">
+                {sectionTitle}
+              </h2>
+              <div className="w-20 h-1.5 bg-primary mb-6 rounded-full" />
+              <p className="text-zinc-200 text-lg font-medium">
+                {sectionSubtitle}
+              </p>
+            </motion.div>
           </div>
-          <Link to="/products">
-            <Button variant="outline" className="gap-2">
-              Voir tous les produits
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <Link to="/products">
+              <Button variant="outline" className="h-12 border-white/10 hover:bg-white/5 gap-2 px-6">
+                Voir tout le catalogue
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </motion.div>
         </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
+              <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin" />
+            </div>
           </div>
         ) : featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
+            {featuredProducts.map((product, index) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
             ))}
           </div>
         ) : (

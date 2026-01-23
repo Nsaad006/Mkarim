@@ -19,6 +19,13 @@ export interface GlobalSettings {
     footerDescription: string;
     footerCopyright: string;
 
+    // Social Media Links
+    facebookLink?: string;
+    instagramLink?: string;
+    twitterLink?: string;
+    youtubeLink?: string;
+    tiktokLink?: string;
+
     // Home Page Content
     heroImage?: string;
     heroSubtitle?: string;

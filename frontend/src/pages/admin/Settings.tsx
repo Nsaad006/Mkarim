@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsApi, GlobalSettings } from "@/api/settings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageUpload } from "@/components/ImageUpload";
+import { HeroSlideManager } from "@/components/admin/HeroSlideManager";
 
 const Settings = () => {
     const queryClient = useQueryClient();
@@ -98,6 +99,52 @@ const Settings = () => {
                             </div>
 
                             <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+                                <h2 className="text-xl font-semibold border-b pb-2">Réseaux Sociaux</h2>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Facebook</Label>
+                                        <Input
+                                            value={formData.facebookLink || ""}
+                                            onChange={(e) => setFormData({ ...formData, facebookLink: e.target.value })}
+                                            placeholder="https://facebook.com/..."
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Instagram</Label>
+                                        <Input
+                                            value={formData.instagramLink || ""}
+                                            onChange={(e) => setFormData({ ...formData, instagramLink: e.target.value })}
+                                            placeholder="https://instagram.com/..."
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Twitter / X</Label>
+                                        <Input
+                                            value={formData.twitterLink || ""}
+                                            onChange={(e) => setFormData({ ...formData, twitterLink: e.target.value })}
+                                            placeholder="https://twitter.com/..."
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>YouTube</Label>
+                                        <Input
+                                            value={formData.youtubeLink || ""}
+                                            onChange={(e) => setFormData({ ...formData, youtubeLink: e.target.value })}
+                                            placeholder="https://youtube.com/..."
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>TikTok</Label>
+                                        <Input
+                                            value={formData.tiktokLink || ""}
+                                            onChange={(e) => setFormData({ ...formData, tiktokLink: e.target.value })}
+                                            placeholder="https://tiktok.com/@..."
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-card rounded-xl border border-border p-6 space-y-4">
                                 <h2 className="text-xl font-semibold border-b pb-2">Contenu du Footer</h2>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
@@ -122,74 +169,7 @@ const Settings = () => {
 
                         {/* Hero Section Tab */}
                         <TabsContent value="hero" className="space-y-6 m-0">
-                            <div className="bg-card rounded-xl border border-border p-6 space-y-4">
-                                <h2 className="text-xl font-semibold border-b pb-2">Section Hero (Accueil)</h2>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label>Image de Fond</Label>
-                                        <ImageUpload
-                                            value={formData.heroImage || ""}
-                                            onChange={(url) => setFormData({ ...formData, heroImage: url })}
-                                        />
-                                    </div>
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Petit Sous-titre (Badge)</Label>
-                                            <Input
-                                                value={formData.heroSubtitle || ""}
-                                                onChange={(e) => setFormData({ ...formData, heroSubtitle: e.target.value })}
-                                                placeholder="🎮 Solutions Gaming & IT"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Titre Principal (Partie 2)</Label>
-                                            <Input
-                                                value={formData.heroTitle || ""}
-                                                onChange={(e) => setFormData({ ...formData, heroTitle: e.target.value })}
-                                                placeholder="PC & Gaming de Qualité"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Description</Label>
-                                        <Textarea
-                                            value={formData.heroDescription || ""}
-                                            onChange={(e) => setFormData({ ...formData, heroDescription: e.target.value })}
-                                            rows={3}
-                                        />
-                                    </div>
-                                    <div className="grid md:grid-cols-2 gap-4 border-t pt-4">
-                                        <div className="space-y-2">
-                                            <Label>Texte Bouton Principal</Label>
-                                            <Input
-                                                value={formData.heroPrimaryBtnText || ""}
-                                                onChange={(e) => setFormData({ ...formData, heroPrimaryBtnText: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Lien Bouton Principal</Label>
-                                            <Input
-                                                value={formData.heroPrimaryBtnLink || ""}
-                                                onChange={(e) => setFormData({ ...formData, heroPrimaryBtnLink: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Texte Bouton Secondaire</Label>
-                                            <Input
-                                                value={formData.heroSecondaryBtnText || ""}
-                                                onChange={(e) => setFormData({ ...formData, heroSecondaryBtnText: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Lien Bouton Secondaire</Label>
-                                            <Input
-                                                value={formData.heroSecondaryBtnLink || ""}
-                                                onChange={(e) => setFormData({ ...formData, heroSecondaryBtnLink: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <HeroSlideManager />
                         </TabsContent>
 
                         {/* Sections Content Tab */}

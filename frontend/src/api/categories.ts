@@ -1,5 +1,6 @@
 import apiClient from '@/lib/api-client';
 import { Category } from '@/data/mock-admin-data';
+export type { Category };
 
 export const categoriesApi = {
     // Get all categories

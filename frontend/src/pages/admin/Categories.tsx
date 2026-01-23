@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import {
     Table,
     TableBody,
@@ -160,6 +161,7 @@ const Categories = () => {
                             <TableHead>Nom</TableHead>
                             <TableHead>Slug</TableHead>
                             <TableHead>Icône</TableHead>
+                            <TableHead className="text-center">Aperçu</TableHead>
                             <TableHead>Produits</TableHead>
                             <TableHead>Statut</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -170,7 +172,27 @@ const Categories = () => {
                             <TableRow key={category.id}>
                                 <TableCell className="font-medium">{category.name}</TableCell>
                                 <TableCell className="text-muted-foreground font-mono text-xs">{category.slug}</TableCell>
-                                <TableCell className="text-muted-foreground text-xs">{category.icon}</TableCell>
+                                <TableCell className="text-muted-foreground text-xs">{category.icon || "-"}</TableCell>
+                                <TableCell className="text-center">
+                                    <div className="flex justify-center">
+                                        {(() => {
+                                            const iconName = category.icon || "";
+                                            const normalized = iconName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+                                            const aliases: Record<string, string> = {
+                                                'motocycle': 'motorcycle',
+                                                'moto': 'motorcycle',
+                                                'scooter': 'bike',
+                                                'trottinette': 'bike'
+                                            };
+
+                                            const target = aliases[normalized] || normalized;
+                                            const foundKey = Object.keys(LucideIcons).find(key => key.toLowerCase() === target);
+                                            const Icon = foundKey ? (LucideIcons as any)[foundKey] : null;
+                                            return Icon ? <Icon className="w-5 h-5 text-zinc-400" /> : <div className="w-5 h-5 bg-zinc-800 rounded-md border border-white/5" />;
+                                        })()}
+                                    </div>
+                                </TableCell>
                                 <TableCell>{category.productsCount || 0}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
@@ -229,14 +251,37 @@ const Categories = () => {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="icon">Icône (Nom Lucide)</Label>
-                            <Input
-                                id="icon"
-                                value={formData.icon}
-                                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                                placeholder="Ex: Laptop, Smartphone, Gamepad2"
-                            />
+                            <div className="flex gap-4 items-end">
+                                <div className="flex-1">
+                                    <Input
+                                        id="icon"
+                                        value={formData.icon}
+                                        onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                                        placeholder="Ex: Laptop, Smartphone, Gamepad2"
+                                    />
+                                </div>
+                                <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center">
+                                    {(() => {
+                                        const iconName = formData.icon;
+                                        if (!iconName) return <div className="w-1 h-3 bg-white/5" />;
+                                        const normalized = iconName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+                                        const aliases: Record<string, string> = {
+                                            'motocycle': 'motorcycle',
+                                            'moto': 'motorcycle',
+                                            'scooter': 'bike',
+                                            'trottinette': 'bike'
+                                        };
+
+                                        const target = aliases[normalized] || normalized;
+                                        const foundKey = Object.keys(LucideIcons).find(key => key.toLowerCase() === target);
+                                        const Icon = foundKey ? (LucideIcons as any)[foundKey] : null;
+                                        return Icon ? <Icon className="w-5 h-5 text-primary" /> : <div className="w-1 h-3 bg-red-500/50" />;
+                                    })()}
+                                </div>
+                            </div>
                             <p className="text-[10px] text-muted-foreground">
-                                Utilisez les noms de <a href="https://lucide.dev/icons" target="_blank" rel="noreferrer" className="text-primary hover:underline">Lucide Icons</a>
+                                Utilisez les noms de <a href="https://lucide.dev/icons" target="_blank" rel="noreferrer" className="text-primary hover:underline">Lucide Icons</a> (ex: gamepad-2, monitor, laptop)
                             </p>
                         </div>
                         <DialogFooter>

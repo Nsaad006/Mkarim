@@ -13,74 +13,88 @@ const OrderSuccess = () => {
     const orderNumber = searchParams.get("orderNumber");
 
     useEffect(() => {
-        // Trigger confetti animation
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-        });
+        // Trigger confetti animation with brand colors
+        const count = 200;
+        const defaults = {
+            origin: { y: 0.7 },
+            colors: ['#EB4432', '#FFFFFF', '#000000']
+        };
+
+        function fire(particleRatio: number, opts: confetti.Options) {
+            confetti({
+                ...defaults,
+                ...opts,
+                particleCount: Math.floor(count * particleRatio)
+            });
+        }
+
+        fire(0.25, { spread: 26, startVelocity: 55 });
+        fire(0.2, { spread: 60 });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+        fire(0.1, { spread: 120, startVelocity: 45 });
     }, []);
 
     return (
-        <div className="min-h-screen bg-background flex flex-col">
+        <div className="min-h-screen bg-zinc-950 flex flex-col selection:bg-primary selection:text-white">
             <Navbar />
-            <div className="container mx-auto px-4 pt-48 pb-16 flex-1">
+            <div className="container mx-auto px-4 pt-32 pb-24 flex-1">
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: "spring", duration: 0.8, bounce: 0.4 }}
                     className="max-w-2xl mx-auto text-center"
                 >
-                    <div className="w-24 h-24 bg-green-100/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle2 className="w-12 h-12 text-green-500" />
+                    <div className="w-32 h-32 bg-green-500/10 border border-green-500/20 rounded-full flex items-center justify-center mx-auto mb-10 relative">
+                        <CheckCircle2 className="w-16 h-16 text-green-500 relative z-10" />
+                        <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full animate-pulse" />
                     </div>
 
-                    <h1 className="text-4xl font-bold mb-4">Commande confirmée !</h1>
-                    <p className="text-xl text-muted-foreground mb-8">
-                        Merci pour votre confiance. Votre commande a été enregistrée avec succès.
+                    <h1 className="font-display text-5xl md:text-7xl font-black text-white italic uppercase tracking-tighter mb-6 leading-none">COMMANDE <span className="text-primary tracking-tight">VALIDÉE</span></h1>
+                    <p className="text-xl text-zinc-400 font-medium mb-12 max-w-lg mx-auto leading-relaxed">
+                        Félicitations ! Votre demande de matériel a été interceptée par nos services logistiques.
                     </p>
 
                     {orderNumber && (
-                        <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-8">
-                            <p className="text-sm text-muted-foreground mb-2">Numéro de commande</p>
-                            <p className="text-2xl font-mono font-bold text-primary">{orderNumber}</p>
+                        <div className="bg-zinc-900/50 backdrop-blur-xl rounded-3xl p-8 border border-white/5 mb-12 shadow-2xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-colors" />
+                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4">IDENTIFIANT DE TRANSACTION</p>
+                            <p className="text-3xl md:text-5xl font-mono font-black text-primary tracking-tight italic select-all">{orderNumber}</p>
                         </div>
                     )}
 
-                    <div className="bg-muted/50 border border-border rounded-xl p-6 mb-8 text-left">
-                        <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                            <Package className="w-5 h-5 text-primary" />
-                            Prochaines étapes
+                    <div className="bg-zinc-900 border border-white/5 rounded-3xl p-8 md:p-10 mb-12 text-left relative">
+                        <h2 className="font-display text-xl font-black text-white italic uppercase tracking-tighter mb-8 flex items-center gap-4">
+                            <div className="w-1.5 h-6 bg-primary skew-x-[-15deg]" />
+                            LOGISTIQUE DÉPLOYÉE
                         </h2>
-                        <ul className="space-y-4">
-                            <li className="flex items-start gap-3">
-                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <span className="text-xs font-bold text-primary">1</span>
+                        <div className="space-y-6">
+                            {[
+                                { step: "01", title: "Vérification tactique", desc: "Un agent logistique vous contactera par téléphone dans les 24h pour confirmer le point de déploiement." },
+                                { step: "02", title: "Activation du convoi", desc: "Votre matériel sera préparé et scellé pour une expédition express par notre flotte partenaire." },
+                                { step: "03", title: "Transfert physique", desc: "Le matériel vous sera remis en mains propres. Paiement cash exigé lors de la réception finale." }
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-start gap-6 group">
+                                    <div className="w-12 h-12 rounded-2xl bg-zinc-950 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-primary/50 transition-colors duration-300">
+                                        <span className="text-xs font-black text-primary italic font-mono">{item.step}</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-1 italic">{item.title}</h3>
+                                        <p className="text-xs text-zinc-500 font-medium leading-relaxed">{item.desc}</p>
+                                    </div>
                                 </div>
-                                <span className="text-muted-foreground">Vous recevrez un appel de confirmation dans les 24h</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <span className="text-xs font-bold text-primary">2</span>
-                                </div>
-                                <span className="text-muted-foreground">Votre commande sera préparée et expédiée dans les plus brefs délais</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <span className="text-xs font-bold text-primary">3</span>
-                                </div>
-                                <span className="text-muted-foreground">Vous payez uniquement à la réception de votre colis</span>
-                            </li>
-                        </ul>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="flex gap-4 justify-center">
-                        <Button onClick={() => navigate("/")} variant="outline" size="lg" className="gap-2">
-                            <Home className="w-5 h-5" />
-                            Retour à l'accueil
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <Button onClick={() => navigate("/")} variant="outline" size="lg" className="border-white/10 text-white hover:bg-white/5 font-black uppercase tracking-widest px-8 h-16 rounded-2xl italic flex-1">
+                            <Home className="w-5 h-5 mr-3 text-primary" />
+                            RETOUR ACCUEIL
                         </Button>
-                        <Button onClick={() => navigate("/products")} size="lg" className="gap-2">
-                            <Package className="w-5 h-5" />
-                            Continuer mes achats
+                        <Button onClick={() => navigate("/products")} size="lg" className="bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest px-8 h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] italic flex-1">
+                            <Package className="w-5 h-5 mr-3" />
+                            REVOIR LE CATALOGUE
                         </Button>
                     </div>
                 </motion.div>

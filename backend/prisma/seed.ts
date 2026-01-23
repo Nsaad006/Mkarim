@@ -131,6 +131,51 @@ async function main() {
     }
 
     console.log('✅ Products seeded');
+
+    // Seed Hero Slides
+    const heroSlidesData = [
+        {
+            title: 'Dominez le Champ de Bataille',
+            subtitle: 'PROMOTIONS EXCLUSIVES',
+            description: 'PCs Gaming haute performance configurés pour la victoire. Jusqu\'à -20% sur la série RTX Elite.',
+            image: 'https://images.unsplash.com/photo-1587202376732-834907a75932?q=80&w=2070&auto=format&fit=crop',
+            buttonText: 'Acheter Maintenant',
+            buttonLink: '/products',
+            badge: 'Offre Limitée',
+            order: 0,
+            active: true
+        },
+        {
+            title: 'Précision Ultime',
+            subtitle: 'NOUVEAUX PACKS',
+            description: 'Découvrez nos packs périphériques : Clavier Mécanique + Souris RGB + Tapis XL à prix réduit.',
+            image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop',
+            buttonText: 'Voir les Packs',
+            buttonLink: '/products',
+            badge: 'Nouveau',
+            order: 1,
+            active: true
+        },
+        {
+            title: 'Immersion Totale',
+            subtitle: 'EXPERIENCE GAMING',
+            description: 'Écrans incurvés 240Hz et casques audio 7.1 pour une immersion sans précédent.',
+            image: 'https://images.unsplash.com/photo-1616588589676-62b3bd4ff6d2?q=80&w=2071&auto=format&fit=crop',
+            buttonText: 'Découvrir',
+            buttonLink: '/products',
+            badge: 'Premium',
+            order: 2,
+            active: true
+        }
+    ];
+
+    for (const slide of heroSlidesData) {
+        await prisma.heroSlide.create({
+            data: slide
+        });
+    }
+
+    console.log('✅ Hero slides seeded');
     console.log('✨ Seeding completed!');
 }
 

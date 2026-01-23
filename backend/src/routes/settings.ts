@@ -24,8 +24,8 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
-// PUT /api/settings - Update settings (super_admin only)
-router.put('/', authenticate, authorize(['super_admin']), async (req: Request, res: Response) => {
+// PUT /api/settings - Update settings (super_admin and editor)
+router.put('/', authenticate, authorize(['super_admin', 'editor']), async (req: Request, res: Response) => {
     try {
         const {
             storeName,
@@ -41,7 +41,24 @@ router.put('/', authenticate, authorize(['super_admin']), async (req: Request, r
             footerCopyright,
             aboutTitle,
             aboutDescription,
-            aboutMission
+            aboutMission,
+            facebookLink,
+            instagramLink,
+            twitterLink,
+            youtubeLink,
+            tiktokLink,
+            categoriesTitle,
+            categoriesSubtitle,
+            featuredTitle,
+            featuredSubtitle,
+            whyTitle,
+            whySubtitle,
+            ctaTitle,
+            ctaSubtitle,
+            ctaPrimaryBtnText,
+            ctaPrimaryBtnLink,
+            ctaSecondaryBtnText,
+            ctaSecondaryBtnLink
         } = req.body;
 
         // Get existing settings or create if none exist
@@ -70,7 +87,24 @@ router.put('/', authenticate, authorize(['super_admin']), async (req: Request, r
                 ...(footerCopyright !== undefined && { footerCopyright }),
                 ...(aboutTitle !== undefined && { aboutTitle }),
                 ...(aboutDescription !== undefined && { aboutDescription }),
-                ...(aboutMission !== undefined && { aboutMission })
+                ...(aboutMission !== undefined && { aboutMission }),
+                ...(facebookLink !== undefined && { facebookLink }),
+                ...(instagramLink !== undefined && { instagramLink }),
+                ...(twitterLink !== undefined && { twitterLink }),
+                ...(youtubeLink !== undefined && { youtubeLink }),
+                ...(tiktokLink !== undefined && { tiktokLink }),
+                ...(categoriesTitle !== undefined && { categoriesTitle }),
+                ...(categoriesSubtitle !== undefined && { categoriesSubtitle }),
+                ...(featuredTitle !== undefined && { featuredTitle }),
+                ...(featuredSubtitle !== undefined && { featuredSubtitle }),
+                ...(whyTitle !== undefined && { whyTitle }),
+                ...(whySubtitle !== undefined && { whySubtitle }),
+                ...(ctaTitle !== undefined && { ctaTitle }),
+                ...(ctaSubtitle !== undefined && { ctaSubtitle }),
+                ...(ctaPrimaryBtnText !== undefined && { ctaPrimaryBtnText }),
+                ...(ctaPrimaryBtnLink !== undefined && { ctaPrimaryBtnLink }),
+                ...(ctaSecondaryBtnText !== undefined && { ctaSecondaryBtnText }),
+                ...(ctaSecondaryBtnLink !== undefined && { ctaSecondaryBtnLink })
             }
         });
 

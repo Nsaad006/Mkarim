@@ -1,40 +1,12 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  Laptop,
-  Monitor,
-  Gamepad2,
-  Headphones,
-  Mouse,
-  Keyboard,
-  Tv,
-  Cpu,
-  Headset,
-  Cable,
-  Zap,
-  Bluetooth,
-  type LucideIcon,
-} from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 import * as icons from "lucide-react";
 
 import { categoriesApi } from "@/api/categories";
 import { settingsApi } from "@/api/settings";
 import { useQuery } from "@tanstack/react-query";
 
-const slugToIcon: Record<string, LucideIcon> = {
-  "laptops": Laptop,
-  "desktops": Cpu,
-  "gaming-pc": Gamepad2,
-  "monitors": Monitor,
-  "gaming-monitors": Tv,
-  "gaming-mice": Mouse,
-  "gaming-keyboards": Keyboard,
-  "gaming-headsets": Headset,
-  "gaming-accessories": Gamepad2,
-  "earphones": Bluetooth,
-  "it-accessories": Cable,
-  "electronics": Zap,
-};
 
 const container = {
   hidden: { opacity: 0 },
@@ -58,7 +30,7 @@ const CategoriesSection = () => {
   });
 
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ['categories', 'active'],
+    queryKey: ['categories'],
     queryFn: () => categoriesApi.getAll(),
   });
 
@@ -68,17 +40,35 @@ const CategoriesSection = () => {
   if (isLoading) return null;
 
   return (
-    <section className="section-padding bg-background">
-      <div className="container-custom">
-        <div className="text-center mb-12">
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-            {sectionTitle.includes("<span") ? (
-              <span dangerouslySetInnerHTML={{ __html: sectionTitle }} />
-            ) : sectionTitle}
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base px-4">
-            {sectionSubtitle}
-          </p>
+    <section className="section-padding relative overflow-hidden bg-background">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0 opacity-20">
+        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full" />
+      </div>
+
+      <div className="container-custom relative z-10">
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="font-display text-4xl md:text-5xl font-black mb-4 tracking-tight">
+              {sectionTitle.includes("<span") ? (
+                <span dangerouslySetInnerHTML={{ __html: sectionTitle }} />
+              ) : (
+                <>
+                  EXPLOREZ NOS <span className="text-primary">UNIVERS</span>
+                </>
+              )}
+            </h2>
+            <div className="w-24 h-1.5 bg-primary mx-auto mb-6 rounded-full" />
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              {sectionSubtitle}
+            </p>
+          </motion.div>
         </div>
 
         <motion.div
@@ -86,52 +76,82 @@ const CategoriesSection = () => {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
-          className="flex flex-wrap justify-center gap-3 md:gap-4 px-4 md:px-0"
+          className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6"
         >
           {categories.map((category) => {
-            // Case-insensitive lookup for the icon
             let IconComponent: LucideIcon | undefined;
 
             if (category.icon) {
-              // 1. Try exact match
-              if (icons[category.icon as keyof typeof icons]) {
-                IconComponent = icons[category.icon as keyof typeof icons] as LucideIcon;
-              }
-              // 2. Try case-insensitive match
-              else {
-                const iconKey = Object.keys(icons).find(
-                  key => key.toLowerCase() === category.icon?.toLowerCase()
-                );
-                if (iconKey) {
-                  IconComponent = icons[iconKey as keyof typeof icons] as LucideIcon;
-                }
+              const iconName = category.icon;
+              const normalizedInput = iconName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+              const aliases: Record<string, string> = {
+                'motocycle': 'motorcycle',
+                'moto': 'motorcycle',
+                'scooter': 'bike',
+                'trottinette': 'bike',
+                'ecran': 'monitor',
+                'souris': 'mouse',
+                'clavier': 'keyboard',
+                'casque': 'headset'
+              };
+
+              const target = aliases[normalizedInput] || normalizedInput;
+              const foundKey = Object.keys(icons).find(
+                key => key.toLowerCase() === target
+              );
+              if (foundKey) {
+                IconComponent = icons[foundKey as keyof typeof icons] as LucideIcon;
               }
             }
 
-            // Fallback to slug map or default
             if (!IconComponent) {
-              IconComponent = (slugToIcon[category.slug] || Laptop);
+              const slugMapping: Record<string, any> = {
+                'gaming-pc': icons.Gamepad2,
+                'laptops': icons.Laptop,
+                'gaming-monitors': icons.Tv,
+                'monitors': icons.Monitor,
+                'gaming-headsets': icons.Headset,
+                'gaming-mice': icons.Mouse,
+                'gaming-keyboards': icons.Keyboard,
+                'desktops': icons.Boxes,
+                'earphones': icons.Bluetooth,
+                'it-accessories': icons.Cable,
+                'components': icons.Cpu,
+                'trottinette': icons.Bike,
+                'all': icons.LayoutGrid
+              };
+              IconComponent = (slugMapping[category.slug] || icons.Package) as LucideIcon;
             }
 
             return (
               <motion.div
                 key={category.slug}
                 variants={item}
-                className="w-[calc(50%-0.5rem)] sm:w-[calc(33.33%-0.5rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(16.66%-0.75rem)]"
+                whileHover={{ y: -10, scale: 1.05 }}
+                className="group"
               >
                 <Link
                   to={`/products?category=${category.slug}`}
-                  className="group block p-4 md:p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 text-center hover:glow-primary h-[140px] md:h-[160px] flex flex-col items-center justify-center"
+                  className="relative flex flex-col items-center justify-center p-4 md:p-8 rounded-xl md:rounded-2xl bg-zinc-900/50 border border-white/5 hover:border-primary/50 transition-all duration-500 overflow-hidden h-full aspect-square md:h-[220px]"
                 >
-                  <div className="w-12 h-12 md:w-14 md:h-14 mx-auto mb-3 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary/20 transition-colors flex-shrink-0">
-                    <IconComponent className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+                  {/* Hover Background Glow */}
+                  <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-500" />
+
+                  <div className="relative z-10 w-12 h-12 md:w-16 md:h-16 mb-2 md:mb-4 rounded-xl md:rounded-2xl bg-zinc-800 flex items-center justify-center border border-white/10 group-hover:bg-primary group-hover:border-primary group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                    <IconComponent className="w-6 h-6 md:w-8 md:h-8 text-primary group-hover:text-white transition-colors duration-500" />
                   </div>
-                  <h3 className="font-medium text-sm md:text-base mb-1 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem] flex items-center justify-center">
+
+                  <h3 className="relative z-10 font-bold text-[10px] md:text-base text-center group-hover:text-primary transition-colors duration-300 line-clamp-1">
                     {category.name}
                   </h3>
+
+                  <div className="absolute bottom-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Découvrir</span>
+                  </div>
                 </Link>
               </motion.div>
-            );
+            )
           })}
         </motion.div>
       </div>

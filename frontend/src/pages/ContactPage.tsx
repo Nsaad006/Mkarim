@@ -102,59 +102,63 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-zinc-950 selection:bg-primary selection:text-white">
       <Navbar />
-      <main className="pt-20">
+      <main className="pt-24 lg:pt-32">
         {/* Header */}
-        <section className="section-padding bg-card border-b border-border">
-          <div className="container-custom">
+        <section className="relative py-12 lg:py-20 overflow-hidden">
+          <div className="container-custom relative z-10">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="max-w-2xl mx-auto text-center"
+              className="max-w-4xl"
             >
-              <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-                Contactez-<span className="text-primary">Nous</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] mb-4 skew-x-[-12deg]">
+                <span className="skew-x-[12deg]">MKARIM SUPPORT</span>
+              </div>
+              <h1 className="font-display text-5xl md:text-7xl font-black mb-6 tracking-tighter text-white uppercase italic uppercase">
+                Contactez-<span className="text-primary italic">Nous</span>
               </h1>
-              <p className="text-lg text-muted-foreground">
-                Notre équipe est disponible pour vous accompagner et répondre à toutes vos questions.
+              <p className="text-xl text-zinc-400 font-medium max-w-2xl leading-relaxed">
+                Notre équipe d'experts est disponible pour vous accompagner et répondre à toutes vos questions tech & gaming.
               </p>
             </motion.div>
           </div>
+          <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 blur-[120px] pointer-events-none" />
         </section>
 
-        <section className="section-padding">
+        <section className="section-padding relative">
           <div className="container-custom">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
               {/* Contact Info */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
-                className="lg:col-span-1 space-y-6"
+                className="lg:col-span-1 space-y-8 order-2 lg:order-1"
               >
-                <div className="bg-card rounded-2xl border border-border p-6">
-                  <h2 className="font-display text-xl font-semibold mb-6">
-                    Informations de Contact
+                <div className="bg-zinc-900/50 backdrop-blur-xl rounded-3xl border border-white/5 p-8 shadow-2xl">
+                  <h2 className="font-display text-xl font-black text-white uppercase tracking-tight mb-8 italic">
+                    Informations Directes
                   </h2>
-                  <div className="space-y-5">
+                  <div className="space-y-8">
                     {contactInfo.map((info) => (
-                      <div key={info.title} className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <info.icon className="w-5 h-5 text-primary" />
+                      <div key={info.title} className="flex items-start gap-6 group">
+                        <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-white/5 flex items-center justify-center flex-shrink-0 group-hover:border-primary/50 transition-colors duration-300">
+                          <info.icon className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">{info.title}</p>
+                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1">{info.title}</p>
                           {info.link ? (
                             <a
                               href={info.link}
-                              className="font-medium hover:text-primary transition-colors"
+                              className="text-lg font-black text-zinc-200 hover:text-primary transition-colors tracking-tight italic"
                             >
                               {info.value}
                             </a>
                           ) : (
-                            <p className="font-medium">{info.value}</p>
+                            <p className="text-lg font-black text-zinc-200 tracking-tight italic">{info.value}</p>
                           )}
                         </div>
                       </div>
@@ -163,20 +167,22 @@ const ContactPage = () => {
                 </div>
 
                 {/* WhatsApp CTA */}
-                <div className="bg-success/10 border border-success/30 rounded-2xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <MessageCircle className="w-8 h-8 text-success" />
+                <div className="bg-green-500/10 border border-green-500/20 rounded-3xl p-8 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-green-500/20 transition-colors" />
+                  <div className="flex items-center gap-4 mb-6 relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-green-500 flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.4)]">
+                      <MessageCircle className="w-8 h-8 text-white" />
+                    </div>
                     <div>
-                      <p className="font-semibold">Besoin d'aide rapide ?</p>
-                      <p className="text-sm text-muted-foreground">Contactez-nous sur WhatsApp</p>
+                      <p className="font-black text-white uppercase tracking-tight italic">Assistance Directe</p>
+                      <p className="text-xs font-bold text-green-500/80 uppercase tracking-widest">Réponse immédiate</p>
                     </div>
                   </div>
                   <Button
                     onClick={handleWhatsApp}
-                    className="w-full bg-success hover:bg-success/90"
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-black uppercase tracking-widest h-14 rounded-xl relative z-10"
                   >
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    Écrire sur WhatsApp
+                    Lancer le Chat WhatsApp
                   </Button>
                 </div>
               </motion.div>
@@ -186,85 +192,85 @@ const ContactPage = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
-                className="lg:col-span-2"
+                className="lg:col-span-2 order-1 lg:order-2"
               >
-                <div className="bg-card rounded-2xl border border-border p-6 md:p-8">
-                  <h2 className="font-display text-xl font-semibold mb-6">
-                    Envoyez-nous un Message
+                <div className="bg-zinc-900/50 backdrop-blur-xl rounded-3xl border border-white/5 p-8 md:p-12 shadow-2xl">
+                  <h2 className="font-display text-2xl font-black text-white uppercase tracking-tight mb-8 italic">
+                    Transmettre un Message
                   </h2>
-                  <form onSubmit={handleSubmit} className="space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <Label htmlFor="name">Nom complet *</Label>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Nom complet *</Label>
                         <Input
                           id="name"
-                          placeholder="Votre nom"
+                          placeholder="votre nom"
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className="mt-1.5"
+                          className="bg-zinc-950/50 border-white/5 text-white h-14 rounded-xl focus:border-primary/50 transition-all font-bold"
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="email">Email *</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Email *</Label>
                         <Input
                           id="email"
                           type="email"
                           placeholder="votre@email.com"
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="mt-1.5"
+                          className="bg-zinc-950/50 border-white/5 text-white h-14 rounded-xl focus:border-primary/50 transition-all font-bold"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <Label htmlFor="phone">Téléphone</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Téléphone</Label>
                         <Input
                           id="phone"
                           type="tel"
                           placeholder="+212 6 XX XX XX XX"
                           value={formData.phone}
                           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          className="mt-1.5"
+                          className="bg-zinc-950/50 border-white/5 text-white h-14 rounded-xl focus:border-primary/50 transition-all font-bold"
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="subject">Sujet</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="subject" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Sujet</Label>
                         <Input
                           id="subject"
-                          placeholder="Sujet de votre message"
+                          placeholder="sujet de votre demande"
                           value={formData.subject}
                           onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                          className="mt-1.5"
+                          className="bg-zinc-950/50 border-white/5 text-white h-14 rounded-xl focus:border-primary/50 transition-all font-bold"
                         />
                       </div>
                     </div>
 
-                    <div>
-                      <Label htmlFor="message">Message *</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="message" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Message *</Label>
                       <Textarea
                         id="message"
-                        placeholder="Votre message..."
+                        placeholder="votre message détaillé..."
                         rows={6}
                         value={formData.message}
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        className="mt-1.5 resize-none"
+                        className="bg-zinc-950/50 border-white/5 text-white rounded-xl focus:border-primary/50 transition-all font-bold resize-none p-6"
                       />
                     </div>
 
                     <Button
                       type="submit"
                       size="lg"
-                      className="w-full btn-glow glow-primary"
+                      className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-16 rounded-xl shadow-[0_0_30px_rgba(235,68,50,0.3)] transition-all hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] active:scale-95"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
-                        "Envoi en cours..."
+                        "Transmission..."
                       ) : (
                         <>
-                          <Send className="w-5 h-5 mr-2" />
-                          Envoyer le Message
+                          <Send className="w-5 h-5 mr-3" />
+                          Démarrer l'envoi
                         </>
                       )}
                     </Button>

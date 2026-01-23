@@ -13,6 +13,7 @@ import adminsRouter from './routes/admins';
 import statsRouter from './routes/stats';
 import contactsRouter from './routes/contacts';
 import uploadRouter from './routes/upload';
+import heroSlidesRouter from './routes/hero-slides';
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/stats', statsRouter);
 app.use('/api/contacts', contactsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/hero-slides', heroSlidesRouter);
 
 // Health check
 app.get('/health', (req, res) => {

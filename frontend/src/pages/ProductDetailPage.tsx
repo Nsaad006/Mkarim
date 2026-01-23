@@ -51,10 +51,11 @@ const ProductDetailPage = () => {
 
   if (isProductLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-zinc-950">
         <Navbar />
-        <main className="pt-20 flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <main className="pt-32 flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+          <p className="text-zinc-500 font-black uppercase tracking-[0.3em] text-xs">Initialisation du matériel...</p>
         </main>
         <Footer />
       </div>
@@ -63,13 +64,13 @@ const ProductDetailPage = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-zinc-950">
         <Navbar />
-        <main className="pt-20 flex items-center justify-center min-h-[60vh]">
+        <main className="pt-32 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <h1 className="font-display text-2xl font-bold mb-4">Produit non trouvé</h1>
+            <h1 className="font-display text-4xl font-black text-white uppercase italic mb-6 tracking-tighter">Matériel <span className="text-primary">Introuvable</span></h1>
             <Link to="/products">
-              <Button>Retour aux produits</Button>
+              <Button className="bg-primary text-white font-black uppercase tracking-widest px-8 h-14 rounded-xl">Retour au Catalogue</Button>
             </Link>
           </div>
         </main>
@@ -82,8 +83,8 @@ const ProductDetailPage = () => {
     if (!product) return;
     addItem(product);
     toast({
-      title: "Produit ajouté !",
-      description: `${product.name} a été ajouté à votre panier.`,
+      title: "Matériel Ajouté",
+      description: `${product.name} est dans votre panier.`,
     });
   };
 
@@ -92,31 +93,34 @@ const ProductDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-zinc-950 selection:bg-primary selection:text-white">
       <Navbar />
-      <main className="pt-20">
-        <div className="container-custom py-8">
+      <main className="pt-24 lg:pt-32">
+        <div className="container-custom py-8 lg:py-16">
           {/* Breadcrumb */}
           <Link
             to="/products"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
+            className="inline-flex items-center gap-3 text-zinc-500 hover:text-white mb-10 transition-colors font-black uppercase tracking-[0.2em] text-[10px]"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Retour aux produits
+            <ArrowLeft className="w-4 h-4 text-primary" />
+            Retour au Catalogue
           </Link>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Product Image Gallery */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
+              className="relative"
             >
               <ProductImageGallery
                 images={product.images && product.images.length > 0 ? product.images : [product.image]}
                 productName={product.name}
                 badge={product.badge}
               />
+              {/* Decorative glow */}
+              <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
             </motion.div>
 
             {/* Product Info */}
@@ -124,125 +128,118 @@ const ProductDetailPage = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="space-y-6"
+              className="space-y-10"
             >
               <div>
-                <span className="text-sm text-primary uppercase tracking-wider font-medium">
-                  {product.category?.name || product.categoryId.replace("-", " ")}
-                </span>
-                <h1 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold mt-2 mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-zinc-900 border border-white/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-4 skew-x-[-12deg]">
+                  <span className="skew-x-[12deg]">{product.category?.name || product.categoryId.replace("-", " ")}</span>
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-white italic tracking-tighter leading-[0.9] mb-6">
                   {product.name}
                 </h1>
-                <p className="text-muted-foreground text-lg">
+                <p className="text-zinc-400 text-lg font-medium leading-relaxed max-w-xl">
                   {product.description}
                 </p>
               </div>
 
-              {/* Price */}
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl md:text-4xl font-bold text-primary">
-                  {product.price.toLocaleString()} {currency}
-                </span>
-                {product.originalPrice && (
-                  <span className="text-xl text-muted-foreground line-through">
-                    {product.originalPrice.toLocaleString()} {currency}
-                  </span>
-                )}
-              </div>
-
-              {/* Stock Status */}
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${product.inStock
-                ? "bg-success/20 text-success"
-                : "bg-destructive/20 text-destructive"
-                }`}>
-                <Check className="w-4 h-4" />
-                <span className="font-medium">
-                  {product.inStock ? "En stock - Disponible" : "Rupture de stock"}
-                </span>
-              </div>
-
-              {/* Specs */}
-              {product.specs && product.specs.length > 0 && (
-                <div className="bg-card rounded-xl border border-border p-6">
-                  <h3 className="font-semibold mb-4">Caractéristiques</h3>
-                  <ul className="space-y-2">
-                    {product.specs.map((spec, index) => (
-                      <li key={index} className="flex items-center gap-2 text-muted-foreground">
-                        <Check className="w-4 h-4 text-primary" />
-                        {spec}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* COD Highlight */}
-              <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="w-8 h-8 text-primary" />
-                  <div>
-                    <p className="font-semibold text-foreground">Paiement à la livraison disponible</p>
-                    <p className="text-sm text-muted-foreground">Payez en cash à la réception</p>
+              {/* Price & Stock */}
+              <div className="flex flex-wrap items-center gap-8 bg-zinc-900/50 backdrop-blur-md p-8 rounded-3xl border border-white/5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-colors" />
+                <div className="relative z-10">
+                  <div className="flex items-baseline gap-4 mb-2">
+                    <span className="text-5xl font-black text-white italic tracking-tighter">
+                      {product.price.toLocaleString()} <span className="text-primary text-2xl not-italic underline decoration-primary/50 decoration-4 underline-offset-8 ml-1">{currency}</span>
+                    </span>
+                    {product.originalPrice && (
+                      <span className="text-2xl text-zinc-600 line-through font-bold tracking-tighter">
+                        {product.originalPrice.toLocaleString()} {currency}
+                      </span>
+                    )}
+                  </div>
+                  <div className={`mt-4 inline-flex items-center gap-2 font-black uppercase tracking-[0.2em] text-[10px] ${product.inStock ? "text-green-500" : "text-primary"}`}>
+                    <Check className={`w-4 h-4 ${product.inStock ? "text-green-500" : "text-primary"}`} />
+                    {product.inStock ? "UNITÉ PRÊTE POUR EXPÉDITION" : "UNITÉ ÉPUISÉE"}
                   </div>
                 </div>
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-4">
                 {!storeAvailability ? (
-                  <div className="p-4 bg-warning/10 text-warning border border-warning/20 rounded-xl text-center flex-1">
-                    La boutique est temporairement fermée. Les commandes sont suspendues.
+                  <div className="p-6 bg-primary/5 text-primary border border-primary/20 rounded-2xl text-center flex-1 font-black uppercase tracking-widest text-sm italic">
+                    ACCÈS AUX LOGISTIQUES TEMPORAIREMENT SUSPENDU.
                   </div>
                 ) : (
                   <>
                     <Button
                       size="lg"
-                      className="flex-1 btn-glow glow-primary text-lg"
+                      className="flex-[1.5] bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-xl"
                       onClick={handleOrderNow}
                       disabled={!product.inStock}
                     >
-                      Commander Maintenant
+                      COMMANDER MAINTENANT
                     </Button>
                     <Button
                       size="lg"
                       variant="outline"
-                      className="flex-1 text-lg"
+                      className="flex-1 border-white/10 text-white hover:bg-white/5 font-black uppercase tracking-widest h-16 rounded-2xl active:scale-95 italic text-lg"
                       onClick={handleAddToCart}
                       disabled={!product.inStock}
                     >
-                      Ajouter au Panier
+                      + PANIER
                     </Button>
                   </>
                 )}
               </div>
 
+              {/* Specs */}
+              {product.specs && product.specs.length > 0 && (
+                <div className="space-y-4 pt-4">
+                  <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] ml-2">SPECIFICATIONS TECHNIQUES</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {product.specs.map((spec, index) => (
+                      <div key={index} className="flex items-center gap-4 bg-zinc-950 border border-white/5 p-4 rounded-xl group hover:border-primary/30 transition-colors duration-300">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        <span className="text-sm font-bold text-zinc-300 uppercase tracking-tight">{spec}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Trust Badges */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-border">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Truck className="w-5 h-5 text-primary" />
-                  <span>Livraison 24-72h</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <ShieldCheck className="w-5 h-5 text-primary" />
-                  <span>Garantie incluse</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CreditCard className="w-5 h-5 text-primary" />
-                  <span>Paiement COD</span>
-                </div>
+              <div className="grid grid-cols-3 gap-6 pt-10 border-t border-white/5">
+                {[
+                  { icon: Truck, label: "EXPRESS LOGISTICS", sub: "24-72H MAROC" },
+                  { icon: ShieldCheck, label: "CERTIFIED GEAR", sub: "FULL WARRANTY" },
+                  { icon: CreditCard, label: "SECURE COD", sub: "PAY ON RECEIPT" }
+                ].map((badge, i) => (
+                  <div key={i} className="flex flex-col items-center text-center gap-3">
+                    <badge.icon className="w-6 h-6 text-primary" />
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-white tracking-[0.1em]">{badge.label}</p>
+                      <p className="text-[8px] font-bold text-zinc-500 tracking-[0.05em]">{badge.sub}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </motion.div>
           </div>
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <section className="mt-16 pt-12 border-t border-border">
-              <h2 className="font-display text-2xl md:text-3xl font-bold mb-8">
-                Produits <span className="text-primary">Similaires</span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {relatedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+            <section className="mt-32 pt-16 border-t border-white/5">
+              <div className="flex items-center justify-between mb-12">
+                <h2 className="font-display text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase">
+                  UNITÉS <span className="text-primary">SIMILAIRES</span>
+                </h2>
+                <Link to="/products" className="text-[10px] font-black text-zinc-500 hover:text-primary uppercase tracking-[0.2em] transition-colors border-b border-zinc-800 hover:border-primary pb-1">
+                  VOIR CATALOGUE COMPLET
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                {relatedProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} />
                 ))}
               </div>
             </section>

@@ -92,21 +92,35 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
                     )}
 
                     {/* Navigation Arrows (only if multiple images) */}
-                    {imageList.length > 1 && !isZoomed && (
+                    {imageList.length > 1 && (
                         <>
                             <Button
                                 variant="secondary"
                                 size="icon"
-                                className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full shadow-lg z-10 hover:bg-background"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full shadow-lg z-20 hover:bg-background transition-opacity"
                                 onClick={handlePrevious}
+                                onMouseEnter={(e) => {
+                                    e.stopPropagation();
+                                    setIsZoomed(false);
+                                }}
+                                onMouseLeave={() => {
+                                    setIsZoomed(true);
+                                }}
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </Button>
                             <Button
                                 variant="secondary"
                                 size="icon"
-                                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full shadow-lg z-10 hover:bg-background"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full shadow-lg z-20 hover:bg-background transition-opacity"
                                 onClick={handleNext}
+                                onMouseEnter={(e) => {
+                                    e.stopPropagation();
+                                    setIsZoomed(false);
+                                }}
+                                onMouseLeave={() => {
+                                    setIsZoomed(true);
+                                }}
                             >
                                 <ChevronRight className="w-5 h-5" />
                             </Button>
@@ -114,8 +128,8 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
                     )}
 
                     {/* Image Counter */}
-                    {imageList.length > 1 && !isZoomed && (
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium z-10 border border-border">
+                    {imageList.length > 1 && (
+                        <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium z-20 border border-border transition-opacity ${isZoomed ? 'opacity-0' : 'opacity-100'}`}>
                             {selectedIndex + 1} / {imageList.length}
                         </div>
                     )}

@@ -137,6 +137,29 @@ model Settings {
   footerDescription String   @default("Votre destination pour les meilleurs PC et accessoires gaming au Maroc. Qualité garantie, livraison rapide.")
   footerCopyright   String   @default("© 2024 MKARIM. Tous droits réservés.")
   
+  // Social Media Links
+  facebookLink      String?
+  instagramLink     String?
+  twitterLink       String?
+  youtubeLink       String?
+  tiktokLink        String?
+  
+  // Home Page Content
+  categoriesTitle     String   @default("NOS CATÉGORIES")
+  categoriesSubtitle  String   @default("Découvrez notre large gamme de produits par univers.")
+  featuredTitle       String   @default("PRODUITS POPULAIRES")
+  featuredSubtitle    String   @default("Les meilleures ventes et nouveautés sélectionnées pour vous.")
+  whyTitle            String   @default("L'EXCELLENCE MKARIM SOLUTION")
+  whySubtitle         String   @default("Nous redéfinissons le standard du gaming au Maroc avec un service irréprochable.")
+  
+  // CTA Section
+  ctaTitle             String   @default("PRÊT À RÉVOLUTIONNER VOTRE SETUP ?")
+  ctaSubtitle          String   @default("Rejoignez l'élite des gamers marocains. Qualité certifiée, livraison express et service client dédié.")
+  ctaPrimaryBtnText    String   @default("Accéder à la Boutique")
+  ctaPrimaryBtnLink    String   @default("/products")
+  ctaSecondaryBtnText  String   @default("Besoin d'aide ?")
+  ctaSecondaryBtnLink  String   @default("/contact")
+  
   // About Page Content
   aboutTitle        String   @default("À Propos de MKARIM")
   aboutDescription  String   @default("MKARIM est votre partenaire de confiance pour tous vos besoins en matériel informatique et gaming au Maroc.")
@@ -144,4 +167,19 @@ model Settings {
   
   updatedAt         DateTime @updatedAt
   createdAt         DateTime @default(now())
+}
+
+model HeroSlide {
+  id          String   @id @default(uuid())
+  image       String
+  title       String
+  subtitle    String?
+  description String?
+  buttonText  String   @default("Commander Maintenant")
+  buttonLink  String   @default("/products")
+  badge       String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
