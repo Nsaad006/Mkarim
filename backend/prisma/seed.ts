@@ -22,21 +22,23 @@ async function main() {
 
     // Seed Categories
     const categoriesData = [
-        { name: 'PC Portable', slug: 'laptops' },
-        { name: 'PC de Bureau', slug: 'desktops' },
-        { name: 'PC Gamer', slug: 'gaming-pc' },
-        { name: 'Moniteurs', slug: 'monitors' },
-        { name: 'Écrans Gamer', slug: 'gaming-monitors' },
-        { name: 'Souris Gamer', slug: 'gaming-mice' },
-        { name: 'Claviers Gamer', slug: 'gaming-keyboards' },
-        { name: 'Casques Gamer', slug: 'gaming-headsets' },
-        { name: 'AirPods & Écouteurs', slug: 'earphones' },
+        { name: 'PC Portable', slug: 'laptops', icon: 'Laptop' },
+        { name: 'PC de Bureau', slug: 'desktops', icon: 'Cpu' },
+        { name: 'PC Gamer', slug: 'gaming-pc', icon: 'Gamepad2' },
+        { name: 'Moniteurs', slug: 'monitors', icon: 'Monitor' },
+        { name: 'Écrans Gamer', slug: 'gaming-monitors', icon: 'Tv' },
+        { name: 'Souris Gamer', slug: 'gaming-mice', icon: 'Mouse' },
+        { name: 'Claviers Gamer', slug: 'gaming-keyboards', icon: 'Keyboard' },
+        { name: 'Casques Gamer', slug: 'gaming-headsets', icon: 'Headset' },
+        { name: 'AirPods & Écouteurs', slug: 'earphones', icon: 'Bluetooth' },
+        { name: 'Accessoires', slug: 'it-accessories', icon: 'Cable' },
+        { name: 'Composants', slug: 'components', icon: 'Cpu' },
     ];
 
     for (const cat of categoriesData) {
         await prisma.category.upsert({
             where: { slug: cat.slug },
-            update: { name: cat.name },
+            update: { name: cat.name, icon: cat.icon },
             create: cat
         });
     }
