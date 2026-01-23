@@ -104,7 +104,7 @@ const CheckoutPage = () => {
         })),
         customerName: formData.fullName,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.phone.replace(/\s/g, ""),
         city: formData.city,
         address: formData.address,
       });
@@ -126,11 +126,18 @@ const CheckoutPage = () => {
       }, 2000);
 
     } catch (err) {
-      const error = err as AxiosError<{ error: string }>;
+      const error = err as AxiosError<{ error: string; details?: { message: string }[] }>;
       console.error("Order submission error:", error);
+
+      let description = error.response?.data?.error || error.message || "Une erreur est survenue lors de la commande.";
+
+      if (error.response?.data?.details?.[0]?.message) {
+        description += `: ${error.response.data.details[0].message}`;
+      }
+
       toast({
         title: "Erreur",
-        description: error.response?.data?.error || error.message || "Une erreur est survenue lors de la commande.",
+        description: description,
         variant: "destructive",
       });
     } finally {

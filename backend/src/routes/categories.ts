@@ -27,6 +27,7 @@ router.get('/', async (req, res) => {
             id: cat.id,
             name: cat.name,
             slug: cat.slug,
+            icon: cat.icon,
             active: cat.active,
             createdAt: cat.createdAt,
             updatedAt: cat.updatedAt,
@@ -49,6 +50,7 @@ router.post('/', authenticate, authorize(['super_admin', 'editor']), async (req:
             data: {
                 name,
                 slug,
+                icon: req.body.icon,
                 active: active ?? true
             }
         });
@@ -71,6 +73,7 @@ router.put('/:id', authenticate, authorize(['super_admin', 'editor']), async (re
             data: {
                 ...(name && { name }),
                 ...(slug && { slug }),
+                ...(req.body.icon !== undefined && { icon: req.body.icon }),
                 ...(active !== undefined && { active })
             }
         });

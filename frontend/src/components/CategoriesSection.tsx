@@ -13,9 +13,9 @@ import {
   Cable,
   Zap,
   Bluetooth,
-  icons,
   type LucideIcon,
 } from "lucide-react";
+import * as icons from "lucide-react";
 
 import { categoriesApi } from "@/api/categories";
 import { settingsApi } from "@/api/settings";
@@ -86,16 +86,39 @@ const CategoriesSection = () => {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 px-4 md:px-0"
+          className="flex flex-wrap justify-center gap-3 md:gap-4 px-4 md:px-0"
         >
           {categories.map((category) => {
-            const iconName = category.icon as keyof typeof icons;
-            const IconComponent = (category.icon && icons[iconName])
-              ? icons[iconName] as LucideIcon
-              : (slugToIcon[category.slug] || Laptop);
+            // Case-insensitive lookup for the icon
+            let IconComponent: LucideIcon | undefined;
+
+            if (category.icon) {
+              // 1. Try exact match
+              if (icons[category.icon as keyof typeof icons]) {
+                IconComponent = icons[category.icon as keyof typeof icons] as LucideIcon;
+              }
+              // 2. Try case-insensitive match
+              else {
+                const iconKey = Object.keys(icons).find(
+                  key => key.toLowerCase() === category.icon?.toLowerCase()
+                );
+                if (iconKey) {
+                  IconComponent = icons[iconKey as keyof typeof icons] as LucideIcon;
+                }
+              }
+            }
+
+            // Fallback to slug map or default
+            if (!IconComponent) {
+              IconComponent = (slugToIcon[category.slug] || Laptop);
+            }
 
             return (
-              <motion.div key={category.slug} variants={item}>
+              <motion.div
+                key={category.slug}
+                variants={item}
+                className="w-[calc(50%-0.5rem)] sm:w-[calc(33.33%-0.5rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(16.66%-0.75rem)]"
+              >
                 <Link
                   to={`/products?category=${category.slug}`}
                   className="group block p-4 md:p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 text-center hover:glow-primary h-[140px] md:h-[160px] flex flex-col items-center justify-center"
