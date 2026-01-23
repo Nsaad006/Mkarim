@@ -72,13 +72,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </span>
         )}
 
-        {/* Stock Status */}
-        <span className={`absolute top-3 right-3 px-2 py-1 text-xs font-medium rounded-full ${product.inStock
-          ? "bg-success/20 text-success"
-          : "bg-destructive/20 text-destructive"
-          }`}>
-          {product.inStock ? "En stock" : "Rupture"}
-        </span>
+
 
         {/* Quick Actions */}
         <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
@@ -102,9 +96,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
       {/* Content - Flex grow to push buttons to bottom */}
       <div className="p-4 flex flex-col flex-grow">
-        <span className="text-xs text-muted-foreground uppercase tracking-wider">
-          {product.category?.name || product.categoryId.replace("-", " ")}
-        </span>
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">
+            {product.category?.name || product.categoryId.replace("-", " ")}
+          </span>
+          {/* Stock Status */}
+          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${product.inStock
+            ? "bg-success/20 text-success"
+            : "bg-destructive/20 text-destructive"
+            }`}>
+            {product.inStock ? "En stock" : "Rupture"}
+          </span>
+        </div>
         <h3 className="font-semibold mt-1 mb-2 line-clamp-2 hover:text-primary transition-colors text-sm md:text-base">
           {product.name}
         </h3>
