@@ -37,15 +37,15 @@ const AboutPage = () => {
   });
 
   const { data: summary } = useQuery({
-    queryKey: ['stats-summary'],
-    queryFn: () => statsApi.getSummary(7),
+    queryKey: ['public-stats'],
+    queryFn: statsApi.getPublicSummary,
   });
 
-  const kpis = summary?.stats || {
-    totalOrders: 0,
-    totalProducts: 500,
-    totalCustomers: 5000,
-    totalCities: 50
+  const kpis = {
+    totalOrders: 0, // Not available publicly
+    totalProducts: summary?.totalProducts || 500,
+    totalCustomers: summary?.totalCustomers || 5000,
+    totalCities: summary?.totalCities || 50
   };
   const citiesCount = 14; // Default known cities, but could be dynamic if we had cities stats. 
   // Wait, I can just hardcode 50+ as before or use real data.

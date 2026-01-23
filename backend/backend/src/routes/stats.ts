@@ -7,14 +7,18 @@ const router = Router();
 // GET /api/stats/summary - Public summary stats for homepage
 router.get('/summary', async (req: Request, res: Response) => {
     try {
-        const [totalProducts, totalCategories] = await Promise.all([
+        const [totalProducts, totalCategories, totalCities, totalCustomers] = await Promise.all([
             prisma.product.count({ where: { inStock: true } }),
-            prisma.category.count({ where: { active: true } })
+            prisma.category.count({ where: { active: true } }),
+            prisma.city.count(),
+            prisma.order.groupBy({ by: ['phone'] }).then(res => res.length)
         ]);
 
         res.json({
             totalProducts,
             totalCategories,
+            totalCities,
+            totalCustomers,
             deliveryTime: '24-72h',
             paymentMethods: ['COD', 'Carte bancaire']
         });

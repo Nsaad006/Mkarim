@@ -40,6 +40,15 @@ export interface StatsSummary {
     };
 }
 
+export interface PublicStats {
+    totalProducts: number;
+    totalCategories: number;
+    totalCities: number;
+    totalCustomers: number;
+    deliveryTime: string;
+    paymentMethods: string[];
+}
+
 export const statsApi = {
     getSummary: async (days: number = 7, dateRange?: { from?: Date; to?: Date }): Promise<StatsSummary> => {
         let query = `days=${days}`;
@@ -47,6 +56,11 @@ export const statsApi = {
             query += `&from=${dateRange.from.toISOString()}&to=${dateRange.to.toISOString()}`;
         }
         const { data } = await apiClient.get<StatsSummary>(`/api/stats/analytics?${query}`);
+        return data;
+    },
+
+    getPublicSummary: async (): Promise<PublicStats> => {
+        const { data } = await apiClient.get<PublicStats>('/api/stats/summary');
         return data;
     }
 };
