@@ -54,8 +54,12 @@ const Analytics = () => {
                             <LineChart data={dailyRevenueHistory}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="date" axisLine={false} tickLine={false} />
-                                <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `${val}${currency.toLowerCase()}`} />
-                                <Tooltip />
+                                <YAxis width={80} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}${currency.toLowerCase()}`} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#f3f4f6' }}
+                                    labelStyle={{ color: '#9ca3af' }}
+                                />
                                 <Line
                                     type="monotone"
                                     dataKey="revenue"
@@ -76,8 +80,12 @@ const Analytics = () => {
                             <BarChart data={cityData} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={80} axisLine={false} tickLine={false} />
-                                <Tooltip />
+                                <YAxis dataKey="name" type="category" width={120} axisLine={false} tickLine={false} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#f3f4f6' }}
+                                    cursor={{ fill: '#374151', opacity: 0.2 }}
+                                />
                                 <Bar dataKey="value" fill="#9b87f5" radius={[0, 4, 4, 0]} barSize={30} />
                             </BarChart>
                         </ResponsiveContainer>
