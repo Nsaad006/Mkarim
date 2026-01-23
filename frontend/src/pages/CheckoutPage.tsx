@@ -296,7 +296,7 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              <div className="bg-green-50/50 border border-green-200 rounded-lg p-4 space-y-2 text-sm">
+              <div className="bg-white border border-green-200 rounded-lg p-4 space-y-2 text-sm">
                 <div className="flex items-center gap-2 text-green-800">
                   <CheckCircle2 className="w-4 h-4" />
                   <span className="font-medium">Paiement à la livraison</span>
