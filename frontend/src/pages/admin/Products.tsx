@@ -130,11 +130,23 @@ const AdminProducts = () => {
             });
         },
         onError: (error: AxiosError<{ error: string }>) => {
-            toast({
-                title: "Erreur",
-                description: error.response?.data?.error || "Impossible de supprimer le produit.",
-                variant: "destructive",
-            });
+            const errorMessage = error.response?.data?.error || "";
+
+            // Check for the specific backend error about existing orders
+            if (errorMessage.includes("exists in orders") || error.response?.status === 400) {
+                toast({
+                    title: "Impossible de supprimer",
+                    description: "Ce produit est lié à des commandes existantes. Veuillez plutôt le marquer comme 'Hors stock' ou le désactiver.",
+                    variant: "destructive",
+                    duration: 5000,
+                });
+            } else {
+                toast({
+                    title: "Erreur",
+                    description: errorMessage || "Impossible de supprimer le produit.",
+                    variant: "destructive",
+                });
+            }
         },
     });
 
