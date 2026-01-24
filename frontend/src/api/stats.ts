@@ -50,10 +50,13 @@ export interface PublicStats {
 }
 
 export const statsApi = {
-    getSummary: async (days: number = 7, dateRange?: { from?: Date; to?: Date }): Promise<StatsSummary> => {
+    getSummary: async (days: number = 7, dateRange?: { from?: Date; to?: Date }, lowStockThreshold?: number): Promise<StatsSummary> => {
         let query = `days=${days}`;
         if (dateRange?.from && dateRange?.to) {
             query += `&from=${dateRange.from.toISOString()}&to=${dateRange.to.toISOString()}`;
+        }
+        if (lowStockThreshold !== undefined) {
+            query += `&lowStockThreshold=${lowStockThreshold}`;
         }
         const { data } = await apiClient.get<StatsSummary>(`/api/stats/analytics?${query}`);
         return data;

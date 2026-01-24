@@ -6,17 +6,13 @@ import * as icons from "lucide-react";
 import { categoriesApi } from "@/api/categories";
 import { settingsApi } from "@/api/settings";
 import { useQuery } from "@tanstack/react-query";
-
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-    },
-  },
-};
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const item = {
   hidden: { opacity: 0, y: 20 },
@@ -71,89 +67,92 @@ const CategoriesSection = () => {
           </motion.div>
         </div>
 
-        <motion.div
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6"
-        >
-          {categories.map((category) => {
-            let IconComponent: LucideIcon | undefined;
+        <div className="px-4 md:px-12">
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2">
+              {categories.map((category) => {
+                let IconComponent: LucideIcon | undefined;
 
-            if (category.icon) {
-              const iconName = category.icon;
-              const normalizedInput = iconName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                if (category.icon) {
+                  const iconName = category.icon;
+                  const normalizedInput = iconName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
-              const aliases: Record<string, string> = {
-                'motocycle': 'motorcycle',
-                'moto': 'motorcycle',
-                'scooter': 'bike',
-                'trottinette': 'bike',
-                'ecran': 'monitor',
-                'souris': 'mouse',
-                'clavier': 'keyboard',
-                'casque': 'headset'
-              };
+                  const aliases: Record<string, string> = {
+                    'motocycle': 'motorcycle',
+                    'moto': 'motorcycle',
+                    'scooter': 'bike',
+                    'trottinette': 'bike',
+                    'ecran': 'monitor',
+                    'souris': 'mouse',
+                    'clavier': 'keyboard',
+                    'casque': 'headset'
+                  };
 
-              const target = aliases[normalizedInput] || normalizedInput;
-              const foundKey = Object.keys(icons).find(
-                key => key.toLowerCase() === target
-              );
-              if (foundKey) {
-                IconComponent = icons[foundKey as keyof typeof icons] as LucideIcon;
-              }
-            }
+                  const target = aliases[normalizedInput] || normalizedInput;
+                  const foundKey = Object.keys(icons).find(
+                    key => key.toLowerCase() === target
+                  );
+                  if (foundKey) {
+                    IconComponent = icons[foundKey as keyof typeof icons] as LucideIcon;
+                  }
+                }
 
-            if (!IconComponent) {
-              const slugMapping: Record<string, any> = {
-                'gaming-pc': icons.Gamepad2,
-                'laptops': icons.Laptop,
-                'gaming-monitors': icons.Tv,
-                'monitors': icons.Monitor,
-                'gaming-headsets': icons.Headset,
-                'gaming-mice': icons.Mouse,
-                'gaming-keyboards': icons.Keyboard,
-                'desktops': icons.Boxes,
-                'earphones': icons.Bluetooth,
-                'it-accessories': icons.Cable,
-                'components': icons.Cpu,
-                'trottinette': icons.Bike,
-                'all': icons.LayoutGrid
-              };
-              IconComponent = (slugMapping[category.slug] || icons.Package) as LucideIcon;
-            }
+                if (!IconComponent) {
+                  const slugMapping: Record<string, any> = {
+                    'gaming-pc': icons.Gamepad2,
+                    'laptops': icons.Laptop,
+                    'gaming-monitors': icons.Tv,
+                    'monitors': icons.Monitor,
+                    'gaming-headsets': icons.Headset,
+                    'gaming-mice': icons.Mouse,
+                    'gaming-keyboards': icons.Keyboard,
+                    'desktops': icons.Boxes,
+                    'earphones': icons.Bluetooth,
+                    'it-accessories': icons.Cable,
+                    'components': icons.Cpu,
+                    'trottinette': icons.Bike,
+                    'all': icons.LayoutGrid
+                  };
+                  IconComponent = (slugMapping[category.slug] || icons.Package) as LucideIcon;
+                }
 
-            return (
-              <motion.div
-                key={category.slug}
-                variants={item}
-                whileHover={{ y: -10, scale: 1.05 }}
-                className="group"
-              >
-                <Link
-                  to={`/products?category=${category.slug}`}
-                  className="relative flex flex-col items-center justify-center p-4 md:p-8 rounded-xl md:rounded-2xl bg-zinc-900/50 border border-white/5 hover:border-primary/50 transition-all duration-500 overflow-hidden h-full aspect-square md:h-[220px]"
-                >
-                  {/* Hover Background Glow */}
-                  <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-500" />
+                return (
+                  <CarouselItem key={category.slug} className="pl-2 basis-1/2 md:basis-1/4 lg:basis-1/6">
+                    <motion.div
+                      variants={item}
+                      whileHover={{ y: -5 }}
+                      className="group h-full"
+                    >
+                      <Link
+                        to={`/products?category=${category.slug}`}
+                        className="relative flex flex-col items-center justify-center p-4 md:p-6 rounded-xl bg-zinc-900/50 border border-white/5 hover:border-primary/50 transition-all duration-300 overflow-hidden h-full aspect-square"
+                      >
+                        {/* Hover Background Glow */}
+                        <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-500" />
 
-                  <div className="relative z-10 w-12 h-12 md:w-16 md:h-16 mb-2 md:mb-4 rounded-xl md:rounded-2xl bg-zinc-800 flex items-center justify-center border border-white/10 group-hover:bg-primary group-hover:border-primary group-hover:rotate-6 transition-all duration-500 shadow-lg">
-                    <IconComponent className="w-6 h-6 md:w-8 md:h-8 text-primary group-hover:text-white transition-colors duration-500" />
-                  </div>
+                        <div className="relative z-10 w-10 h-10 md:w-14 md:h-14 mb-3 rounded-xl bg-zinc-800 flex items-center justify-center border border-white/10 group-hover:bg-primary group-hover:border-primary group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                          <IconComponent className="w-5 h-5 md:w-7 md:h-7 text-primary group-hover:text-white transition-colors duration-500" />
+                        </div>
 
-                  <h3 className="relative z-10 font-bold text-[10px] md:text-base text-center group-hover:text-primary transition-colors duration-300 line-clamp-1">
-                    {category.name}
-                  </h3>
-
-                  <div className="absolute bottom-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Découvrir</span>
-                  </div>
-                </Link>
-              </motion.div>
-            )
-          })}
-        </motion.div>
+                        <h3 className="relative z-10 font-bold text-[10px] md:text-sm text-center group-hover:text-primary transition-colors duration-300 line-clamp-1 uppercase tracking-tight">
+                          {category.name}
+                        </h3>
+                      </Link>
+                    </motion.div>
+                  </CarouselItem>
+                )
+              })}
+            </CarouselContent>
+            <CarouselPrevious className="-left-4 md:-left-12" />
+            <CarouselNext className="-right-4 md:-right-12" />
+          </Carousel>
+        </div>
       </div>
     </section>
   );

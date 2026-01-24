@@ -59,6 +59,9 @@ export interface GlobalSettings {
 
     updatedAt: string;
     createdAt?: string;
+
+    // Low Stock Settings
+    lowStockThreshold?: number;
 }
 
 export const settingsApi = {

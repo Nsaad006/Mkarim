@@ -8,10 +8,14 @@ import {
     CheckCircle2,
     AlertCircle,
     MessageSquare,
-    User
+    User,
+    ChevronDown,
+    ChevronUp,
+    Settings2
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
     AreaChart,
     Area,
@@ -26,18 +30,60 @@ import {
 import { ordersApi } from "@/api/orders";
 import { statsApi } from "@/api/stats";
 import { contactsApi } from "@/api/contacts";
+import { settingsApi } from "@/api/settings";
 import { useOutletContext } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import StatsCard from "@/components/admin/StatsCard";
 import { useSettings } from "@/context/SettingsContext";
+import { toast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
-    const { searchQuery } = useOutletContext<{ searchQuery: string }>();
+    const queryClient = useQueryClient();
+    const context = useOutletContext<{ searchQuery: string }>();
+    const searchQuery = context?.searchQuery || "";
     const { currency } = useSettings();
+    const [lowStockThreshold, setLowStockThreshold] = useState(5);
+    const [tempThreshold, setTempThreshold] = useState(5);
+    const [showLowStock, setShowLowStock] = useState(false);
+    const [showOutOfStock, setShowOutOfStock] = useState(false);
+
+    // Fetch settings to get persisted threshold
+    const { data: settings } = useQuery({
+        queryKey: ['settings'],
+        queryFn: settingsApi.get,
+    });
+
+    useEffect(() => {
+        if (settings?.lowStockThreshold) {
+            setLowStockThreshold(settings.lowStockThreshold);
+            setTempThreshold(settings.lowStockThreshold);
+        }
+    }, [settings]);
+
+    const handleSaveThreshold = async () => {
+        try {
+            await settingsApi.update({ lowStockThreshold: tempThreshold });
+            setLowStockThreshold(tempThreshold);
+            queryClient.invalidateQueries({ queryKey: ['settings'] });
+            queryClient.invalidateQueries({ queryKey: ['stats-summary'] });
+            toast({
+                title: "Succès",
+                description: "Seuil d'alerte mis à jour",
+            });
+        } catch (error) {
+            toast({
+                title: "Erreur",
+                description: "Impossible de mettre à jour le seuil",
+                variant: "destructive"
+            });
+        }
+    };
+
     // Fetch dashboard summary
     const { data: summary, isLoading: isStatsLoading } = useQuery({
-        queryKey: ['stats-summary'],
-        queryFn: () => statsApi.getSummary(7),
+        queryKey: ['stats-summary', lowStockThreshold],
+        queryFn: () => statsApi.getSummary(7, undefined, lowStockThreshold),
     });
 
     // Fetch orders for the recent orders table
@@ -90,6 +136,125 @@ const Dashboard = () => {
                             Ajouter un Produit
                         </Button>
                     </Link>
+                </div>
+            </div>
+
+            {/* Alerts Section - Collapsible Buttons */}
+            <div className="grid gap-4 md:grid-cols-2">
+                {/* Out of Stock Button */}
+                <div className="space-y-2">
+                    <Button
+                        variant="outline"
+                        className={`w-full justify-between h-auto py-4 border-l-4 ${filteredOutOfStock.length > 0 ? 'border-l-destructive bg-destructive/5' : 'border-l-transparent'}`}
+                        onClick={() => setShowOutOfStock(!showOutOfStock)}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-full ${filteredOutOfStock.length > 0 ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground'}`}>
+                                <AlertCircle className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="font-semibold text-lg leading-none">Rupture de Stock</h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    {filteredOutOfStock.length} produits indisponibles
+                                </p>
+                            </div>
+                        </div>
+                        {showOutOfStock ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </Button>
+
+                    {showOutOfStock && filteredOutOfStock.length > 0 && (
+                        <div className="bg-card border border-border rounded-xl p-4 animate-in slide-in-from-top-2">
+                            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+                                {filteredOutOfStock.map(product => (
+                                    <div key={product.id} className="bg-background border border-border rounded-lg p-3 flex justify-between items-center shadow-sm">
+                                        <div>
+                                            <p className="font-medium text-sm line-clamp-1">{product.name}</p>
+                                            <p className="text-xs text-muted-foreground">Indisponible</p>
+                                        </div>
+                                        <Link to="/admin/products">
+                                            <Button size="sm" variant="ghost" className="h-8">Gérer</Button>
+                                        </Link>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Low Stock Button */}
+                <div className="space-y-2">
+                    <Button
+                        variant="outline"
+                        className={`w-full justify-between h-auto py-4 border-l-4 ${filteredStockAlerts.length > 0 ? 'border-l-warning bg-warning/5' : 'border-l-transparent'}`}
+                        onClick={() => setShowLowStock(!showLowStock)}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-full ${filteredStockAlerts.length > 0 ? 'bg-warning/10 text-warning' : 'bg-muted text-muted-foreground'}`}>
+                                <Package className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="font-semibold text-lg leading-none">Stock Faible</h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    {filteredStockAlerts.length} produits (≤ {lowStockThreshold})
+                                </p>
+                            </div>
+                        </div>
+                        {showLowStock ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </Button>
+
+                    {showLowStock && (
+                        <div className="bg-card border border-border rounded-xl p-4 animate-in slide-in-from-top-2 space-y-4">
+                            {/* Threshold Settings */}
+                            <div className="flex items-center gap-4 bg-muted/30 p-3 rounded-lg border border-border/50">
+                                <Settings2 className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-sm font-medium whitespace-nowrap">Seuil d'alerte :</span>
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        max="100"
+                                        value={tempThreshold}
+                                        onChange={(e) => setTempThreshold(Number(e.target.value) || 0)}
+                                        className="w-24 h-8"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="h-8 w-8 p-0"
+                                        disabled={tempThreshold === lowStockThreshold}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSaveThreshold();
+                                        }}
+                                        title="Enregistrer"
+                                    >
+                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                    </Button>
+                                </div>
+                                <span className="text-xs text-muted-foreground">unités</span>
+                            </div>
+
+                            {/* List */}
+                            {filteredStockAlerts.length > 0 ? (
+                                <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+                                    {filteredStockAlerts.map(product => (
+                                        <div key={product.id} className="bg-background border border-border rounded-lg p-3 flex justify-between items-center shadow-sm">
+                                            <div>
+                                                <p className="font-medium text-sm line-clamp-1">{product.name}</p>
+                                                <p className="text-xs text-warning font-medium">Reste: {product.quantity}</p>
+                                            </div>
+                                            <Link to="/admin/products">
+                                                <Button size="sm" variant="ghost" className="h-8">Approvisionner</Button>
+                                            </Link>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-2">Aucun produit en dessous du seuil.</p>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -241,52 +406,6 @@ const Dashboard = () => {
                     </table>
                 </div>
             </div>
-
-            {/* Low Stock Alerts */}
-            {filteredStockAlerts.length > 0 && (
-                <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-6">
-                    <div className="flex items-center gap-2 text-destructive mb-4">
-                        <AlertCircle className="w-5 h-5" />
-                        <h3 className="font-semibold text-lg">Alertes Stock Faible</h3>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {filteredStockAlerts.map(product => (
-                            <div key={product.id} className="bg-card border border-border rounded-lg p-4 flex justify-between items-center">
-                                <div>
-                                    <p className="font-medium text-sm line-clamp-1">{product.name}</p>
-                                    <p className="text-xs text-muted-foreground">Reste: {product.quantity} unités</p>
-                                </div>
-                                <Link to="/admin/products">
-                                    <Button size="sm" variant="outline">Réapprovisionner</Button>
-                                </Link>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Out of Stock Alerts */}
-            {filteredOutOfStock.length > 0 && (
-                <div className="bg-warning/5 border border-warning/20 rounded-xl p-6">
-                    <div className="flex items-center gap-2 text-warning mb-4">
-                        <Package className="w-5 h-5" />
-                        <h3 className="font-semibold text-lg">Produits en Rupture de Stock</h3>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {filteredOutOfStock.map(product => (
-                            <div key={product.id} className="bg-card border border-border rounded-lg p-4 flex justify-between items-center">
-                                <div>
-                                    <p className="font-medium text-sm line-clamp-1">{product.name}</p>
-                                    <p className="text-xs text-muted-foreground">Marqué comme indisponible</p>
-                                </div>
-                                <Link to="/admin/products">
-                                    <Button size="sm" variant="outline">Gérer</Button>
-                                </Link>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

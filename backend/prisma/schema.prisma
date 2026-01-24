@@ -165,6 +165,9 @@ model Settings {
   aboutDescription  String   @default("MKARIM est votre partenaire de confiance pour tous vos besoins en matériel informatique et gaming au Maroc.")
   aboutMission      String   @default("Notre mission est de fournir des produits de haute qualité à des prix compétitifs avec un service client exceptionnel.")
   
+  // Low Stock Settings
+  lowStockThreshold Int      @default(5)
+
   updatedAt         DateTime @updatedAt
   createdAt         DateTime @default(now())
 }

@@ -98,7 +98,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         </div>
 
-        <h3 className="font-display text-[13px] md:text-lg font-black text-white italic tracking-tighter leading-tight mb-2 line-clamp-1 uppercase group-hover:text-primary transition-colors">
+        <h3 className="font-display text-[13px] md:text-lg font-black text-white italic tracking-tighter leading-tight mb-2 line-clamp-2 min-h-[2.5rem] md:min-h-[3.5rem] uppercase group-hover:text-primary transition-colors">
           {product.name}
         </h3>
 

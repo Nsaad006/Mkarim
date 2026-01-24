@@ -58,7 +58,8 @@ router.put('/', authenticate, authorize(['super_admin', 'editor']), async (req: 
             ctaPrimaryBtnText,
             ctaPrimaryBtnLink,
             ctaSecondaryBtnText,
-            ctaSecondaryBtnLink
+            ctaSecondaryBtnLink,
+            lowStockThreshold
         } = req.body;
 
         // Get existing settings or create if none exist
@@ -104,7 +105,8 @@ router.put('/', authenticate, authorize(['super_admin', 'editor']), async (req: 
                 ...(ctaPrimaryBtnText !== undefined && { ctaPrimaryBtnText }),
                 ...(ctaPrimaryBtnLink !== undefined && { ctaPrimaryBtnLink }),
                 ...(ctaSecondaryBtnText !== undefined && { ctaSecondaryBtnText }),
-                ...(ctaSecondaryBtnLink !== undefined && { ctaSecondaryBtnLink })
+                ...(ctaSecondaryBtnLink !== undefined && { ctaSecondaryBtnLink }),
+                ...(lowStockThreshold !== undefined && { lowStockThreshold: Number(lowStockThreshold) })
             }
         });
 

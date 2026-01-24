@@ -189,10 +189,11 @@ router.get('/analytics', authenticate, authorize(['super_admin', 'editor', 'view
             .slice(0, 10);
 
         // 4. Low Stock
+        const threshold = Number(req.query.lowStockThreshold) || 5;
         const lowStock = await prisma.product.findMany({
             where: {
                 quantity: {
-                    lte: 5
+                    lte: threshold
                 },
                 inStock: true
             },
