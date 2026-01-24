@@ -74,6 +74,11 @@ const Orders = () => {
 
     const queryClient = useQueryClient();
 
+    // Get current user role from localStorage
+    const userStr = localStorage.getItem("user");
+    const currentUser = userStr ? JSON.parse(userStr) : { role: "viewer" };
+    const userRole = currentUser.role;
+
     const { data: orders = [], isLoading } = useQuery({
         queryKey: ['orders'],
         queryFn: () => ordersApi.getAll(),
@@ -89,17 +94,73 @@ const Orders = () => {
                 description: "La commande a été mise à jour avec succès.",
             });
         },
-        onError: () => {
+        onError: (error: any) => {
             toast({
                 title: "Erreur",
-                description: "Impossible de mettre à jour le statut de la commande.",
+                description: error.response?.data?.error || "Impossible de mettre à jour le statut de la commande.",
                 variant: "destructive",
             });
         }
     });
 
+    // Helper function to check if user can perform an action
+    const canUpdateStatus = (status: string): boolean => {
+        if (userRole === 'super_admin' || userRole === 'editor') return true;
+        if (userRole === 'commercial') {
+            return ['CONFIRMED', 'CANCELLED'].includes(status);
+        }
+        if (userRole === 'magasinier') {
+            return ['SHIPPED', 'DELIVERED'].includes(status);
+        }
+        return false;
+    };
+
+    // Helper function to check if a specific action can be performed on an order
+    const canPerformAction = (order: Order, targetStatus: string): boolean => {
+        const currentStatus = order.status.toUpperCase();
+
+        // Super admin and editor can do anything
+        if (userRole === 'super_admin' || userRole === 'editor') return true;
+
+        if (userRole === 'commercial') {
+            // Commercial can only CONFIRM orders that are PENDING
+            if (targetStatus === 'CONFIRMED') {
+                return currentStatus === 'PENDING';
+            }
+            // Commercial can only CANCEL orders that are PENDING or CONFIRMED
+            if (targetStatus === 'CANCELLED') {
+                return ['PENDING', 'CONFIRMED'].includes(currentStatus);
+            }
+        }
+
+        if (userRole === 'magasinier') {
+            // Magasinier can only mark as SHIPPED if order is CONFIRMED
+            if (targetStatus === 'SHIPPED') {
+                return currentStatus === 'CONFIRMED';
+            }
+            // Magasinier can only mark as DELIVERED if order is SHIPPED
+            if (targetStatus === 'DELIVERED') {
+                return currentStatus === 'SHIPPED';
+            }
+        }
+
+        return false;
+    };
+
+    // Helper function to check if order is visible to user
+    const isOrderVisible = (order: Order): boolean => {
+        if (userRole === 'magasinier') {
+            // Magasinier can only see CONFIRMED, SHIPPED, and DELIVERED orders
+            return ['CONFIRMED', 'SHIPPED', 'DELIVERED'].includes(order.status.toUpperCase());
+        }
+        return true; // All other roles can see all orders
+    };
+
     const filteredOrders = orders
         .filter((order) => {
+            // Role-based visibility filter
+            if (!isOrderVisible(order)) return false;
+
             const combinedSearch = (globalSearch + " " + searchTerm).trim().toLowerCase();
             const matchesSearch =
                 order.customerName.toLowerCase().includes(combinedSearch) ||
@@ -260,15 +321,40 @@ const Orders = () => {
                                                                 <p className="text-sm text-muted-foreground mb-1">Statut actuel</p>
                                                                 <StatusBadge status={order.status} />
                                                             </div>
-                                                            <div className="flex gap-2">
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    onClick={() => handleStatusChange(order.id, "CONFIRMED")}
-                                                                    disabled={updateStatusMutation.isPending}
-                                                                >
-                                                                    <CheckCircle2 className="w-4 h-4 mr-1" /> Confirmer
-                                                                </Button>
+                                                            <div className="flex gap-2 flex-wrap">
+                                                                {/* Commercial can only CONFIRM */}
+                                                                {canUpdateStatus('CONFIRMED') && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => handleStatusChange(order.id, "CONFIRMED")}
+                                                                        disabled={updateStatusMutation.isPending || !canPerformAction(order, 'CONFIRMED')}
+                                                                    >
+                                                                        <CheckCircle2 className="w-4 h-4 mr-1" /> Confirmer
+                                                                    </Button>
+                                                                )}
+                                                                {/* Magasinier can mark as SHIPPED */}
+                                                                {canUpdateStatus('SHIPPED') && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => handleStatusChange(order.id, "SHIPPED")}
+                                                                        disabled={updateStatusMutation.isPending || !canPerformAction(order, 'SHIPPED')}
+                                                                    >
+                                                                        <Truck className="w-4 h-4 mr-1" /> Expédier
+                                                                    </Button>
+                                                                )}
+                                                                {/* Magasinier can mark as DELIVERED */}
+                                                                {canUpdateStatus('DELIVERED') && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => handleStatusChange(order.id, "DELIVERED")}
+                                                                        disabled={updateStatusMutation.isPending || !canPerformAction(order, 'DELIVERED')}
+                                                                    >
+                                                                        <CheckCircle2 className="w-4 h-4 mr-1" /> Livrer
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </div>
 
@@ -349,15 +435,17 @@ const Orders = () => {
                                                         </div>
 
                                                         <div className="pt-4 border-t">
-                                                            <Button
-                                                                variant="destructive"
-                                                                className="w-full"
-                                                                onClick={() => handleStatusChange(order.id, "CANCELLED")}
-                                                                disabled={updateStatusMutation.isPending}
-                                                            >
-                                                                <XCircle className="w-4 h-4 mr-2" />
-                                                                Annuler la commande
-                                                            </Button>
+                                                            {canUpdateStatus('CANCELLED') && (
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    className="w-full"
+                                                                    onClick={() => handleStatusChange(order.id, "CANCELLED")}
+                                                                    disabled={updateStatusMutation.isPending || !canPerformAction(order, 'CANCELLED')}
+                                                                >
+                                                                    <XCircle className="w-4 h-4 mr-2" />
+                                                                    Annuler la commande
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </SheetContent>
@@ -375,32 +463,42 @@ const Orders = () => {
                                                         <FileText className="mr-2 h-4 w-4" /> Facture PDF
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleStatusChange(order.id, "CONFIRMED")}
-                                                        disabled={updateStatusMutation.isPending}
-                                                    >
-                                                        Confirmer
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleStatusChange(order.id, "SHIPPED")}
-                                                        disabled={updateStatusMutation.isPending}
-                                                    >
-                                                        Marquer Expédiée
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleStatusChange(order.id, "DELIVERED")}
-                                                        disabled={updateStatusMutation.isPending}
-                                                    >
-                                                        Marquer Livrée
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        className="text-destructive"
-                                                        onClick={() => handleStatusChange(order.id, "CANCELLED")}
-                                                        disabled={updateStatusMutation.isPending}
-                                                    >
-                                                        Annuler
-                                                    </DropdownMenuItem>
+                                                    {canUpdateStatus('CONFIRMED') && (
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleStatusChange(order.id, "CONFIRMED")}
+                                                            disabled={updateStatusMutation.isPending || !canPerformAction(order, 'CONFIRMED')}
+                                                        >
+                                                            Confirmer
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {canUpdateStatus('SHIPPED') && (
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleStatusChange(order.id, "SHIPPED")}
+                                                            disabled={updateStatusMutation.isPending || !canPerformAction(order, 'SHIPPED')}
+                                                        >
+                                                            Marquer Expédiée
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {canUpdateStatus('DELIVERED') && (
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleStatusChange(order.id, "DELIVERED")}
+                                                            disabled={updateStatusMutation.isPending || !canPerformAction(order, 'DELIVERED')}
+                                                        >
+                                                            Marquer Livrée
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {canUpdateStatus('CANCELLED') && (
+                                                        <>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                className="text-destructive"
+                                                                onClick={() => handleStatusChange(order.id, "CANCELLED")}
+                                                                disabled={updateStatusMutation.isPending || !canPerformAction(order, 'CANCELLED')}
+                                                            >
+                                                                Annuler
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>

@@ -105,15 +105,33 @@ router.post('/', async (req, res) => {
     }
 });
 
-// GET /api/orders - List all orders (admin/editor/viewer)
-router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer']), async (req: Request, res: Response) => {
+// GET /api/orders - List all orders (admin/editor/viewer/commercial/magasinier)
+router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer', 'commercial', 'magasinier']), async (req: Request, res: Response) => {
     try {
         const { status, city } = req.query;
+        const user = (req as any).user; // Get authenticated user
 
         const where: Prisma.OrderWhereInput = {};
 
+        // Role-based filtering
+        if (user.role === 'magasinier') {
+            // Magasinier can only see CONFIRMED, SHIPPED, and DELIVERED orders
+            where.status = {
+                in: ['CONFIRMED', 'SHIPPED', 'DELIVERED']
+            };
+        }
+        // Commercial and other roles can see all orders
+
         if (status) {
-            where.status = String(status) as import('@prisma/client').OrderStatus;
+            // If magasinier, ensure they can only filter within their allowed statuses
+            if (user.role === 'magasinier') {
+                const requestedStatus = String(status) as import('@prisma/client').OrderStatus;
+                if (['CONFIRMED', 'SHIPPED', 'DELIVERED'].includes(requestedStatus)) {
+                    where.status = requestedStatus;
+                }
+            } else {
+                where.status = String(status) as import('@prisma/client').OrderStatus;
+            }
         }
 
         if (city) {
@@ -141,8 +159,8 @@ router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer']), as
     }
 });
 
-// GET /api/orders/:id - Get order details (admin/editor/viewer)
-router.get('/:id', authenticate, authorize(['super_admin', 'editor', 'viewer']), async (req: Request, res: Response) => {
+// GET /api/orders/:id - Get order details (admin/editor/viewer/commercial/magasinier)
+router.get('/:id', authenticate, authorize(['super_admin', 'editor', 'viewer', 'commercial', 'magasinier']), async (req: Request, res: Response) => {
     try {
         const id = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
 
@@ -168,11 +186,74 @@ router.get('/:id', authenticate, authorize(['super_admin', 'editor', 'viewer']),
     }
 });
 
-// PATCH /api/orders/:id/status - Update order status (super_admin/editor)
-router.patch('/:id/status', authenticate, authorize(['super_admin', 'editor']), async (req: Request, res: Response) => {
+// PATCH /api/orders/:id/status - Update order status (super_admin/editor/commercial/magasinier)
+router.patch('/:id/status', authenticate, authorize(['super_admin', 'editor', 'commercial', 'magasinier']), async (req: Request, res: Response) => {
     try {
         const id = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
         const { status } = req.body;
+        const user = (req as any).user;
+
+        // Role-based status update restrictions
+        if (user.role === 'commercial') {
+            // Commercial can only CONFIRM or CANCEL orders
+            if (!['CONFIRMED', 'CANCELLED'].includes(status)) {
+                return res.status(403).json({
+                    error: 'Commercial can only confirm or cancel orders'
+                });
+            }
+
+            // Get current order to check its status
+            const order = await prisma.order.findUnique({
+                where: { id }
+            });
+
+            if (!order) {
+                return res.status(404).json({ error: 'Order not found' });
+            }
+
+            // Commercial can only CONFIRM orders that are PENDING
+            if (status === 'CONFIRMED' && order.status !== 'PENDING') {
+                return res.status(403).json({
+                    error: 'Vous ne pouvez confirmer que les commandes en attente'
+                });
+            }
+
+            // Commercial can only CANCEL orders that are PENDING or CONFIRMED
+            if (status === 'CANCELLED' && !['PENDING', 'CONFIRMED'].includes(order.status)) {
+                return res.status(403).json({
+                    error: 'Vous ne pouvez annuler que les commandes en attente ou confirmées'
+                });
+            }
+
+            // Cannot modify orders that are already SHIPPED, DELIVERED, or CANCELLED
+            if (['SHIPPED', 'DELIVERED', 'CANCELLED'].includes(order.status) && status !== 'CANCELLED') {
+                return res.status(403).json({
+                    error: 'Cette commande ne peut plus être modifiée'
+                });
+            }
+        } else if (user.role === 'magasinier') {
+            // Magasinier can only set SHIPPED or DELIVERED
+            if (!['SHIPPED', 'DELIVERED'].includes(status)) {
+                return res.status(403).json({
+                    error: 'Magasinier can only set orders to shipped or delivered'
+                });
+            }
+
+            // Magasinier can only update orders that are already CONFIRMED
+            const order = await prisma.order.findUnique({
+                where: { id }
+            });
+
+            if (!order) {
+                return res.status(404).json({ error: 'Order not found' });
+            }
+
+            if (!['CONFIRMED', 'SHIPPED'].includes(order.status)) {
+                return res.status(403).json({
+                    error: 'Magasinier can only update confirmed or shipped orders'
+                });
+            }
+        }
 
         const updatedOrder = await prisma.order.update({
             where: { id },

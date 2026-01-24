@@ -27,6 +27,15 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { FilterSidebar } from "@/components/FilterSidebar";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const ProductsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,6 +43,8 @@ const ProductsPage = () => {
 
   const [sortBy, setSortBy] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 9;
 
   // Advanced Filtering State
   const [filters, setFilters] = useState({
@@ -131,6 +142,22 @@ const ProductsPage = () => {
       }
     });
   }, [filteredProducts, sortBy]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const endIndex = startIndex + PRODUCTS_PER_PAGE;
+  const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, sortBy, searchParam]);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
 
   const removeFilter = (type: string, value?: string) => {
     if (type === 'search') {
@@ -310,18 +337,74 @@ const ProductsPage = () => {
                   <p className="text-zinc-500 font-black uppercase tracking-[0.4em] text-xs">Synchronisation du catalogue...</p>
                 </div>
               ) : sortedProducts.length > 0 ? (
-                <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
-                  {sortedProducts.map((product, idx) => (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                    >
-                      <ProductCard product={product} />
-                    </motion.div>
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
+                    {paginatedProducts.map((product, idx) => (
+                      <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                      >
+                        <ProductCard product={product} />
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="mt-12 flex justify-center">
+                      <Pagination>
+                        <PaginationContent className="gap-2">
+                          <PaginationItem>
+                            <PaginationPrevious
+                              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                              className={`cursor-pointer bg-zinc-900 border-white/5 text-white hover:bg-zinc-800 hover:text-primary ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            />
+                          </PaginationItem>
+
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                            // Show first page, last page, current page, and pages around current
+                            if (
+                              page === 1 ||
+                              page === totalPages ||
+                              (page >= currentPage - 1 && page <= currentPage + 1)
+                            ) {
+                              return (
+                                <PaginationItem key={page}>
+                                  <PaginationLink
+                                    onClick={() => setCurrentPage(page)}
+                                    isActive={currentPage === page}
+                                    className={`cursor-pointer ${currentPage === page
+                                      ? 'bg-primary text-white hover:bg-primary/90'
+                                      : 'bg-zinc-900 border-white/5 text-white hover:bg-zinc-800 hover:text-primary'
+                                      }`}
+                                  >
+                                    {page}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              );
+                            } else if (page === currentPage - 2 || page === currentPage + 2) {
+                              return (
+                                <PaginationItem key={page}>
+                                  <PaginationEllipsis className="text-zinc-600" />
+                                </PaginationItem>
+                              );
+                            }
+                            return null;
+                          })}
+
+                          <PaginationItem>
+                            <PaginationNext
+                              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                              className={`cursor-pointer bg-zinc-900 border-white/5 text-white hover:bg-zinc-800 hover:text-primary ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  )}
+                </>
               ) : (
                 <motion.div
                   initial={{ opacity: 0 }}

@@ -11,7 +11,7 @@ const createAdminSchema = z.object({
     name: z.string().min(2),
     email: z.string().email(),
     password: z.string().min(6),
-    role: z.enum(['super_admin', 'editor', 'viewer']),
+    role: z.enum(['super_admin', 'editor', 'viewer', 'commercial', 'magasinier']),
 });
 
 // GET /api/admins - List all admins (super_admin only)
@@ -139,7 +139,7 @@ router.patch('/:id/role', authenticate, authorize(['super_admin']), async (req: 
         const { role } = req.body;
 
         // Validate role
-        if (!['super_admin', 'editor', 'viewer'].includes(role)) {
+        if (!['super_admin', 'editor', 'viewer', 'commercial', 'magasinier'].includes(role)) {
             return res.status(400).json({ error: 'Invalid role' });
         }
 

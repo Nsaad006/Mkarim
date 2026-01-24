@@ -23,7 +23,7 @@ import { authApi } from "@/api/auth";
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin", roles: ["super_admin", "editor", "viewer"] },
-    { icon: ShoppingBag, label: "Commandes", path: "/admin/orders", roles: ["super_admin", "editor", "viewer"] },
+    { icon: ShoppingBag, label: "Commandes", path: "/admin/orders", roles: ["super_admin", "editor", "viewer", "commercial", "magasinier"] },
     { icon: Package, label: "Produits", path: "/admin/products", roles: ["super_admin", "editor", "viewer"] },
     { icon: FolderOpen, label: "Catégories", path: "/admin/categories", roles: ["super_admin", "editor", "viewer"] },
     { icon: MapPin, label: "Livraison", path: "/admin/cities", roles: ["super_admin", "editor", "viewer"] },
@@ -69,15 +69,15 @@ const AdminLayout = () => {
             {/* Sidebar */}
             <aside
                 className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-                    } lg:relative lg:translate-x-0`}
+                    } lg:translate-x-0 flex flex-col`}
             >
-                <div className="h-16 flex items-center px-6 border-b border-border">
+                <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
                     <Link to="/admin" className="font-display font-bold text-xl">
                         MKARIM <span className="text-primary">ADMIN</span>
                     </Link>
                 </div>
 
-                <div className="p-4 space-y-1">
+                <div className="flex-1 overflow-y-auto p-4 space-y-1">
                     {filteredSidebarItems.map((item) => {
                         const isActive = location.pathname === item.path;
                         return (
@@ -94,7 +94,7 @@ const AdminLayout = () => {
                     })}
                 </div>
 
-                <div className="absolute bottom-4 left-4 right-4">
+                <div className="p-4 border-t border-border flex-shrink-0">
                     <Button
                         variant="outline"
                         className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -107,7 +107,7 @@ const AdminLayout = () => {
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
                 {/* Header */}
                 <header className="h-16 border-b border-border bg-card/50 backdrop-blur-md flex items-center justify-between px-4 sm:px-8 sticky top-0 z-30">
                     <div className="flex items-center gap-4">

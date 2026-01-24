@@ -311,6 +311,8 @@ const AdminUsers = () => {
                                     <SelectItem value="super_admin">Super Admin (Accès Total)</SelectItem>
                                     <SelectItem value="editor">Éditeur (Gestion Commandes/Produits)</SelectItem>
                                     <SelectItem value="viewer">Observateur (Lecture seule)</SelectItem>
+                                    <SelectItem value="commercial">Commercial (Confirmer/Annuler Commandes)</SelectItem>
+                                    <SelectItem value="magasinier">Magasinier (Expédier/Livrer Commandes)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -369,6 +371,8 @@ const AdminUsers = () => {
                                         <SelectItem value="super_admin">Super Admin (Accès Total)</SelectItem>
                                         <SelectItem value="editor">Éditeur (Gestion Commandes/Produits)</SelectItem>
                                         <SelectItem value="viewer">Observateur (Lecture seule)</SelectItem>
+                                        <SelectItem value="commercial">Commercial (Confirmer/Annuler Commandes)</SelectItem>
+                                        <SelectItem value="magasinier">Magasinier (Expédier/Livrer Commandes)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
