@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 import prisma from './prisma';
 
 /**
@@ -36,37 +36,50 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
             return;
         }
 
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // use STARTTLS
-            requireTLS: true,
-            auth: {
-                type: 'OAuth2',
-                user: emailGmailUser,
-                clientId: emailClientId,
-                clientSecret: emailClientSecret,
-                refreshToken: emailRefreshToken,
-            },
-            connectionTimeout: 20000, // 20 seconds
-            greetingTimeout: 20000,   // 20 seconds
-            debug: true,              // show debug logs
-            logger: true,             // log to console
-        } as any);
+        const auth = new google.auth.OAuth2(
+            emailClientId,
+            emailClientSecret
+        );
 
-        const mailOptions = {
-            from: `"${emailSenderName || 'Store'}" <${emailGmailUser}>`,
-            to,
-            subject,
+        auth.setCredentials({
+            refresh_token: emailRefreshToken
+        });
+
+        const gmail = google.gmail({ version: 'v1', auth });
+
+        // Create the email in RFC 822 format
+        const subjectEncoded = Buffer.from(subject).toString('base64');
+        const utf8Html = Buffer.from(html, 'utf-8').toString('base64');
+
+        const rawMessage = [
+            `From: "${emailSenderName || 'Store'}" <${emailGmailUser}>`,
+            `To: ${to}`,
+            `Subject: =?utf-8?B?${subjectEncoded}?=`,
+            'Content-Type: text/html; charset=utf-8',
+            'MIME-Version: 1.0',
+            '',
             html,
-        };
+        ].join('\n');
 
-        console.log(`📨 Attempting to send email to ${to}...`);
-        const info = await transporter.sendMail(mailOptions);
-        console.log('✅ Email sent successfully:', info.messageId);
-        return info;
+        const encodedMessage = Buffer.from(rawMessage)
+            .toString('base64')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+
+        console.log(`📨 Sending via Gmail API (HTTPS) to ${to}...`);
+
+        const res = await gmail.users.messages.send({
+            userId: 'me',
+            requestBody: {
+                raw: encodedMessage,
+            },
+        });
+
+        console.log('✅ Email sent successfully via API:', res.data.id);
+        return res.data;
     } catch (error) {
-        console.error('❌ Error in sendEmail:', error);
+        console.error('❌ Error in sendEmail (Gmail API):', error);
         throw error;
     }
 };
