@@ -4,23 +4,48 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log('🌱 Seeding database...');
+    console.log('🌱 Starting database seed...\n');
 
-    // Seed Admin
+    // 1. Seed Admin User
+    console.log('👤 Seeding admin user...');
     const hashedPassword = await bcrypt.hash('123456', 10);
     const admin = await prisma.admin.upsert({
         where: { email: 'admin@mkarim.ma' },
-        update: {},
+        update: { password: hashedPassword },
         create: {
             email: 'admin@mkarim.ma',
             password: hashedPassword,
             name: 'Admin Principal',
-            role: 'super_admin'
+            role: 'super_admin',
+            active: true
         }
     });
-    console.log('✅ Admin user created:', admin.email);
+    console.log(`   ✅ Admin user created: ${admin.email}\n`);
 
-    // Seed Categories
+    // 2. Seed Settings
+    console.log('⚙️ Seeding global settings...');
+    await prisma.settings.upsert({
+        where: { id: 'global-settings' },
+        update: {},
+        create: {
+            id: 'global-settings',
+            storeName: 'MKARIM SOLUTION',
+            storeAvailability: true,
+            codEnabled: true,
+            whatsappNumber: '+212 6 00 00 00 00',
+            currency: 'MAD',
+            contactAddress: 'Casablanca, Maroc',
+            contactPhone: '+212 6 00 00 00 00',
+            contactEmail: 'contact@mkarim.ma',
+            footerDescription: 'Votre destination ultime pour le gaming au Maroc. Performance, passion et innovation au service des gamers.',
+            footerCopyright: '© 2025 MKARIM SOLUTION – Engineered for Gamers',
+            emailEnabled: false
+        }
+    });
+    console.log('   ✅ Settings updated\n');
+
+    // 3. Seed Categories
+    console.log('📁 Seeding categories...');
     const categoriesData = [
         { name: 'PC Portable', slug: 'laptops', icon: 'Laptop' },
         { name: 'PC de Bureau', slug: 'desktops', icon: 'Cpu' },
@@ -33,107 +58,129 @@ async function main() {
         { name: 'AirPods & Écouteurs', slug: 'earphones', icon: 'Bluetooth' },
         { name: 'Accessoires', slug: 'it-accessories', icon: 'Cable' },
         { name: 'Composants', slug: 'components', icon: 'Cpu' },
+        { name: 'Électronique', slug: 'electronics', icon: 'Zap' }
     ];
 
+    const createdCategories: Record<string, any> = {};
     for (const cat of categoriesData) {
-        await prisma.category.upsert({
+        const category = await prisma.category.upsert({
             where: { slug: cat.slug },
             update: { name: cat.name, icon: cat.icon },
-            create: cat
+            create: {
+                name: cat.name,
+                slug: cat.slug,
+                icon: cat.icon,
+                active: true
+            }
         });
+        createdCategories[cat.slug] = category;
+        console.log(`   ✅ ${category.name}`);
     }
-    console.log('✅ Categories seeded');
+    console.log('');
 
-    // Seed Cities
+    // 4. Seed Cities
+    console.log('🏙️  Seeding cities...');
     const citiesData = [
-        { name: 'Casablanca', shippingFee: 20, deliveryTime: '24h', active: true },
-        { name: 'Rabat', shippingFee: 25, deliveryTime: '24h', active: true },
-        { name: 'Marrakech', shippingFee: 35, deliveryTime: '48h', active: true },
-        { name: 'Tanger', shippingFee: 35, deliveryTime: '48h', active: true },
-        { name: 'Agadir', shippingFee: 40, deliveryTime: '48-72h', active: true },
-        { name: 'Fès', shippingFee: 30, deliveryTime: '48h', active: true },
-        { name: 'Meknès', shippingFee: 30, deliveryTime: '48h', active: true },
-        { name: 'Oujda', shippingFee: 45, deliveryTime: '72h', active: true },
-        { name: 'Kenitra', shippingFee: 25, deliveryTime: '24h', active: true },
-        { name: 'Tetouan', shippingFee: 40, deliveryTime: '48h', active: true },
-        { name: 'Safi', shippingFee: 35, deliveryTime: '48h', active: true },
-        { name: 'Temara', shippingFee: 25, deliveryTime: '24h', active: true },
-        { name: 'Sale', shippingFee: 25, deliveryTime: '24h', active: true },
-        { name: 'Mohammedia', shippingFee: 20, deliveryTime: '24h', active: true },
-        { name: 'El Jadida', shippingFee: 30, deliveryTime: '48h', active: true },
-        { name: 'Beni Mellal', shippingFee: 35, deliveryTime: '48h', active: true },
-        { name: 'Nador', shippingFee: 45, deliveryTime: '72h', active: true },
-        { name: 'Taza', shippingFee: 40, deliveryTime: '48h', active: true },
-        { name: 'Settat', shippingFee: 30, deliveryTime: '48h', active: true },
-        { name: 'Larache', shippingFee: 35, deliveryTime: '48h', active: true },
-        { name: 'Ksar El Kebir', shippingFee: 35, deliveryTime: '48h', active: true },
-        { name: 'Khemisset', shippingFee: 30, deliveryTime: '48h', active: true },
-        { name: 'Guelmim', shippingFee: 50, deliveryTime: '72h', active: true },
-        { name: 'Berrechid', shippingFee: 25, deliveryTime: '24h', active: true },
-        { name: 'Oued Zem', shippingFee: 35, deliveryTime: '48h', active: true },
-        { name: 'Fquih Ben Salah', shippingFee: 35, deliveryTime: '48h', active: true },
+        { name: 'Casablanca', shippingFee: 20, deliveryTime: '24h' },
+        { name: 'Rabat', shippingFee: 25, deliveryTime: '24h' },
+        { name: 'Marrakech', shippingFee: 30, deliveryTime: '48h' },
+        { name: 'Fès', shippingFee: 30, deliveryTime: '48h' },
+        { name: 'Tanger', shippingFee: 35, deliveryTime: '48h' },
+        { name: 'Agadir', shippingFee: 40, deliveryTime: '72h' }
     ];
 
     for (const city of citiesData) {
         await prisma.city.upsert({
             where: { name: city.name },
             update: city,
-            create: city
+            create: { ...city, active: true }
         });
+        console.log(`   ✅ ${city.name}`);
     }
-    console.log('✅ Cities seeded');
+    console.log('');
 
-    // Get categories to link products
-    const dbCategories = await prisma.category.findMany();
-    const getCatId = (slug: string) => dbCategories.find((c: import('@prisma/client').Category) => c.slug === slug)?.id || dbCategories[0].id;
-
-    // Seed Products
+    // 5. Seed Products
+    console.log('🛒 Seeding products...');
     const productsData = [
-        {
-            name: 'PC Gamer MKARIM Pro RTX 4070',
-            description: 'PC Gaming haute performance avec RTX 4070, Intel i7, 32GB RAM',
-            price: 18999,
-            originalPrice: 21999,
-            image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600',
-            categoryId: getCatId('gaming-pc'),
-            inStock: true,
-            quantity: 50,
-            badge: 'Bestseller',
-            specs: ['Intel Core i7-13700K', 'RTX 4070 12GB', '32GB DDR5', '1TB NVMe SSD']
-        },
         {
             name: 'PC Portable Dell XPS 15',
             description: 'Ultrabook professionnel avec écran 4K',
             price: 15999,
             originalPrice: 17999,
             image: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600',
-            categoryId: getCatId('laptops'),
-            inStock: true,
+            categoryId: createdCategories['laptops'].id,
             quantity: 30,
             badge: 'Nouveau',
             specs: ['Intel i7-12700H', '16GB RAM', '512GB SSD', 'Écran 15.6" 4K']
+        },
+        {
+            name: 'MacBook Pro 14" M3',
+            description: 'Performance exceptionnelle pour les créatifs',
+            price: 24999,
+            originalPrice: null,
+            image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600',
+            categoryId: createdCategories['laptops'].id,
+            quantity: 15,
+            badge: 'Bestseller',
+            specs: ['Apple M3', '16GB RAM', '512GB SSD', 'Écran Retina 14"']
+        },
+        {
+            name: 'PC Gamer MKARIM Pro RTX 4070',
+            description: 'PC Gaming haute performance avec RTX 4070, Intel i7, 32GB RAM',
+            price: 18999,
+            originalPrice: 21999,
+            image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600',
+            categoryId: createdCategories['gaming-pc'].id,
+            quantity: 50,
+            badge: 'Bestseller',
+            specs: ['Intel Core i7-13700K', 'RTX 4070 12GB', '32GB DDR5', '1TB NVMe SSD']
+        },
+        {
+            name: 'Logitech G Pro X Superlight',
+            description: 'Souris gaming sans fil ultra-légère',
+            price: 1499,
+            originalPrice: null,
+            image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=600',
+            categoryId: createdCategories['gaming-mice'].id,
+            quantity: 60,
+            badge: 'Pro',
+            specs: ['Sans fil', '63g', 'Hero 25K', '70h autonomie']
+        },
+        {
+            name: 'Razer BlackWidow V3',
+            description: 'Clavier mécanique RGB gaming',
+            price: 1899,
+            originalPrice: 2199,
+            image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?w=600',
+            categoryId: createdCategories['gaming-keyboards'].id,
+            quantity: 35,
+            badge: 'Promo',
+            specs: ['Switches mécaniques', 'RGB Chroma', 'Repose-poignet', 'USB-C']
         }
     ];
 
-    for (const product of productsData) {
-        await prisma.product.upsert({
-            where: { id: product.name }, // This is technically wrong since id is UUID, using name as placeholder or use something else
-            // Let's just use create and skip if exists or delete all products first
-            update: product,
-            create: {
-                ...product,
-                id: undefined // Let Prisma generate ID
-            }
-        }).catch(() => {
-            // If upsert fails because of ID, just create
-            return prisma.product.create({ data: product });
-        });
+    for (const prod of productsData) {
+        // We use name as a matching key for seeding since IDs change
+        const existing = await prisma.product.findFirst({ where: { name: prod.name } });
+        if (existing) {
+            await prisma.product.update({
+                where: { id: existing.id },
+                data: prod
+            });
+        } else {
+            await prisma.product.create({
+                data: {
+                    ...prod,
+                    inStock: prod.quantity > 0
+                }
+            });
+        }
+        console.log(`   ✅ ${prod.name}`);
     }
 
-    console.log('✅ Products seeded');
-
-    // Seed Hero Slides
-    const heroSlidesData = [
+    // 6. Seed Hero Slides
+    console.log('\n🎞️ Seeding hero slides...');
+    const slides = [
         {
             title: 'Dominez le Champ de Bataille',
             subtitle: 'PROMOTIONS EXCLUSIVES',
@@ -144,44 +191,25 @@ async function main() {
             badge: 'Offre Limitée',
             order: 0,
             active: true
-        },
-        {
-            title: 'Précision Ultime',
-            subtitle: 'NOUVEAUX PACKS',
-            description: 'Découvrez nos packs périphériques : Clavier Mécanique + Souris RGB + Tapis XL à prix réduit.',
-            image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop',
-            buttonText: 'Voir les Packs',
-            buttonLink: '/products',
-            badge: 'Nouveau',
-            order: 1,
-            active: true
-        },
-        {
-            title: 'Immersion Totale',
-            subtitle: 'EXPERIENCE GAMING',
-            description: 'Écrans incurvés 240Hz et casques audio 7.1 pour une immersion sans précédent.',
-            image: 'https://images.unsplash.com/photo-1616588589676-62b3bd4ff6d2?q=80&w=2071&auto=format&fit=crop',
-            buttonText: 'Découvrir',
-            buttonLink: '/products',
-            badge: 'Premium',
-            order: 2,
-            active: true
         }
     ];
 
-    for (const slide of heroSlidesData) {
-        await prisma.heroSlide.create({
-            data: slide
-        });
+    for (const slide of slides) {
+        const existing = await prisma.heroSlide.findFirst({ where: { title: slide.title } });
+        if (existing) {
+            await prisma.heroSlide.update({ where: { id: existing.id }, data: slide });
+        } else {
+            await prisma.heroSlide.create({ data: slide });
+        }
     }
+    console.log('   ✅ Hero slides updated');
 
-    console.log('✅ Hero slides seeded');
-    console.log('✨ Seeding completed!');
+    console.log('\n✨ Database seeded successfully!');
 }
 
 main()
     .catch((e) => {
-        console.error('❌ Seeding failed:', e);
+        console.error('❌ Error seeding database:', e);
         process.exit(1);
     })
     .finally(async () => {

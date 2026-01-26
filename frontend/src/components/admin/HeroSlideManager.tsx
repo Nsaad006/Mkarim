@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,26 +11,35 @@ import { heroSlidesApi, HeroSlide, CreateHeroSlide } from "@/api/hero-slides";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 
-export const HeroSlideManager = () => {
+interface HeroSlideManagerProps {
+    onSlidesChange?: (slides: Record<string, Partial<HeroSlide>>) => void;
+    onHasChanges?: (hasChanges: boolean) => void;
+}
+
+export const HeroSlideManager = ({ onSlidesChange, onHasChanges }: HeroSlideManagerProps) => {
     const queryClient = useQueryClient();
+    const [editedSlides, setEditedSlides] = useState<Record<string, Partial<HeroSlide>>>({});
 
     const { data: slides = [], isLoading } = useQuery({
         queryKey: ['hero-slides-admin'],
         queryFn: () => heroSlidesApi.getAllAdmin(),
     });
 
+    // Notify parent of changes
+    useEffect(() => {
+        if (onSlidesChange) {
+            onSlidesChange(editedSlides);
+        }
+        if (onHasChanges) {
+            onHasChanges(Object.keys(editedSlides).length > 0);
+        }
+    }, [editedSlides, onSlidesChange, onHasChanges]);
+
     const createMutation = useMutation({
         mutationFn: (data: CreateHeroSlide) => heroSlidesApi.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['hero-slides-admin'] });
             toast({ title: "Slide ajouté" });
-        }
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: string, data: Partial<CreateHeroSlide> }) => heroSlidesApi.update(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['hero-slides-admin'] });
         }
     });
 
@@ -56,6 +65,63 @@ export const HeroSlideManager = () => {
         });
     };
 
+    const updateSlideField = (slideId: string, field: string, value: any) => {
+        setEditedSlides(prev => ({
+            ...prev,
+            [slideId]: {
+                ...prev[slideId],
+                [field]: value
+            }
+        }));
+    };
+
+    const getSlideValue = (slide: HeroSlide, field: keyof HeroSlide) => {
+        if (editedSlides[slide.id] && field in editedSlides[slide.id]) {
+            return editedSlides[slide.id][field];
+        }
+        return slide[field];
+    };
+
+    const moveSlide = async (slideId: string, direction: 'up' | 'down') => {
+        const slide = slides.find(s => s.id === slideId);
+        if (!slide) return;
+
+        const targetOrder = direction === 'up' ? slide.order - 1 : slide.order + 1;
+        const targetSlide = slides.find(s => s.order === targetOrder);
+
+        if (!targetSlide) return;
+
+        try {
+            // Swap orders immediately
+            await Promise.all([
+                heroSlidesApi.update(slide.id, { order: targetOrder }),
+                heroSlidesApi.update(targetSlide.id, { order: slide.order })
+            ]);
+            queryClient.invalidateQueries({ queryKey: ['hero-slides-admin'] });
+        } catch (error) {
+            toast({
+                title: "Erreur",
+                description: "Impossible de réorganiser les slides",
+                variant: "destructive"
+            });
+        }
+    };
+
+    // Expose method to save all changes (called by parent)
+    useEffect(() => {
+        (window as any).__saveHeroSlides = async () => {
+            const promises = Object.entries(editedSlides).map(([id, data]) =>
+                heroSlidesApi.update(id, data)
+            );
+            await Promise.all(promises);
+            setEditedSlides({});
+            queryClient.invalidateQueries({ queryKey: ['hero-slides-admin'] });
+        };
+        return () => {
+            delete (window as any).__saveHeroSlides;
+        };
+    }, [editedSlides, queryClient]);
+
     if (isLoading) return <Loader2 className="animate-spin mx-auto" />;
 
     return (
@@ -80,14 +146,8 @@ export const HeroSlideManager = () => {
                                             variant="ghost"
                                             size="icon"
                                             className="h-8 w-8"
-                                            disabled={slide.order === 0 || updateMutation.isPending}
-                                            onClick={() => {
-                                                const prevSlide = slides.find(s => s.order === slide.order - 1);
-                                                if (prevSlide) {
-                                                    updateMutation.mutate({ id: prevSlide.id, data: { order: slide.order } });
-                                                    updateMutation.mutate({ id: slide.id, data: { order: slide.order - 1 } });
-                                                }
-                                            }}
+                                            disabled={slide.order === 0}
+                                            onClick={() => moveSlide(slide.id, 'up')}
                                         >
                                             <ArrowUp className="w-4 h-4" />
                                         </Button>
@@ -95,14 +155,8 @@ export const HeroSlideManager = () => {
                                             variant="ghost"
                                             size="icon"
                                             className="h-8 w-8"
-                                            disabled={slide.order === slides.length - 1 || updateMutation.isPending}
-                                            onClick={() => {
-                                                const nextSlide = slides.find(s => s.order === slide.order + 1);
-                                                if (nextSlide) {
-                                                    updateMutation.mutate({ id: nextSlide.id, data: { order: slide.order } });
-                                                    updateMutation.mutate({ id: slide.id, data: { order: slide.order + 1 } });
-                                                }
-                                            }}
+                                            disabled={slide.order === slides.length - 1}
+                                            onClick={() => moveSlide(slide.id, 'down')}
                                         >
                                             <ArrowDown className="w-4 h-4" />
                                         </Button>
@@ -110,8 +164,8 @@ export const HeroSlideManager = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Switch
-                                        checked={slide.active}
-                                        onCheckedChange={(checked) => updateMutation.mutate({ id: slide.id, data: { active: checked } })}
+                                        checked={getSlideValue(slide, 'active') as boolean}
+                                        onCheckedChange={(checked) => updateSlideField(slide.id, 'active', checked)}
                                     />
                                     <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(slide.id)} className="text-destructive">
                                         <Trash2 className="w-4 h-4" />
@@ -124,16 +178,15 @@ export const HeroSlideManager = () => {
                                     <div className="space-y-2">
                                         <Label>Image du Slide</Label>
                                         <ImageUpload
-                                            value={slide.image}
-                                            onChange={(url) => updateMutation.mutate({ id: slide.id, data: { image: url } })}
+                                            value={getSlideValue(slide, 'image') as string}
+                                            onChange={(url) => updateSlideField(slide.id, 'image', url)}
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Badge (ex: Nouveau, -20%)</Label>
                                         <Input
-                                            value={slide.badge || ""}
-                                            onChange={(e) => updateMutation.mutate({ id: slide.id, data: { badge: e.target.value } })}
-                                            onBlur={(e) => updateMutation.mutate({ id: slide.id, data: { badge: e.target.value } })}
+                                            value={getSlideValue(slide, 'badge') as string || ""}
+                                            onChange={(e) => updateSlideField(slide.id, 'badge', e.target.value)}
                                         />
                                     </div>
                                 </div>
@@ -142,22 +195,22 @@ export const HeroSlideManager = () => {
                                     <div className="space-y-2">
                                         <Label>Titre</Label>
                                         <Input
-                                            value={slide.title}
-                                            onChange={(e) => updateMutation.mutate({ id: slide.id, data: { title: e.target.value } })}
+                                            value={getSlideValue(slide, 'title') as string}
+                                            onChange={(e) => updateSlideField(slide.id, 'title', e.target.value)}
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Sous-titre</Label>
                                         <Input
-                                            value={slide.subtitle || ""}
-                                            onChange={(e) => updateMutation.mutate({ id: slide.id, data: { subtitle: e.target.value } })}
+                                            value={getSlideValue(slide, 'subtitle') as string || ""}
+                                            onChange={(e) => updateSlideField(slide.id, 'subtitle', e.target.value)}
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Description</Label>
                                         <Textarea
-                                            value={slide.description || ""}
-                                            onChange={(e) => updateMutation.mutate({ id: slide.id, data: { description: e.target.value } })}
+                                            value={getSlideValue(slide, 'description') as string || ""}
+                                            onChange={(e) => updateSlideField(slide.id, 'description', e.target.value)}
                                             rows={2}
                                         />
                                     </div>
@@ -165,15 +218,15 @@ export const HeroSlideManager = () => {
                                         <div className="space-y-2">
                                             <Label>Texte Bouton</Label>
                                             <Input
-                                                value={slide.buttonText}
-                                                onChange={(e) => updateMutation.mutate({ id: slide.id, data: { buttonText: e.target.value } })}
+                                                value={getSlideValue(slide, 'buttonText') as string}
+                                                onChange={(e) => updateSlideField(slide.id, 'buttonText', e.target.value)}
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Lien Bouton</Label>
                                             <Input
-                                                value={slide.buttonLink}
-                                                onChange={(e) => updateMutation.mutate({ id: slide.id, data: { buttonLink: e.target.value } })}
+                                                value={getSlideValue(slide, 'buttonLink') as string}
+                                                onChange={(e) => updateSlideField(slide.id, 'buttonLink', e.target.value)}
                                             />
                                         </div>
                                     </div>

@@ -62,6 +62,15 @@ export interface GlobalSettings {
 
     // Low Stock Settings
     lowStockThreshold?: number;
+
+    // Email Configuration
+    emailSenderName?: string;
+    emailGmailUser?: string;
+    emailClientId?: string;
+    emailClientSecret?: string;
+    emailRefreshToken?: string;
+    emailAdminReceiver?: string;
+    emailEnabled?: boolean;
 }
 
 export const settingsApi = {

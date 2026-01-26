@@ -28,10 +28,12 @@ function generateOrderNumber(): string {
     return `ORD-${timestamp}${random}`;
 }
 
+import { sendOrderEmails } from '../lib/email';
+
 // POST /api/orders - Create new COD order (Multi-item)
 router.post('/', async (req, res) => {
     try {
-        // Validate request body
+        // ... (rest of validation and total calculation remains the same)
         const validatedData = createOrderSchema.parse(req.body);
 
         // Find products and calculate total
@@ -90,6 +92,10 @@ router.post('/', async (req, res) => {
                 }
             }
         });
+
+        // Trigger email notification (don't await to not delay response, or await for confirmation)
+        // We'll use a detached execution or wrapped in try-catch to not break response
+        sendOrderEmails(newOrder).catch(err => console.error('Error in sendOrderEmails background task:', err));
 
         res.status(201).json(newOrder);
     } catch (error) {

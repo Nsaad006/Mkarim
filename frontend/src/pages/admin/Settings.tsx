@@ -15,6 +15,7 @@ import { HeroSlideManager } from "@/components/admin/HeroSlideManager";
 const Settings = () => {
     const queryClient = useQueryClient();
     const [formData, setFormData] = useState<Partial<GlobalSettings>>({});
+    const [heroSlidesChanges, setHeroSlidesChanges] = useState<Record<string, any>>({});
 
     // Fetch settings
     const { data: settings, isLoading } = useQuery({
@@ -47,9 +48,20 @@ const Settings = () => {
         }
     });
 
-    const handleSave = (e: React.FormEvent) => {
+    const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Save settings
         mutation.mutate(formData);
+
+        // Save hero slides if there are changes
+        if (Object.keys(heroSlidesChanges).length > 0 && (window as any).__saveHeroSlides) {
+            try {
+                await (window as any).__saveHeroSlides();
+            } catch (error) {
+                console.error('Error saving hero slides:', error);
+            }
+        }
     };
 
     if (isLoading) {
@@ -72,9 +84,89 @@ const Settings = () => {
                         <TabsTrigger value="sections" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border border-border">Sections</TabsTrigger>
                         <TabsTrigger value="contact" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border border-border">Contact</TabsTrigger>
                         <TabsTrigger value="checkout" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border border-border">Checkout</TabsTrigger>
+                        <TabsTrigger value="email" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border border-border">Email</TabsTrigger>
                     </TabsList>
 
                     <div className="mt-6">
+                        {/* Email Tab */}
+                        <TabsContent value="email" className="space-y-6 m-0">
+                            <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+                                <div className="flex items-center justify-between border-b pb-2">
+                                    <h2 className="text-xl font-semibold">Configuration Email (Gmail OAuth2)</h2>
+                                    <div className="flex items-center gap-2">
+                                        <Label htmlFor="email-enabled">Activer les emails</Label>
+                                        <Switch
+                                            id="email-enabled"
+                                            checked={formData.emailEnabled || false}
+                                            onCheckedChange={(checked) => setFormData({ ...formData, emailEnabled: checked })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 text-sm text-blue-200">
+                                    <p className="font-semibold mb-1">💡 Note sur la sécurité :</p>
+                                    <p>Utilisez Gmail OAuth2 pour une sécurité maximale. Vous devez créer un projet sur Google Cloud Console pour obtenir le Client ID, Secret et Refresh Token.</p>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Nom de l'expéditeur</Label>
+                                        <Input
+                                            value={formData.emailSenderName || ""}
+                                            onChange={(e) => setFormData({ ...formData, emailSenderName: e.target.value })}
+                                            placeholder="Ex: MKARIM Store"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Email Gmail (Expéditeur)</Label>
+                                        <Input
+                                            value={formData.emailGmailUser || ""}
+                                            onChange={(e) => setFormData({ ...formData, emailGmailUser: e.target.value })}
+                                            placeholder="votre-email@gmail.com"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Email Administrateur (Notifications)</Label>
+                                        <Input
+                                            value={formData.emailAdminReceiver || ""}
+                                            onChange={(e) => setFormData({ ...formData, emailAdminReceiver: e.target.value })}
+                                            placeholder="destinataire@email.com"
+                                        />
+                                        <p className="text-xs text-muted-foreground">L'email qui recevra les notifications de nouvelles commandes.</p>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 space-y-4">
+                                    <h3 className="text-lg font-medium border-b pb-2">Identifiants OAuth2</h3>
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>Client ID</Label>
+                                            <Input
+                                                value={formData.emailClientId || ""}
+                                                onChange={(e) => setFormData({ ...formData, emailClientId: e.target.value })}
+                                                placeholder="000000000000-abc.apps.googleusercontent.com"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Client Secret</Label>
+                                            <Input
+                                                type="password"
+                                                value={formData.emailClientSecret || ""}
+                                                onChange={(e) => setFormData({ ...formData, emailClientSecret: e.target.value })}
+                                                placeholder="••••••••••••••••••••"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Refresh Token</Label>
+                                            <Textarea
+                                                value={formData.emailRefreshToken || ""}
+                                                onChange={(e) => setFormData({ ...formData, emailRefreshToken: e.target.value })}
+                                                placeholder="1//0abcde..."
+                                                rows={2}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </TabsContent>
                         {/* General Tab */}
                         <TabsContent value="general" className="space-y-6 m-0">
                             <div className="bg-card rounded-xl border border-border p-6 space-y-4">
@@ -169,7 +261,9 @@ const Settings = () => {
 
                         {/* Hero Section Tab */}
                         <TabsContent value="hero" className="space-y-6 m-0">
-                            <HeroSlideManager />
+                            <HeroSlideManager
+                                onSlidesChange={setHeroSlidesChanges}
+                            />
                         </TabsContent>
 
                         {/* Sections Content Tab */}

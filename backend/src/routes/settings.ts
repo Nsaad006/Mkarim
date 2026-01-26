@@ -106,7 +106,15 @@ router.put('/', authenticate, authorize(['super_admin', 'editor']), async (req: 
                 ...(ctaPrimaryBtnLink !== undefined && { ctaPrimaryBtnLink }),
                 ...(ctaSecondaryBtnText !== undefined && { ctaSecondaryBtnText }),
                 ...(ctaSecondaryBtnLink !== undefined && { ctaSecondaryBtnLink }),
-                ...(lowStockThreshold !== undefined && { lowStockThreshold: Number(lowStockThreshold) })
+                ...(lowStockThreshold !== undefined && { lowStockThreshold: Number(lowStockThreshold) }),
+                // Email Configuration
+                ...(req.body.emailSenderName !== undefined && { emailSenderName: req.body.emailSenderName }),
+                ...(req.body.emailGmailUser !== undefined && { emailGmailUser: req.body.emailGmailUser }),
+                ...(req.body.emailClientId !== undefined && { emailClientId: req.body.emailClientId }),
+                ...(req.body.emailClientSecret !== undefined && { emailClientSecret: req.body.emailClientSecret }),
+                ...(req.body.emailRefreshToken !== undefined && { emailRefreshToken: req.body.emailRefreshToken }),
+                ...(req.body.emailAdminReceiver !== undefined && { emailAdminReceiver: req.body.emailAdminReceiver }),
+                ...(req.body.emailEnabled !== undefined && { emailEnabled: Boolean(req.body.emailEnabled) })
             }
         });
 

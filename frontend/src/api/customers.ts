@@ -17,4 +17,11 @@ export const customersApi = {
         const { data } = await apiClient.get<Customer[]>('/api/customers');
         return data;
     },
+
+    // Get orders for a specific customer
+    getCustomerOrders: async (customerId: string): Promise<any[]> => {
+        const { data } = await apiClient.get(`/api/customers/${customerId}/orders`);
+        return data;
+    },
 };
+

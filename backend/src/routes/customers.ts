@@ -67,12 +67,51 @@ router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer']), as
 
         // Convert map to array and sort by total spent (descending)
         const customers = Array.from(customersMap.values())
+            .map(customer => ({
+                id: customer.phone, // Use phone as unique ID
+                name: customer.name,
+                phone: customer.phone,
+                email: customer.email,
+                city: customer.city,
+                ordersCount: customer.totalOrders,
+                totalSpent: customer.totalSpent,
+                lastOrderDate: customer.lastOrderDate
+            }))
             .sort((a, b) => b.totalSpent - a.totalSpent);
 
         res.json(customers);
     } catch (error) {
         console.error('Error fetching customers:', error);
         res.status(500).json({ error: 'Failed to fetch customers' });
+    }
+});
+
+// GET /api/customers/:customerId/orders - Get all orders for a specific customer
+router.get('/:customerId/orders', authenticate, authorize(['super_admin', 'editor', 'viewer']), async (req: Request, res: Response) => {
+    try {
+        const { customerId } = req.params;
+
+        // Fetch all orders for this customer (using phone as identifier)
+        const orders = await prisma.order.findMany({
+            where: {
+                phone: customerId
+            },
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        res.json(orders);
+    } catch (error) {
+        console.error('Error fetching customer orders:', error);
+        res.status(500).json({ error: 'Failed to fetch customer orders' });
     }
 });
 

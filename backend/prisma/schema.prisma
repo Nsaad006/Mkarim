@@ -168,6 +168,15 @@ model Settings {
   // Low Stock Settings
   lowStockThreshold Int      @default(5)
 
+  // Email Configuration (OAuth2)
+  emailSenderName    String    @default("MKARIM Store")
+  emailGmailUser     String    @default("")
+  emailClientId      String    @default("")
+  emailClientSecret  String    @default("")
+  emailRefreshToken  String    @default("")
+  emailAdminReceiver String    @default("")
+  emailEnabled       Boolean   @default(false)
+
   updatedAt         DateTime @updatedAt
   createdAt         DateTime @default(now())
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Mail, Phone, MapPin } from "lucide-react";
+import { Search, Mail, Phone, FileDown, History, Loader2 } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -11,18 +11,40 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { customersApi, Customer } from "@/api/customers";
-import { Loader2 } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { exportCustomersToExcel, exportCustomersToPDF } from "@/utils/exportUtils";
+import { toast } from "@/hooks/use-toast";
 
 const Customers = () => {
     const { currency } = useSettings();
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [showOrderHistory, setShowOrderHistory] = useState(false);
 
     const { data: customers = [], isLoading } = useQuery({
         queryKey: ['admin-customers'],
         queryFn: () => customersApi.getAll(),
+    });
+
+    const { data: customerOrders = [], isLoading: isLoadingOrders } = useQuery({
+        queryKey: ['customer-orders', selectedCustomer?.id],
+        queryFn: () => customersApi.getCustomerOrders(selectedCustomer!.id),
+        enabled: !!selectedCustomer,
     });
 
     const filteredCustomers = customers.filter((customer) =>
@@ -31,13 +53,65 @@ const Customers = () => {
         customer.phone.includes(searchTerm)
     );
 
+    const handleExportExcel = () => {
+        try {
+            exportCustomersToExcel(filteredCustomers, currency);
+            toast({
+                title: "Export réussi",
+                description: "Les clients ont été exportés en Excel.",
+            });
+        } catch (error) {
+            toast({
+                title: "Erreur d'export",
+                description: "Impossible d'exporter les clients.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleExportPDF = () => {
+        try {
+            exportCustomersToPDF(filteredCustomers, currency);
+            toast({
+                title: "Export réussi",
+                description: "Les clients ont été exportés en PDF.",
+            });
+        } catch (error) {
+            toast({
+                title: "Erreur d'export",
+                description: "Impossible d'exporter les clients.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleViewOrderHistory = (customer: Customer) => {
+        setSelectedCustomer(customer);
+        setShowOrderHistory(true);
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
-                <Button variant="outline">
-                    Export DB
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            <FileDown className="w-4 h-4 mr-2" />
+                            Exporter
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleExportExcel}>
+                            <FileDown className="w-4 h-4 mr-2" />
+                            Exporter en Excel (.xlsx)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportPDF}>
+                            <FileDown className="w-4 h-4 mr-2" />
+                            Exporter en PDF
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             <div className="bg-card rounded-xl border border-border p-6">
@@ -104,9 +178,23 @@ const Customers = () => {
                                         {new Date(customer.lastOrderDate).toLocaleDateString()}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="outline" size="sm" onClick={() => window.open(`https://wa.me/${customer.phone.replace(/\s+/g, '')}`, "_blank")}>
-                                            WhatsApp
-                                        </Button>
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleViewOrderHistory(customer)}
+                                            >
+                                                <History className="w-4 h-4 mr-1" />
+                                                Historique
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => window.open(`https://wa.me/${customer.phone.replace(/\s+/g, '')}`, "_blank")}
+                                            >
+                                                WhatsApp
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -120,6 +208,75 @@ const Customers = () => {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Order History Dialog */}
+            <Dialog open={showOrderHistory} onOpenChange={setShowOrderHistory}>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Historique des Commandes</DialogTitle>
+                        <DialogDescription>
+                            {selectedCustomer && (
+                                <>
+                                    Client: <span className="font-semibold">{selectedCustomer.name}</span> |
+                                    Total: <span className="font-semibold">{selectedCustomer.ordersCount} commande(s)</span>
+                                </>
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="mt-4">
+                        {isLoadingOrders ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                                <span>Chargement de l'historique...</span>
+                            </div>
+                        ) : customerOrders.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>N° Commande</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Produits</TableHead>
+                                        <TableHead>Total</TableHead>
+                                        <TableHead>Status</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {customerOrders.map((order: any) => (
+                                        <TableRow key={order.id}>
+                                            <TableCell className="font-mono text-sm">{order.orderNumber}</TableCell>
+                                            <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                                            <TableCell>
+                                                <div className="text-sm">
+                                                    {order.items?.map((item: any, idx: number) => (
+                                                        <div key={idx} className="text-muted-foreground">
+                                                            {item.product?.name || 'Produit'} x{item.quantity}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="font-semibold">{order.total.toLocaleString()} {currency}</TableCell>
+                                            <TableCell>
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                    ${order.status === 'delivered' ? 'bg-green-500/10 text-green-500' :
+                                                        order.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
+                                                            order.status === 'processing' ? 'bg-blue-500/10 text-blue-500' :
+                                                                'bg-yellow-500/10 text-yellow-500'}`}>
+                                                    {order.status}
+                                                </span>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                                Aucune commande trouvée pour ce client.
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

@@ -181,6 +181,50 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
             <ScrollArea className="flex-1 px-4 py-6">
                 <div className="space-y-8 pb-8">
 
+                    {/* Price Range (Permanent Global Filter) */}
+                    <div className="pb-8 border-b border-white/5">
+                        <h3 className="px-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4">Budget de Déploiement</h3>
+                        <div className="bg-zinc-900 border border-white/5 rounded-2xl p-6 space-y-6 shadow-xl">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest px-1">MIN (MAD)</p>
+                                    <input
+                                        type="number"
+                                        value={priceRange[0]}
+                                        onChange={(e) => {
+                                            const val = Math.min(Number(e.target.value), priceRange[1]);
+                                            handlePriceChange([val, priceRange[1]]);
+                                            updateFilters({ ...activeFilters, minPrice: val, maxPrice: priceRange[1] });
+                                        }}
+                                        className="w-full bg-zinc-950 border border-white/5 rounded-xl px-3 py-2 text-xs font-black text-white italic outline-none focus:border-primary/50"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest px-1">MAX (MAD)</p>
+                                    <input
+                                        type="number"
+                                        value={priceRange[1]}
+                                        onChange={(e) => {
+                                            const val = Math.max(Number(e.target.value), priceRange[0]);
+                                            handlePriceChange([priceRange[0], val]);
+                                            updateFilters({ ...activeFilters, minPrice: priceRange[0], maxPrice: val });
+                                        }}
+                                        className="w-full bg-zinc-950 border border-white/5 rounded-xl px-3 py-2 text-xs font-black text-white italic outline-none focus:border-primary/50"
+                                    />
+                                </div>
+                            </div>
+
+                            <Slider
+                                value={priceRange}
+                                min={0}
+                                max={100000}
+                                step={500}
+                                onValueChange={handlePriceChange}
+                                onValueCommit={applyPriceFilter}
+                            />
+                        </div>
+                    </div>
+
                     {/* Main Filter: Categories */}
                     <div>
                         <h3 className="px-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4">Secteur d'Arsenal</h3>
@@ -311,49 +355,7 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                         </Accordion>
                     </div>
 
-                    {/* Price Range (Permanent Global Filter) */}
-                    <div className="pt-8 border-t border-white/5">
-                        <h3 className="px-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4">Budget de Déploiement</h3>
-                        <div className="bg-zinc-900 border border-white/5 rounded-2xl p-6 space-y-6 shadow-xl">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest px-1">MIN (MAD)</p>
-                                    <input
-                                        type="number"
-                                        value={priceRange[0]}
-                                        onChange={(e) => {
-                                            const val = Math.min(Number(e.target.value), priceRange[1]);
-                                            handlePriceChange([val, priceRange[1]]);
-                                            updateFilters({ ...activeFilters, minPrice: val, maxPrice: priceRange[1] });
-                                        }}
-                                        className="w-full bg-zinc-950 border border-white/5 rounded-xl px-3 py-2 text-xs font-black text-white italic outline-none focus:border-primary/50"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest px-1">MAX (MAD)</p>
-                                    <input
-                                        type="number"
-                                        value={priceRange[1]}
-                                        onChange={(e) => {
-                                            const val = Math.max(Number(e.target.value), priceRange[0]);
-                                            handlePriceChange([priceRange[0], val]);
-                                            updateFilters({ ...activeFilters, minPrice: priceRange[0], maxPrice: val });
-                                        }}
-                                        className="w-full bg-zinc-950 border border-white/5 rounded-xl px-3 py-2 text-xs font-black text-white italic outline-none focus:border-primary/50"
-                                    />
-                                </div>
-                            </div>
 
-                            <Slider
-                                value={priceRange}
-                                min={0}
-                                max={100000}
-                                step={500}
-                                onValueChange={handlePriceChange}
-                                onValueCommit={applyPriceFilter}
-                            />
-                        </div>
-                    </div>
                 </div>
             </ScrollArea>
 

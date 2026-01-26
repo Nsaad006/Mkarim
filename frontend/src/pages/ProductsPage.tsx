@@ -166,7 +166,7 @@ const ProductsPage = () => {
       return;
     }
 
-    if (type === 'minPrice' || type === 'maxPrice') {
+    if (type === 'minPrice' || type === 'maxPrice' || type === 'price') {
       setFilters({ ...filters, minPrice: 0, maxPrice: 100000 });
       return;
     }
@@ -247,7 +247,7 @@ const ProductsPage = () => {
 
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-72 flex-shrink-0">
-              <div className="sticky top-32 rounded-3xl overflow-hidden shadow-2xl">
+              <div className="sticky top-32 h-[calc(100vh-160px)] rounded-3xl overflow-hidden shadow-2xl">
                 <FilterSidebar
                   products={allProducts}
                   categories={categories}

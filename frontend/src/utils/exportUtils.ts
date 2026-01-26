@@ -125,3 +125,54 @@ export const generateInvoicePDF = (order: Order, currency: string = "DH") => {
 
     doc.save(`Facture_${order.orderNumber}.pdf`);
 };
+
+// Export customers to Excel
+export const exportCustomersToExcel = (customers: any[], currency: string = "DH") => {
+    const data = customers.map(customer => ({
+        "Nom": customer.name,
+        "Email": customer.email,
+        "Téléphone": customer.phone,
+        "Ville": customer.city,
+        "Nombre de Commandes": customer.ordersCount,
+        [`Total Dépensé (${currency})`]: customer.totalSpent,
+        "Dernière Commande": new Date(customer.lastOrderDate).toLocaleDateString()
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Clients");
+
+    XLSX.writeFile(workbook, `Clients_MKARIM_${new Date().toISOString().split('T')[0]}.xlsx`);
+};
+
+// Export customers to PDF
+export const exportCustomersToPDF = (customers: any[], currency: string = "DH") => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Liste des Clients - MKARIM SOLUTION", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Généré le: ${new Date().toLocaleString()}`, 14, 30);
+
+    const tableColumn = ["Nom", "Email", "Téléphone", "Ville", "Commandes", `Total (${currency})`];
+    const tableRows = customers.map(customer => [
+        customer.name,
+        customer.email,
+        customer.phone,
+        customer.city,
+        customer.ordersCount.toString(),
+        customer.totalSpent.toLocaleString()
+    ]);
+
+    autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 35,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [155, 135, 245] }
+    });
+
+    doc.save(`Clients_MKARIM_${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
