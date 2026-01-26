@@ -74,7 +74,7 @@ export const HeroCarousel = () => {
             stopAutoplay();
             autoplayId = setInterval(() => {
                 emblaApi.scrollNext();
-            }, 6000);
+            }, 5000);
         };
 
         const stopAutoplay = () => {
@@ -85,7 +85,7 @@ export const HeroCarousel = () => {
             stopAutoplay();
             clearTimeout(resumeTimeoutId);
             // Wait 8 seconds before restarting autoplay
-            resumeTimeoutId = setTimeout(startAutoplay, 8000);
+            resumeTimeoutId = setTimeout(startAutoplay, 1000);
         };
 
         onSelect();
