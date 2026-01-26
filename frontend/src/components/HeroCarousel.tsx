@@ -111,7 +111,7 @@ export const HeroCarousel = () => {
 
     return (
         <div className="dark">
-            <div className="relative h-[85vh] sm:h-[90vh] md:h-screen w-full overflow-hidden bg-[#070708] pt-16 md:pt-20">
+            <div className="relative h-[600px] md:h-[80vh] lg:h-screen w-full overflow-hidden bg-[#070708] pt-16 md:pt-20">
                 <div className="overflow-hidden h-full" ref={emblaRef}>
                     <div className="flex h-full">
                         {slides.map((slide, index) => (
@@ -138,11 +138,11 @@ export const HeroCarousel = () => {
                                                     exit={{ opacity: 0, y: 20 }}
                                                     transition={{ duration: 0.6, ease: "easeOut" }}
                                                 >
-                                                    <div className="flex items-center justify-start gap-4 mb-6">
+                                                    <div className="flex items-center justify-start gap-4 mb-4 md:mb-6">
                                                         {slide.badge && (
                                                             <div className="relative group">
                                                                 <div className="absolute inset-0 bg-primary blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                                <span className="relative px-4 py-1.5 bg-primary text-white text-[10px] md:text-xs font-black uppercase tracking-[0.2em] rounded-sm transform -skew-x-12 inline-block border-l-4 border-white">
+                                                                <span className="relative px-3 py-1 md:px-4 md:py-1.5 bg-primary text-white text-[9px] md:text-xs font-black uppercase tracking-[0.2em] rounded-sm transform -skew-x-12 inline-block border-l-4 border-white">
                                                                     <span className="transform skew-x-12 inline-block">
                                                                         {slide.badge}
                                                                     </span>
@@ -150,13 +150,13 @@ export const HeroCarousel = () => {
                                                             </div>
                                                         )}
                                                         {slide.subtitle && (
-                                                            <span className="text-zinc-100 tracking-[0.2em] text-[10px] md:text-xs uppercase bg-zinc-800 px-2 py-0.5 rounded">
+                                                            <span className="text-zinc-100 tracking-[0.2em] text-[9px] md:text-xs uppercase bg-zinc-800 px-2 py-0.5 rounded">
                                                                 {slide.subtitle}
                                                             </span>
                                                         )}
                                                     </div>
 
-                                                    <h1 className="font-display text-4xl md:text-7xl lg:text-8xl font-black mb-6 leading-[1.1] tracking-tight text-white drop-shadow-2xl">
+                                                    <h1 className="font-display text-3xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-[1.1] tracking-tight text-white drop-shadow-2xl">
                                                         {slide.title.split(' ').map((word, i) => (
                                                             <span key={i} className={i === 1 ? "text-primary block md:inline" : ""}>
                                                                 {word}{' '}
@@ -165,7 +165,7 @@ export const HeroCarousel = () => {
                                                     </h1>
 
                                                     {slide.description && (
-                                                        <p className="text-base md:text-xl text-zinc-400 mb-8 max-w-xl leading-relaxed font-medium">
+                                                        <p className="text-sm md:text-xl text-zinc-400 mb-6 md:mb-8 max-w-xl leading-relaxed font-medium line-clamp-2 md:line-clamp-none">
                                                             {slide.description}
                                                         </p>
                                                     )}
