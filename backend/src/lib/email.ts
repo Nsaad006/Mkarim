@@ -37,7 +37,9 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
         }
 
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true, // use SSL
             auth: {
                 type: 'OAuth2',
                 user: emailGmailUser,
@@ -45,6 +47,10 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
                 clientSecret: emailClientSecret,
                 refreshToken: emailRefreshToken,
             },
+            connectionTimeout: 15000, // 15 seconds
+            greetingTimeout: 15000,   // 15 seconds
+            debug: true,              // show debug logs
+            logger: true,             // log to console
         } as any);
 
         const mailOptions = {
