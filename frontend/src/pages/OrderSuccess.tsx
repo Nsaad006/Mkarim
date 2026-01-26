@@ -36,7 +36,7 @@ const OrderSuccess = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-zinc-950 flex flex-col selection:bg-primary selection:text-white">
+        <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-white">
             <Navbar />
             <div className="container mx-auto px-4 pt-32 pb-24 flex-1">
                 <motion.div
@@ -50,21 +50,21 @@ const OrderSuccess = () => {
                         <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full animate-pulse" />
                     </div>
 
-                    <h1 className="font-display text-5xl md:text-7xl font-black text-white italic uppercase tracking-tighter mb-6 leading-none">COMMANDE <span className="text-primary tracking-tight">VALIDÉE</span></h1>
-                    <p className="text-xl text-zinc-400 font-medium mb-12 max-w-lg mx-auto leading-relaxed">
+                    <h1 className="font-display text-5xl md:text-7xl font-black text-foreground italic uppercase tracking-tighter mb-6 leading-none">COMMANDE <span className="text-primary tracking-tight">VALIDÉE</span></h1>
+                    <p className="text-xl text-muted-foreground font-medium mb-12 max-w-lg mx-auto leading-relaxed">
                         Félicitations ! Votre demande de matériel a été interceptée par nos services logistiques.
                     </p>
 
                     {orderNumber && (
-                        <div className="bg-zinc-900/50 backdrop-blur-xl rounded-3xl p-8 border border-white/5 mb-12 shadow-2xl relative overflow-hidden group">
+                        <div className="bg-card backdrop-blur-xl rounded-3xl p-8 border border-border mb-12 shadow-2xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-colors" />
-                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4">IDENTIFIANT DE TRANSACTION</p>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-4">IDENTIFIANT DE TRANSACTION</p>
                             <p className="text-3xl md:text-5xl font-mono font-black text-primary tracking-tight italic select-all">{orderNumber}</p>
                         </div>
                     )}
 
-                    <div className="bg-zinc-900 border border-white/5 rounded-3xl p-8 md:p-10 mb-12 text-left relative">
-                        <h2 className="font-display text-xl font-black text-white italic uppercase tracking-tighter mb-8 flex items-center gap-4">
+                    <div className="bg-card border border-border rounded-3xl p-8 md:p-10 mb-12 text-left relative">
+                        <h2 className="font-display text-xl font-black text-foreground italic uppercase tracking-tighter mb-8 flex items-center gap-4">
                             <div className="w-1.5 h-6 bg-primary skew-x-[-15deg]" />
                             LOGISTIQUE DÉPLOYÉE
                         </h2>
@@ -75,12 +75,12 @@ const OrderSuccess = () => {
                                 { step: "03", title: "Transfert physique", desc: "Le matériel vous sera remis en mains propres. Paiement cash exigé lors de la réception finale." }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-start gap-6 group">
-                                    <div className="w-12 h-12 rounded-2xl bg-zinc-950 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-primary/50 transition-colors duration-300">
+                                    <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex items-center justify-center flex-shrink-0 group-hover:border-primary/50 transition-colors duration-300">
                                         <span className="text-xs font-black text-primary italic font-mono">{item.step}</span>
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-1 italic">{item.title}</h3>
-                                        <p className="text-xs text-zinc-500 font-medium leading-relaxed">{item.desc}</p>
+                                        <h3 className="text-sm font-black text-foreground uppercase tracking-widest mb-1 italic">{item.title}</h3>
+                                        <p className="text-xs text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
                                     </div>
                                 </div>
                             ))}
@@ -88,11 +88,11 @@ const OrderSuccess = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button onClick={() => navigate("/")} variant="outline" size="lg" className="border-white/10 text-white hover:bg-white/5 font-black uppercase tracking-widest px-8 h-16 rounded-2xl italic flex-1">
+                        <Button onClick={() => navigate("/")} variant="outline" size="lg" className="border-border text-foreground hover:bg-accent font-black uppercase tracking-widest px-8 h-16 rounded-2xl italic flex-1">
                             <Home className="w-5 h-5 mr-3 text-primary" />
                             RETOUR ACCUEIL
                         </Button>
-                        <Button onClick={() => navigate("/products")} size="lg" className="bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest px-8 h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] italic flex-1">
+                        <Button onClick={() => navigate("/products")} size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest px-8 h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] italic flex-1">
                             <Package className="w-5 h-5 mr-3" />
                             REVOIR LE CATALOGUE
                         </Button>

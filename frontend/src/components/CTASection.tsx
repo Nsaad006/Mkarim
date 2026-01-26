@@ -19,7 +19,7 @@ const CTASection = () => {
   const secondaryBtnLink = settings?.ctaSecondaryBtnLink || "/contact";
 
   return (
-    <section className="py-24 relative overflow-hidden bg-zinc-950">
+    <section className="py-24 relative overflow-hidden bg-background">
       {/* Dynamic Background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(235,68,50,0.1),transparent_70%)]" />
@@ -31,7 +31,7 @@ const CTASection = () => {
       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent shadow-[0_0_20px_rgba(235,68,50,0.5)]" />
 
       <div className="container-custom relative z-10 px-4 md:px-0">
-        <div className="max-w-4xl mx-auto backdrop-blur-md rounded-2xl md:rounded-3xl border border-white/5 bg-zinc-900/60 p-6 md:p-16 text-center shadow-2xl">
+        <div className="max-w-4xl mx-auto backdrop-blur-md rounded-2xl md:rounded-3xl border border-border bg-card/60 p-6 md:p-16 text-center shadow-2xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -42,7 +42,7 @@ const CTASection = () => {
               Édition Limitée
             </span>
 
-            <h2 className="font-display text-3xl md:text-6xl font-black text-white mb-6 md:mb-8 tracking-tighter leading-tight md:leading-none">
+            <h2 className="font-display text-3xl md:text-6xl font-black text-foreground mb-6 md:mb-8 tracking-tighter leading-tight md:leading-none">
               {ctaTitle.split(' ').map((word, i) => (
                 <span key={i} className={word.toLowerCase() === 'setup' || word.toLowerCase() === 'révolutionner' ? "text-primary" : ""}>
                   {word}{' '}
@@ -50,7 +50,7 @@ const CTASection = () => {
               ))}
             </h2>
 
-            <p className="text-base md:text-xl text-zinc-200 mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed px-2 md:px-0 font-medium">
+            <p className="text-base md:text-xl text-muted-foreground mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed px-2 md:px-0 font-medium">
               {ctaSubtitle}
             </p>
 
@@ -62,7 +62,7 @@ const CTASection = () => {
                 </Button>
               </Link>
               <Link to={secondaryBtnLink} className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="h-14 md:h-16 px-8 md:px-10 text-lg md:text-xl font-bold bg-transparent border-white/10 text-white hover:bg-white/5 uppercase tracking-wider w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="h-14 md:h-16 px-8 md:px-10 text-lg md:text-xl font-bold bg-transparent border-border text-foreground hover:bg-accent uppercase tracking-wider w-full sm:w-auto">
                   {secondaryBtnText}
                 </Button>
               </Link>

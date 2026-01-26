@@ -69,16 +69,16 @@ const CheckoutPage = () => {
   // Redirect if cart is empty
   if (cartState.items.length === 0) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col selection:bg-primary selection:text-white">
+      <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-white">
         <Navbar />
         <div className="container mx-auto px-4 py-32 text-center flex-1 flex flex-col justify-center">
-          <div className="w-32 h-32 bg-zinc-900 border border-white/5 rounded-3xl flex items-center justify-center mx-auto mb-8 relative shadow-2xl">
+          <div className="w-32 h-32 bg-muted border border-border rounded-3xl flex items-center justify-center mx-auto mb-8 relative shadow-2xl">
             <ShoppingBag className="w-16 h-16 text-primary" />
             <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full" />
           </div>
-          <h1 className="font-display text-4xl font-black text-white italic uppercase tracking-tighter mb-4">Panier <span className="text-primary italic">Vide</span></h1>
-          <p className="text-zinc-500 font-medium mb-10 max-w-xs mx-auto">Impossible de finaliser une commande sans matériel.</p>
-          <Button onClick={() => navigate("/products")} className="bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest px-8 h-14 rounded-xl shadow-[0_0_30px_rgba(235,68,50,0.3)] italic mx-auto">Découvrir le Catalogue</Button>
+          <h1 className="font-display text-4xl font-black text-foreground italic uppercase tracking-tighter mb-4">Panier <span className="text-primary italic">Vide</span></h1>
+          <p className="text-muted-foreground font-medium mb-10 max-w-xs mx-auto">Impossible de finaliser une commande sans matériel.</p>
+          <Button onClick={() => navigate("/products")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest px-8 h-14 rounded-xl shadow-[0_0_30px_rgba(235,68,50,0.3)] italic mx-auto">Découvrir le Catalogue</Button>
         </div>
         <Footer />
       </div>
@@ -187,13 +187,13 @@ const CheckoutPage = () => {
   const total = getTotal() + shippingFee;
 
   return (
-    <div className="min-h-screen bg-zinc-950 selection:bg-primary selection:text-white">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-white">
       <Navbar />
       <div className="container-custom pt-24 lg:pt-32 pb-24">
         <Button
           variant="ghost"
           onClick={() => navigate("/cart")}
-          className="mb-6 lg:mb-10 gap-3 text-zinc-600 hover:text-white transition-colors font-black uppercase tracking-[0.2em] text-[10px]"
+          className="mb-6 lg:mb-10 gap-3 text-muted-foreground hover:text-foreground transition-colors font-black uppercase tracking-[0.2em] text-[10px]"
         >
           <ArrowLeft className="w-4 h-4 text-primary" />
           Retour au Panier
@@ -205,19 +205,19 @@ const CheckoutPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-zinc-900/40 backdrop-blur-xl rounded-2xl lg:rounded-3xl p-5 lg:p-12 border border-white/5 shadow-2xl"
+              className="bg-card backdrop-blur-xl rounded-2xl lg:rounded-3xl p-5 lg:p-12 border border-border shadow-2xl"
             >
-              <div className="flex items-center gap-4 mb-8 lg:mb-10 border-b border-white/5 pb-5 lg:pb-8">
+              <div className="flex items-center gap-4 mb-8 lg:mb-10 border-b border-border pb-5 lg:pb-8">
                 <div className="w-1 h-8 lg:w-2 lg:h-10 bg-primary skew-x-[-15deg]" />
-                <h1 className="font-display text-2xl lg:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
-                  Finaliser <span className="text-primary tracking-tight">VOTRE COMMANDE</span>
+                <h1 className="font-display text-2xl lg:text-5xl font-black text-foreground italic uppercase tracking-tighter leading-none">
+                  Finaliser <span className="text-primary tracking-tight uppercase">VOTRE COMMANDE</span>
                 </h1>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-8">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+                    <Label htmlFor="fullName" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2 px-1">
                       <User className="w-3.5 h-3.5 text-primary" />
                       Nom complet
                     </Label>
@@ -229,7 +229,7 @@ const CheckoutPage = () => {
                         if (errors.fullName) setErrors({ ...errors, fullName: "" });
                       }}
                       placeholder="Votre nom et prénom"
-                      className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-zinc-700 ${errors.fullName ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                      className={`bg-background text-foreground h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-muted-foreground/30 ${errors.fullName ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary/50"
                         }`}
                     />
                     {errors.fullName && (
@@ -238,7 +238,7 @@ const CheckoutPage = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+                    <Label htmlFor="phone" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2 px-1">
                       <Phone className="w-3.5 h-3.5 text-primary" />
                       Téléphone
                     </Label>
@@ -251,7 +251,7 @@ const CheckoutPage = () => {
                         if (errors.phone) setErrors({ ...errors, phone: "" });
                       }}
                       placeholder="06 XX XX XX XX"
-                      className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-zinc-700 ${errors.phone ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                      className={`bg-background text-foreground h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-muted-foreground/30 ${errors.phone ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary/50"
                         }`}
                     />
                     {errors.phone && (
@@ -260,7 +260,7 @@ const CheckoutPage = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="city" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+                    <Label htmlFor="city" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2 px-1">
                       <MapPin className="w-3.5 h-3.5 text-primary" />
                       Ville de livraison
                     </Label>
@@ -273,12 +273,12 @@ const CheckoutPage = () => {
                     >
                       <SelectTrigger
                         id="city"
-                        className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold uppercase tracking-wider ${errors.city ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                        className={`bg-background text-foreground h-13 lg:h-14 rounded-xl transition-all font-bold uppercase tracking-wider ${errors.city ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary/50"
                           }`}
                       >
                         <SelectValue placeholder="Sélectionner votre ville" />
                       </SelectTrigger>
-                      <SelectContent className="bg-zinc-950 border-white/10 text-white">
+                      <SelectContent className="bg-card border-border text-foreground">
                         {cities.map((city) => (
                           <SelectItem key={city.id} value={city.name} className="focus:bg-white/5 uppercase tracking-wide font-black text-[10px] cursor-pointer">
                             {city.name} — {city.shippingFee} {currency}
@@ -292,7 +292,7 @@ const CheckoutPage = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="address" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+                    <Label htmlFor="address" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2 px-1">
                       <Home className="w-3.5 h-3.5 text-primary" />
                       Adresse complète
                     </Label>
@@ -304,7 +304,7 @@ const CheckoutPage = () => {
                         if (errors.address) setErrors({ ...errors, address: "" });
                       }}
                       placeholder="Quartier, rue, appartement..."
-                      className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-zinc-700 ${errors.address ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                      className={`bg-background text-foreground h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-muted-foreground/30 ${errors.address ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary/50"
                         }`}
                     />
                     {errors.address && (
@@ -314,7 +314,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+                  <Label htmlFor="email" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2 px-1">
                     <Mail className="w-3.5 h-3.5 text-primary" />
                     Adresse Email
                   </Label>
@@ -327,7 +327,7 @@ const CheckoutPage = () => {
                       if (errors.email) setErrors({ ...errors, email: "" });
                     }}
                     placeholder="votre@email.com"
-                    className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-zinc-700 ${errors.email ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                    className={`bg-background text-foreground h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-muted-foreground/30 ${errors.email ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary/50"
                       }`}
                   />
                   {errors.email && (
@@ -337,7 +337,7 @@ const CheckoutPage = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-15 lg:h-16 rounded-xl lg:rounded-2xl shadow-[0_10px_30px_rgba(235,68,50,0.3)] hover:shadow-[0_10px_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-lg lg:text-xl mt-4"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest h-15 lg:h-16 rounded-xl lg:rounded-2xl shadow-[0_10px_30px_rgba(235,68,50,0.3)] hover:shadow-[0_10px_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-lg lg:text-xl mt-4"
                   size="lg"
                   disabled={isSubmitting}
                 >
@@ -359,20 +359,20 @@ const CheckoutPage = () => {
 
           {/* Totals Section */}
           <div className="lg:col-span-1">
-            <div className="bg-zinc-900 border border-white/10 rounded-2xl lg:rounded-3xl p-5 lg:p-8 lg:sticky lg:top-32 shadow-2xl relative overflow-hidden">
+            <div className="bg-card border border-border rounded-2xl lg:rounded-3xl p-5 lg:p-8 lg:sticky lg:top-32 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
 
-              <h2 className="font-display text-lg lg:text-2xl font-black text-white italic uppercase tracking-tighter mb-5 border-b border-white/5 pb-3">Récapitulatif</h2>
+              <h2 className="font-display text-lg lg:text-2xl font-black text-foreground italic uppercase tracking-tighter mb-5 border-b border-border pb-3">Récapitulatif</h2>
 
               <div className="space-y-4">
                 <div className="max-h-40 lg:max-h-none overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                   {cartState.items.map((item) => (
                     <div key={item.product.id} className="flex justify-between items-start gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] lg:text-xs font-black text-white uppercase italic tracking-tight line-clamp-2">{item.product.name}</p>
-                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mt-1">x{item.quantity}</p>
+                        <p className="text-[11px] lg:text-xs font-black text-foreground uppercase italic tracking-tight line-clamp-2">{item.product.name}</p>
+                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">x{item.quantity}</p>
                       </div>
-                      <span className="font-bold text-zinc-400 text-[11px] lg:text-xs font-mono">
+                      <span className="font-bold text-muted-foreground text-[11px] lg:text-xs font-mono">
                         {(item.product.price * item.quantity).toLocaleString()} {currency}
                       </span>
                     </div>
@@ -393,7 +393,7 @@ const CheckoutPage = () => {
                   </div>
 
                   <div className="pt-5 mt-2 border-t border-white/10 flex justify-between items-end">
-                    <span className="font-display text-lg lg:text-2xl font-black text-white italic uppercase tracking-tighter leading-none">Total Net</span>
+                    <span className="font-display text-lg lg:text-2xl font-black text-foreground italic uppercase tracking-tighter leading-none">Total Net</span>
                     <span className="text-3xl lg:text-4xl font-black text-primary italic tracking-tighter leading-none">
                       {total.toLocaleString()} <span className="text-[10px] lg:text-sm not-italic font-bold">{currency}</span>
                     </span>

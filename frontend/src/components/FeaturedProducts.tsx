@@ -24,7 +24,7 @@ const FeaturedProducts = () => {
   const featuredProducts = products.slice(0, 8);
 
   return (
-    <section className="section-padding relative bg-zinc-950/50">
+    <section className="section-padding relative bg-muted/30">
       {/* Subtle Grid Background */}
       <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
 
@@ -40,7 +40,7 @@ const FeaturedProducts = () => {
                 {sectionTitle}
               </h2>
               <div className="w-20 h-1.5 bg-primary mb-6 rounded-full" />
-              <p className="text-zinc-200 text-lg font-medium">
+              <p className="text-foreground/80 text-lg font-medium">
                 {sectionSubtitle}
               </p>
             </motion.div>
@@ -51,7 +51,7 @@ const FeaturedProducts = () => {
             viewport={{ once: true }}
           >
             <Link to="/products">
-              <Button variant="outline" className="h-12 border-white/10 hover:bg-white/5 gap-2 px-6">
+              <Button variant="outline" className="h-12 border-border hover:bg-accent gap-2 px-6">
                 Voir tout le catalogue
                 <ArrowRight className="w-4 h-4" />
               </Button>

@@ -70,11 +70,30 @@ router.post('/', async (req, res) => {
             });
         }
 
+        // Create or update customer record for persistent tracking
+        const customer = await prisma.customer.upsert({
+            where: { phone: validatedData.phone },
+            update: {
+                name: validatedData.customerName,
+                email: validatedData.email || null,
+                city: validatedData.city,
+                address: validatedData.address,
+            },
+            create: {
+                name: validatedData.customerName,
+                email: validatedData.email || null,
+                phone: validatedData.phone,
+                city: validatedData.city,
+                address: validatedData.address,
+            }
+        });
+
         const newOrder = await prisma.order.create({
             data: {
                 orderNumber: generateOrderNumber(),
+                customerId: customer.id,
                 customerName: validatedData.customerName,
-                email: validatedData.email || null,  // Save email if provided
+                email: validatedData.email || null,
                 phone: validatedData.phone,
                 city: validatedData.city,
                 address: validatedData.address,

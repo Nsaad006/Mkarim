@@ -49,7 +49,7 @@ const AboutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 selection:bg-primary selection:text-white">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-white">
       <Navbar />
       <main className="pt-24 lg:pt-32">
         {/* Hero Section */}
@@ -61,17 +61,17 @@ const AboutPage = () => {
               transition={{ duration: 0.6 }}
               className="max-w-4xl mx-auto text-center"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-zinc-900 border border-white/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-8 skew-x-[-12deg]">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-muted border border-border text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-8 skew-x-[-12deg]">
                 <span className="skew-x-[12deg]">NOTRE HISTOIRE</span>
               </div>
-              <h1 className="font-display text-5xl md:text-7xl font-black mb-8 tracking-tighter text-white uppercase italic leading-[0.9]">
+              <h1 className="font-display text-5xl md:text-7xl font-black mb-8 tracking-tighter text-foreground uppercase italic leading-[0.9]">
                 {settings?.aboutTitle || (
                   <>
                     L'EXCELLENCE <span className="text-primary italic">GAMING</span>
                   </>
                 )}
               </h1>
-              <p className="text-xl text-zinc-400 leading-relaxed font-medium">
+              <p className="text-xl text-muted-foreground leading-relaxed font-medium">
                 {settings?.aboutDescription || "Votre destination ultime pour le gaming au Maroc. Performance, passion et innovation au service des gamers."}
               </p>
             </motion.div>
@@ -94,13 +94,13 @@ const AboutPage = () => {
                   <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
                     <Target className="w-6 h-6 text-primary" />
                   </div>
-                  <h2 className="font-display text-4xl font-black text-white uppercase italic tracking-tighter">Notre Mission</h2>
+                  <h2 className="font-display text-4xl font-black text-foreground uppercase italic tracking-tighter">Notre Mission</h2>
                 </div>
                 <div className="space-y-6">
-                  <p className="text-zinc-300 text-xl font-medium leading-relaxed italic border-l-4 border-primary pl-6">
+                  <p className="text-foreground/80 text-xl font-medium leading-relaxed italic border-l-4 border-primary pl-6">
                     {settings?.aboutMission || "Rendre accessible à tous les Marocains des solutions informatiques et gaming de haute qualité. Nous croyons que chaque client mérite le meilleur."}
                   </p>
-                  <p className="text-zinc-500 text-lg leading-relaxed">
+                  <p className="text-muted-foreground text-lg leading-relaxed">
                     Avec le paiement à la livraison, nous facilitons l'accès à la technologie
                     pour tous, partout au Maroc. Notre équipe passionnée est là pour vous
                     conseiller et vous accompagner dans vos choix.
@@ -115,21 +115,21 @@ const AboutPage = () => {
                 transition={{ duration: 0.6 }}
                 className="relative"
               >
-                <div className="aspect-square md:aspect-video rounded-3xl overflow-hidden bg-zinc-900 border border-white/5 relative group">
+                <div className="aspect-square md:aspect-video rounded-3xl overflow-hidden bg-muted border border-border relative group">
                   <img
                     src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=1200"
                     alt="Gaming Setup"
                     className="w-full h-full object-cover opacity-50 transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
                   <div className="absolute bottom-10 left-10 right-10">
-                    <div className="flex items-center gap-6 bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10">
+                    <div className="flex items-center gap-6 bg-card/10 backdrop-blur-md p-6 rounded-2xl border border-border/10">
                       <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-[0_0_30px_rgba(235,68,50,0.5)]">
                         <Heart className="w-8 h-8 text-white" />
                       </div>
                       <div>
-                        <p className="font-display font-black text-3xl text-white tracking-tighter italic">+{kpis.totalCustomers}</p>
-                        <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">Clients Satisfaits</p>
+                        <p className="font-display font-black text-3xl text-foreground tracking-tighter italic">+{kpis.totalCustomers}</p>
+                        <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">Clients Satisfaits</p>
                       </div>
                     </div>
                   </div>
@@ -143,10 +143,10 @@ const AboutPage = () => {
 
         {/* Values Section */}
         <section className="section-padding relative overflow-hidden">
-          <div className="absolute inset-0 bg-zinc-900/30" />
+          <div className="absolute inset-0 bg-muted/30" />
           <div className="container-custom relative z-10">
             <div className="text-center mb-16">
-              <h2 className="font-display text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter mb-6">
+              <h2 className="font-display text-4xl md:text-6xl font-black text-foreground uppercase italic tracking-tighter mb-6">
                 Nos <span className="text-primary">Valeurs</span>
               </h2>
               <div className="w-24 h-1 bg-primary mx-auto" />
@@ -160,14 +160,14 @@ const AboutPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="p-8 rounded-3xl bg-zinc-950 border border-white/5 hover:border-primary/50 transition-all duration-500 group relative overflow-hidden"
+                  className="p-8 rounded-3xl bg-card border border-border hover:border-primary/50 transition-all duration-500 group relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
-                  <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                  <div className="w-16 h-16 rounded-2xl bg-muted border border-border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
                     <value.icon className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="font-display font-black text-white text-xl uppercase italic tracking-tighter mb-4">{value.title}</h3>
-                  <p className="text-zinc-500 leading-relaxed font-medium">{value.description}</p>
+                  <h3 className="font-display font-black text-foreground text-xl uppercase italic tracking-tighter mb-4">{value.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed font-medium">{value.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -190,12 +190,12 @@ const AboutPage = () => {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 p-8 rounded-3xl text-center group hover:bg-zinc-900 transition-colors duration-500"
+                  className="bg-card backdrop-blur-sm border border-border p-8 rounded-3xl text-center group hover:bg-muted/50 transition-colors duration-500"
                 >
-                  <p className="font-display text-4xl md:text-5xl font-black text-white italic tracking-tighter mb-2 group-hover:text-primary transition-colors">
+                  <p className="font-display text-4xl md:text-5xl font-black text-foreground italic tracking-tighter mb-2 group-hover:text-primary transition-colors">
                     {stat.value}
                   </p>
-                  <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">{stat.label}</p>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">{stat.label}</p>
                 </motion.div>
               ))}
             </div>

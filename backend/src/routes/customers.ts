@@ -4,82 +4,46 @@ import { authenticate, authorize } from './auth';
 
 const router = Router();
 
-// GET /api/customers - Get all unique customers from orders
-router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer']), async (req: Request, res: Response) => {
+// GET /api/customers - Get all persistent customers
+router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer', 'commercial']), async (req: Request, res: Response) => {
     try {
-        // Fetch all orders with their items
-        const orders = await prisma.order.findMany({
+        const customers = await prisma.customer.findMany({
             include: {
-                items: true
+                _count: {
+                    select: { orders: true }
+                },
+                orders: {
+                    select: {
+                        total: true,
+                        createdAt: true
+                    }
+                }
             },
             orderBy: {
                 createdAt: 'desc'
             }
         });
 
-        // Group orders by customer (using phone as unique identifier)
-        const customersMap = new Map<string, {
-            name: string;
-            phone: string;
-            email: string;  // Added email
-            city: string;
-            address: string;
-            totalOrders: number;
-            totalSpent: number;
-            lastOrderDate: Date;
-            orders: string[];
-        }>();
+        const formattedCustomers = customers.map((customer: any) => {
+            const totalSpent = customer.orders.reduce((sum: number, order: any) => sum + order.total, 0);
+            const lastOrder = customer.orders.length > 0
+                ? [...customer.orders].sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime())[0]
+                : null;
 
-        orders.forEach(order => {
-            const existing = customersMap.get(order.phone);
-
-            if (existing) {
-                // Update existing customer
-                existing.totalOrders += 1;
-                existing.totalSpent += order.total;
-                existing.orders.push(order.orderNumber);
-                if (order.createdAt > existing.lastOrderDate) {
-                    existing.lastOrderDate = order.createdAt;
-                    // Update to latest info
-                    existing.name = order.customerName;
-                    existing.city = order.city;
-                    existing.address = order.address;
-                    // Update email if provided in latest order
-                    if (order.email) {
-                        existing.email = order.email;
-                    }
-                }
-            } else {
-                // Add new customer
-                customersMap.set(order.phone, {
-                    name: order.customerName,
-                    phone: order.phone,
-                    email: order.email || '',  // Include email from order
-                    city: order.city,
-                    address: order.address,
-                    totalOrders: 1,
-                    totalSpent: order.total,
-                    lastOrderDate: order.createdAt,
-                    orders: [order.orderNumber]
-                });
-            }
-        });
-
-        // Convert map to array and sort by total spent (descending)
-        const customers = Array.from(customersMap.values())
-            .map(customer => ({
-                id: customer.phone, // Use phone as unique ID
+            return {
+                id: customer.phone,
                 name: customer.name,
                 phone: customer.phone,
-                email: customer.email,
+                email: customer.email || '',
                 city: customer.city,
-                ordersCount: customer.totalOrders,
-                totalSpent: customer.totalSpent,
-                lastOrderDate: customer.lastOrderDate
-            }))
-            .sort((a, b) => b.totalSpent - a.totalSpent);
+                address: customer.address,
+                ordersCount: customer._count.orders,
+                totalSpent: totalSpent,
+                lastOrderDate: lastOrder ? lastOrder.createdAt : null
+            };
+        }).sort((a: any, b: any) => b.totalSpent - a.totalSpent);
 
-        res.json(customers);
+        res.json(formattedCustomers);
     } catch (error) {
         console.error('Error fetching customers:', error);
         res.status(500).json({ error: 'Failed to fetch customers' });

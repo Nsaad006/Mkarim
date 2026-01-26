@@ -6,6 +6,68 @@
 
 @layer base {
   :root {
+    /* MKARIM SOLUTION - Light Theme */
+    --background: 0 0% 100%;
+    --foreground: 220 25% 10%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 220 25% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 10%;
+
+    --primary: 4 82% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 96%;
+    --secondary-foreground: 220 25% 10%;
+
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 220 15% 94%;
+    --accent-foreground: 220 25% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 90%;
+    --input: 220 15% 92%;
+    --ring: 4 82% 56%;
+
+    --radius: 1rem;
+
+    /* Custom tokens */
+    --glow-primary: 4 82% 56%;
+    --surface-elevated: 0 0% 96%;
+    --surface-glass: 0 0% 100%;
+    --text-muted: 220 10% 40%;
+    --success: 142 76% 45%;
+    --warning: 38 92% 50%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(4 82% 56%) 0%, hsl(350 80% 45%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(220 20% 98%) 0%, hsl(220 20% 95%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(220 15% 98%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsla(4 82% 56% / 0.1) 0%, hsla(0 0% 100% / 0.9) 50%);
+
+    /* Shadows */
+    --shadow-glow: 0 0 40px hsla(4, 82%, 56%, 0.2);
+    --shadow-card: 0 10px 40px hsla(220, 20%, 10%, 0.05);
+    --shadow-elevated: 0 20px 50px hsla(220, 20%, 10%, 0.1);
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 25% 10%;
+    --sidebar-primary: 4 82% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 96%;
+    --sidebar-accent-foreground: 220 25% 10%;
+    --sidebar-border: 220 15% 90%;
+    --sidebar-ring: 4 82% 56%;
+  }
+
+  .dark {
     /* MKARIM SOLUTION - Tech/Gaming Dark Theme */
     --background: 220 20% 7%;
     --foreground: 0 0% 98%;
@@ -16,11 +78,9 @@
     --popover: 220 18% 10%;
     --popover-foreground: 0 0% 98%;
 
-    /* Brand Red */
     --primary: 4 82% 56%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Slate */
     --secondary: 220 15% 15%;
     --secondary-foreground: 0 0% 95%;
 
@@ -37,18 +97,13 @@
     --input: 220 15% 15%;
     --ring: 4 82% 56%;
 
-    --radius: 0.75rem;
-
     /* Custom tokens */
     --glow-primary: 4 82% 56%;
     --surface-elevated: 220 18% 12%;
     --surface-glass: 220 20% 8%;
     --text-muted: 220 10% 60%;
-    --success: 142 76% 45%;
-    --warning: 38 92% 50%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(4 82% 56%) 0%, hsl(350 80% 45%) 100%);
     --gradient-dark: linear-gradient(180deg, hsl(220 20% 10%) 0%, hsl(220 20% 5%) 100%);
     --gradient-card: linear-gradient(135deg, hsl(220 18% 12%) 0%, hsl(220 18% 8%) 100%);
     --gradient-hero: linear-gradient(135deg, hsla(4 82% 56% / 0.15) 0%, hsla(220 20% 7% / 0.9) 50%);
@@ -61,16 +116,9 @@
     /* Sidebar */
     --sidebar-background: 220 20% 7%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 4 82% 56%;
-    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 15% 15%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 220 15% 18%;
-    --sidebar-ring: 4 82% 56%;
-  }
-
-  .dark {
-    /* Same as root - dark by default */
   }
 }
 
@@ -219,10 +267,10 @@
 
   /* Admin Gaming Theme */
   .bg-gaming-admin {
-    background-color: #020817;
+    background-color: hsl(var(--background));
     background-image:
-      linear-gradient(rgba(155, 135, 245, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(155, 135, 245, 0.03) 1px, transparent 1px);
+      linear-gradient(hsla(var(--primary) / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--primary) / 0.03) 1px, transparent 1px);
     background-size: 40px 40px;
     position: relative;
     overflow: hidden;

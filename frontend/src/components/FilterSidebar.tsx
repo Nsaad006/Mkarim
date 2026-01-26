@@ -160,18 +160,18 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
     };
 
     return (
-        <div className="flex flex-col h-full bg-zinc-950/50 backdrop-blur-xl border-r border-white/5 w-full lg:w-72">
+        <div className="flex flex-col h-full bg-background/50 backdrop-blur-xl border-r border-border w-full lg:w-72">
             {/* Header */}
-            <div className="p-6 border-b border-white/5 flex items-center justify-between sticky top-0 bg-zinc-950/80 z-20">
+            <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-background/80 z-20">
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-6 bg-primary skew-x-[-15deg]" />
-                    <h2 className="font-display font-black text-white text-lg uppercase italic tracking-tighter">Filtres</h2>
+                    <h2 className="font-display font-black text-foreground text-lg uppercase italic tracking-tighter">Filtres</h2>
                 </div>
                 <Button
                     variant="ghost"
                     size="sm"
                     onClick={resetAll}
-                    className="text-[10px] font-black text-zinc-500 hover:text-primary uppercase tracking-widest gap-2"
+                    className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-widest gap-2"
                 >
                     <RotateCcw className="w-3 h-3" />
                     Reset
@@ -182,12 +182,12 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                 <div className="space-y-8 pb-8">
 
                     {/* Price Range (Permanent Global Filter) */}
-                    <div className="pb-8 border-b border-white/5">
-                        <h3 className="px-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4">Budget de Déploiement</h3>
-                        <div className="bg-zinc-900 border border-white/5 rounded-2xl p-6 space-y-6 shadow-xl">
+                    <div className="pb-8 border-b border-border">
+                        <h3 className="px-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-4">Budget de Déploiement</h3>
+                        <div className="bg-card border border-border rounded-2xl p-6 space-y-6 shadow-xl">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest px-1">MIN (MAD)</p>
+                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest px-1">MIN (MAD)</p>
                                     <input
                                         type="number"
                                         value={priceRange[0]}
@@ -196,11 +196,11 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                                             handlePriceChange([val, priceRange[1]]);
                                             updateFilters({ ...activeFilters, minPrice: val, maxPrice: priceRange[1] });
                                         }}
-                                        className="w-full bg-zinc-950 border border-white/5 rounded-xl px-3 py-2 text-xs font-black text-white italic outline-none focus:border-primary/50"
+                                        className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs font-black text-foreground italic outline-none focus:border-primary/50"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest px-1">MAX (MAD)</p>
+                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest px-1">MAX (MAD)</p>
                                     <input
                                         type="number"
                                         value={priceRange[1]}
@@ -209,7 +209,7 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                                             handlePriceChange([priceRange[0], val]);
                                             updateFilters({ ...activeFilters, minPrice: priceRange[0], maxPrice: val });
                                         }}
-                                        className="w-full bg-zinc-950 border border-white/5 rounded-xl px-3 py-2 text-xs font-black text-white italic outline-none focus:border-primary/50"
+                                        className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs font-black text-foreground italic outline-none focus:border-primary/50"
                                     />
                                 </div>
                             </div>
@@ -227,7 +227,7 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
 
                     {/* Main Filter: Categories */}
                     <div>
-                        <h3 className="px-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4">Secteur d'Arsenal</h3>
+                        <h3 className="px-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-4">Secteur d'Arsenal</h3>
                         <div className="space-y-1">
                             {[{ id: 'all', name: 'Tous les Produits', slug: 'all', icon: 'LayoutGrid' }, ...categories].map((cat) => {
                                 const categorySlug = (cat as any).slug || cat.id;
@@ -238,11 +238,11 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                                         key={cat.id}
                                         onClick={() => updateFilters({ ...activeFilters, category: categorySlug })}
                                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${isActive
-                                            ? 'bg-primary text-white shadow-[0_0_20px_rgba(235,68,50,0.3)] translate-x-1'
-                                            : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/5'
+                                            ? 'bg-primary text-primary-foreground shadow-[0_0_20px_rgba(235,68,50,0.3)] translate-x-1'
+                                            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                                             }`}
                                     >
-                                        <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-white' : 'text-zinc-600 group-hover:text-primary'}`} />
+                                        <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-primary'}`} />
                                         <span className="text-xs font-black uppercase italic tracking-tight">{cat.name}</span>
                                     </button>
                                 );
@@ -251,17 +251,17 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                     </div>
 
                     {/* Dynamic Specs based on Category */}
-                    <div className="space-y-6 pt-4 border-t border-white/5">
-                        <h3 className="px-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2">Spécifications Tactiques</h3>
+                    <div className="space-y-6 pt-4 border-t border-border">
+                        <h3 className="px-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-2">Spécifications Tactiques</h3>
 
                         <Accordion type="multiple" className="w-full space-y-2">
                             {/* CPU Group */}
                             {dynamicSpecs.cpus.length > 0 && (
                                 <AccordionItem value="cpus" className="border-none">
-                                    <AccordionTrigger className="flex items-center gap-3 py-3 px-4 bg-zinc-900 border border-white/5 rounded-xl hover:bg-zinc-800 transition-all hover:no-underline">
+                                    <AccordionTrigger className="flex items-center gap-3 py-3 px-4 bg-muted border border-border rounded-xl hover:bg-accent transition-all hover:no-underline">
                                         <div className="flex items-center gap-3 flex-1 text-left">
                                             <LucideIcons.Cpu className="w-4 h-4 text-primary" />
-                                            <span className="text-xs font-black text-white uppercase tracking-wider">Processeurs</span>
+                                            <span className="text-xs font-black text-foreground uppercase tracking-wider">Processeurs</span>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="pt-2 px-1">
@@ -270,13 +270,13 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                                                 <div
                                                     key={cpu}
                                                     onClick={() => toggleArrayFilter('cpus', cpu)}
-                                                    className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors"
+                                                    className="flex items-center justify-between p-3 rounded-lg hover:bg-accent cursor-pointer group transition-colors"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${activeFilters.cpus?.includes(cpu) ? 'bg-primary border-primary' : 'border-white/10 group-hover:border-white/30'}`}>
-                                                            {activeFilters.cpus?.includes(cpu) && <Check className="w-3 h-3 text-white" />}
+                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${activeFilters.cpus?.includes(cpu) ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'}`}>
+                                                            {activeFilters.cpus?.includes(cpu) && <Check className="w-3 h-3 text-primary-foreground" />}
                                                         </div>
-                                                        <span className={`text-xs font-bold uppercase tracking-tight transition-colors ${activeFilters.cpus?.includes(cpu) ? 'text-white' : 'text-zinc-400'}`}>
+                                                        <span className={`text-xs font-bold uppercase tracking-tight transition-colors ${activeFilters.cpus?.includes(cpu) ? 'text-foreground' : 'text-muted-foreground'}`}>
                                                             {cpu}
                                                         </span>
                                                     </div>
@@ -290,10 +290,10 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                             {/* GPU Group */}
                             {dynamicSpecs.gpus.length > 0 && (
                                 <AccordionItem value="gpus" className="border-none">
-                                    <AccordionTrigger className="flex items-center gap-3 py-3 px-4 bg-zinc-900 border border-white/5 rounded-xl hover:bg-zinc-800 transition-all hover:no-underline">
+                                    <AccordionTrigger className="flex items-center gap-3 py-3 px-4 bg-muted border border-border rounded-xl hover:bg-accent transition-all hover:no-underline">
                                         <div className="flex items-center gap-3 flex-1 text-left">
                                             <Zap className="w-4 h-4 text-primary" />
-                                            <span className="text-xs font-black text-white uppercase tracking-wider">Graphisme (GPU)</span>
+                                            <span className="text-xs font-black text-foreground uppercase tracking-wider">Graphisme (GPU)</span>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="pt-2 px-1">
@@ -302,13 +302,13 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                                                 <div
                                                     key={gpu}
                                                     onClick={() => toggleArrayFilter('gpus', gpu)}
-                                                    className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors"
+                                                    className="flex items-center justify-between p-3 rounded-lg hover:bg-accent cursor-pointer group transition-colors"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${activeFilters.gpus?.includes(gpu) ? 'bg-primary border-primary' : 'border-white/10 group-hover:border-white/30'}`}>
-                                                            {activeFilters.gpus?.includes(gpu) && <Check className="w-3 h-3 text-white" />}
+                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${activeFilters.gpus?.includes(gpu) ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'}`}>
+                                                            {activeFilters.gpus?.includes(gpu) && <Check className="w-3 h-3 text-primary-foreground" />}
                                                         </div>
-                                                        <span className={`text-xs font-bold uppercase tracking-tight transition-colors ${activeFilters.gpus?.includes(gpu) ? 'text-white' : 'text-zinc-400'}`}>
+                                                        <span className={`text-xs font-bold uppercase tracking-tight transition-colors ${activeFilters.gpus?.includes(gpu) ? 'text-foreground' : 'text-muted-foreground'}`}>
                                                             {gpu}
                                                         </span>
                                                     </div>
@@ -322,10 +322,10 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                             {/* Other Specs (dynamic per category) */}
                             {dynamicSpecs.others.length > 0 && (
                                 <AccordionItem value="others" className="border-none">
-                                    <AccordionTrigger className="flex items-center gap-3 py-3 px-4 bg-zinc-900 border border-white/5 rounded-xl hover:bg-zinc-800 transition-all hover:no-underline">
+                                    <AccordionTrigger className="flex items-center gap-3 py-3 px-4 bg-muted border border-border rounded-xl hover:bg-accent transition-all hover:no-underline">
                                         <div className="flex items-center gap-3 flex-1 text-left">
                                             <LucideIcons.Boxes className="w-4 h-4 text-primary" />
-                                            <span className="text-xs font-black text-white uppercase tracking-wider">
+                                            <span className="text-xs font-black text-foreground uppercase tracking-wider">
                                                 {activeFilters.category === 'all' ? 'Hardware Global' : 'Filtres Avancés'}
                                             </span>
                                         </div>
@@ -336,13 +336,13 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                                                 <div
                                                     key={spec}
                                                     onClick={() => toggleArrayFilter('others', spec)}
-                                                    className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors"
+                                                    className="flex items-center justify-between p-3 rounded-lg hover:bg-accent cursor-pointer group transition-colors"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${activeFilters.others?.includes(spec) ? 'bg-primary border-primary' : 'border-white/10 group-hover:border-white/30'}`}>
-                                                            {activeFilters.others?.includes(spec) && <Check className="w-3 h-3 text-white" />}
+                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${activeFilters.others?.includes(spec) ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'}`}>
+                                                            {activeFilters.others?.includes(spec) && <Check className="w-3 h-3 text-primary-foreground" />}
                                                         </div>
-                                                        <span className={`text-[11px] font-bold uppercase tracking-tight transition-colors ${activeFilters.others?.includes(spec) ? 'text-white' : 'text-zinc-400'}`}>
+                                                        <span className={`text-[11px] font-bold uppercase tracking-tight transition-colors ${activeFilters.others?.includes(spec) ? 'text-foreground' : 'text-muted-foreground'}`}>
                                                             {spec}
                                                         </span>
                                                     </div>
@@ -361,8 +361,8 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
 
             {/* Mobile Apply Button */}
             {onClose && (
-                <div className="p-6 border-t border-white/5 bg-zinc-950/80">
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-14 rounded-xl shadow-lg" onClick={onClose}>
+                <div className="p-6 border-t border-border bg-background/80">
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest h-14 rounded-xl shadow-lg" onClick={onClose}>
                         Valider le Matériel
                     </Button>
                 </div>

@@ -51,11 +51,11 @@ const ProductDetailPage = () => {
 
   if (isProductLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950">
+      <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <main className="pt-32 flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Loader2 className="w-12 h-12 animate-spin text-primary" />
-          <p className="text-zinc-500 font-black uppercase tracking-[0.3em] text-xs">Initialisation du matériel...</p>
+          <p className="text-muted-foreground font-black uppercase tracking-[0.3em] text-xs">Initialisation du matériel...</p>
         </main>
         <Footer />
       </div>
@@ -64,13 +64,13 @@ const ProductDetailPage = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-zinc-950">
+      <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <main className="pt-32 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <h1 className="font-display text-4xl font-black text-white uppercase italic mb-6 tracking-tighter">Matériel <span className="text-primary">Introuvable</span></h1>
+            <h1 className="font-display text-4xl font-black text-foreground uppercase italic mb-6 tracking-tighter">Matériel <span className="text-primary">Introuvable</span></h1>
             <Link to="/products">
-              <Button className="bg-primary text-white font-black uppercase tracking-widest px-8 h-14 rounded-xl">Retour au Catalogue</Button>
+              <Button className="bg-primary text-primary-foreground font-black uppercase tracking-widest px-8 h-14 rounded-xl">Retour au Catalogue</Button>
             </Link>
           </div>
         </main>
@@ -89,14 +89,14 @@ const ProductDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 selection:bg-primary selection:text-white">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-white">
       <Navbar />
       <main className="pt-24 lg:pt-32">
         <div className="container-custom py-8 lg:py-16">
           {/* Breadcrumb */}
           <Link
             to="/products"
-            className="inline-flex items-center gap-3 text-zinc-500 hover:text-white mb-10 transition-colors font-black uppercase tracking-[0.2em] text-[10px]"
+            className="inline-flex items-center gap-3 text-muted-foreground hover:text-foreground mb-10 transition-colors font-black uppercase tracking-[0.2em] text-[10px]"
           >
             <ArrowLeft className="w-4 h-4 text-primary" />
             Retour au Catalogue
@@ -127,27 +127,27 @@ const ProductDetailPage = () => {
               className="space-y-10"
             >
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-zinc-900 border border-white/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-4 skew-x-[-12deg]">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-muted border border-border text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-4 skew-x-[-12deg]">
                   <span className="skew-x-[12deg]">{product.category?.name || product.categoryId.replace("-", " ")}</span>
                 </div>
-                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-white italic tracking-tighter leading-[0.9] mb-6">
+                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground italic tracking-tighter leading-[0.9] mb-6 uppercase">
                   {product.name}
                 </h1>
-                <p className="text-zinc-400 text-lg font-medium leading-relaxed max-w-xl">
+                <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-xl">
                   {product.description}
                 </p>
               </div>
 
               {/* Price & Stock */}
-              <div className="flex flex-wrap items-center gap-8 bg-zinc-900/50 backdrop-blur-md p-8 rounded-3xl border border-white/5 relative overflow-hidden group">
+              <div className="flex flex-wrap items-center gap-8 bg-card backdrop-blur-md p-8 rounded-3xl border border-border relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-colors" />
                 <div className="relative z-10">
                   <div className="flex items-baseline gap-4 mb-2">
-                    <span className="text-5xl font-black text-white italic tracking-tighter">
+                    <span className="text-5xl font-black text-foreground italic tracking-tighter">
                       {product.price.toLocaleString()} <span className="text-primary text-2xl not-italic underline decoration-primary/50 decoration-4 underline-offset-8 ml-1">{currency}</span>
                     </span>
                     {product.originalPrice && (
-                      <span className="text-2xl text-zinc-600 line-through font-bold tracking-tighter">
+                      <span className="text-2xl text-muted-foreground/60 line-through font-bold tracking-tighter">
                         {product.originalPrice.toLocaleString()} {currency}
                       </span>
                     )}
@@ -169,7 +169,7 @@ const ProductDetailPage = () => {
                   <>
                     <Button
                       size="lg"
-                      className="flex-[1.5] bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-xl"
+                      className="flex-[1.5] bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-xl"
                       onClick={handleOrderNow}
                       disabled={!product.inStock}
                     >
@@ -178,7 +178,7 @@ const ProductDetailPage = () => {
                     <Button
                       size="lg"
                       variant="outline"
-                      className="flex-1 border-white/10 text-white hover:bg-white/5 font-black uppercase tracking-widest h-16 rounded-2xl active:scale-95 italic text-lg"
+                      className="flex-1 border-border text-foreground hover:bg-accent font-black uppercase tracking-widest h-16 rounded-2xl active:scale-95 italic text-lg"
                       onClick={handleAddToCart}
                       disabled={!product.inStock}
                     >
@@ -191,12 +191,12 @@ const ProductDetailPage = () => {
               {/* Specs */}
               {product.specs && product.specs.length > 0 && (
                 <div className="space-y-4 pt-4">
-                  <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] ml-2">SPECIFICATIONS TECHNIQUES</h3>
+                  <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-2">SPECIFICATIONS TECHNIQUES</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {product.specs.map((spec, index) => (
-                      <div key={index} className="flex items-center gap-4 bg-zinc-950 border border-white/5 p-4 rounded-xl group hover:border-primary/30 transition-colors duration-300">
+                      <div key={index} className="flex items-center gap-4 bg-muted/50 border border-border p-4 rounded-xl group hover:border-primary/30 transition-colors duration-300">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                        <span className="text-sm font-bold text-zinc-300 uppercase tracking-tight">{spec}</span>
+                        <span className="text-sm font-bold text-foreground uppercase tracking-tight">{spec}</span>
                       </div>
                     ))}
                   </div>
@@ -204,7 +204,7 @@ const ProductDetailPage = () => {
               )}
 
               {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-6 pt-10 border-t border-white/5">
+              <div className="grid grid-cols-3 gap-6 pt-10 border-t border-border">
                 {[
                   { icon: Truck, label: "EXPRESS LOGISTICS", sub: "24-72H MAROC" },
                   { icon: ShieldCheck, label: "CERTIFIED GEAR", sub: "FULL WARRANTY" },
@@ -213,8 +213,8 @@ const ProductDetailPage = () => {
                   <div key={i} className="flex flex-col items-center text-center gap-3">
                     <badge.icon className="w-6 h-6 text-primary" />
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black text-white tracking-[0.1em]">{badge.label}</p>
-                      <p className="text-[8px] font-bold text-zinc-500 tracking-[0.05em]">{badge.sub}</p>
+                      <p className="text-[10px] font-black text-foreground tracking-[0.1em]">{badge.label}</p>
+                      <p className="text-[8px] font-bold text-muted-foreground tracking-[0.05em]">{badge.sub}</p>
                     </div>
                   </div>
                 ))}
@@ -224,12 +224,12 @@ const ProductDetailPage = () => {
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <section className="mt-32 pt-16 border-t border-white/5">
+            <section className="mt-32 pt-16 border-t border-border">
               <div className="flex items-center justify-between mb-12">
-                <h2 className="font-display text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase">
+                <h2 className="font-display text-3xl md:text-5xl font-black text-foreground italic tracking-tighter uppercase">
                   UNITÉS <span className="text-primary">SIMILAIRES</span>
                 </h2>
-                <Link to="/products" className="text-[10px] font-black text-zinc-500 hover:text-primary uppercase tracking-[0.2em] transition-colors border-b border-zinc-800 hover:border-primary pb-1">
+                <Link to="/products" className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-[0.2em] transition-colors border-b border-border hover:border-primary pb-1">
                   VOIR CATALOGUE COMPLET
                 </Link>
               </div>

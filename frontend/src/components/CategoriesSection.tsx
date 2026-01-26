@@ -131,13 +131,13 @@ const CategoriesSection = () => {
                     >
                       <Link
                         to={`/products?category=${category.slug}`}
-                        className="relative flex flex-col items-center justify-center p-4 md:p-6 rounded-xl bg-zinc-900/50 border border-white/5 hover:border-primary/50 transition-all duration-300 overflow-hidden h-full aspect-square"
+                        className="relative flex flex-col items-center justify-center p-4 md:p-6 rounded-xl bg-card/50 border border-border hover:border-primary/50 transition-all duration-300 overflow-hidden h-full aspect-square"
                       >
                         {/* Hover Background Glow */}
                         <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-500" />
 
-                        <div className="relative z-10 w-10 h-10 md:w-14 md:h-14 mb-3 rounded-xl bg-zinc-800 flex items-center justify-center border border-white/10 group-hover:bg-primary group-hover:border-primary group-hover:rotate-6 transition-all duration-500 shadow-lg">
-                          <IconComponent className="w-5 h-5 md:w-7 md:h-7 text-primary group-hover:text-white transition-colors duration-500" />
+                        <div className="relative z-10 w-10 h-10 md:w-14 md:h-14 mb-3 rounded-xl bg-muted flex items-center justify-center border border-border group-hover:bg-primary group-hover:border-primary group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                          <IconComponent className="w-5 h-5 md:w-7 md:h-7 text-primary group-hover:text-primary-foreground transition-colors duration-500" />
                         </div>
 
                         <h3 className="relative z-10 font-bold text-[10px] md:text-sm text-center group-hover:text-primary transition-colors duration-300 line-clamp-1 uppercase tracking-tight">

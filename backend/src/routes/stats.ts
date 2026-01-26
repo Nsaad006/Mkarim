@@ -11,7 +11,7 @@ router.get('/summary', async (req: Request, res: Response) => {
             prisma.product.count({ where: { inStock: true } }),
             prisma.category.count({ where: { active: true } }),
             prisma.city.count(),
-            prisma.order.groupBy({ by: ['phone'] }).then(res => res.length)
+            prisma.customer.count()
         ]);
 
         res.json({
@@ -228,7 +228,7 @@ router.get('/analytics', authenticate, authorize(['super_admin', 'editor', 'view
             prisma.order.count({ where: { status: 'PENDING' } }),
             prisma.order.count({ where: { status: 'DELIVERED' } }),
             prisma.product.count(),
-            prisma.order.groupBy({ by: ['phone'] }).then(res => res.length), // Approx unique customers
+            prisma.customer.count(),
             prisma.city.count()
         ]);
 

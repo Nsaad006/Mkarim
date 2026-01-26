@@ -204,33 +204,33 @@ const ProductsPage = () => {
   }, [filters, searchParam]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 selection:bg-primary selection:text-white">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-white">
       <Navbar />
       <main className="pt-24 lg:pt-32">
         {/* Simplified Header */}
-        <section className="relative py-8 lg:py-12 border-b border-white/5">
+        <section className="relative py-8 lg:py-12 border-b border-border">
           <div className="container-custom relative z-10">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1.5 h-6 bg-primary skew-x-[-15deg]" />
-                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em]">ARSYENAL MKARIM</span>
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">ARSYENAL MKARIM</span>
                 </div>
-                <h1 className="font-display text-5xl md:text-6xl font-black text-white italic uppercase tracking-tighter">
+                <h1 className="font-display text-5xl md:text-6xl font-black text-foreground italic uppercase tracking-tighter">
                   Catalogue <span className="text-primary tracking-tight">Tech</span>
                 </h1>
               </div>
-              <div className="flex items-center gap-4 bg-zinc-900/50 p-4 rounded-2xl border border-white/5">
+              <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border">
                 <div className="text-right hidden sm:block">
-                  <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">ARTICLES TROUVÉS</p>
-                  <p className="text-xl font-black text-white italic tracking-tighter">{sortedProducts.length}</p>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">ARTICLES TROUVÉS</p>
+                  <p className="text-xl font-black text-foreground italic tracking-tighter">{sortedProducts.length}</p>
                 </div>
-                <div className="w-[1px] h-8 bg-white/10 hidden sm:block" />
+                <div className="w-[1px] h-8 bg-border hidden sm:block" />
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-48 bg-zinc-950 border-white/5 text-white font-bold uppercase tracking-wider h-12">
+                  <SelectTrigger className="w-48 bg-background border-border text-foreground font-bold uppercase tracking-wider h-12">
                     <SelectValue placeholder="Trier par" />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-950 border-white/10 text-white">
+                  <SelectContent className="bg-card border-border text-foreground">
                     <SelectItem value="featured">Recommandés</SelectItem>
                     <SelectItem value="price-asc">Prix croissant</SelectItem>
                     <SelectItem value="price-desc">Prix décroissant</SelectItem>
@@ -261,7 +261,7 @@ const ProductsPage = () => {
             <div className="lg:hidden">
               <Sheet open={showFilters} onOpenChange={setShowFilters}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="w-full h-14 bg-zinc-900 border-white/5 text-white font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl">
+                  <Button variant="outline" className="w-full h-14 bg-card border-border text-foreground font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl">
                     <SlidersHorizontal className="w-5 h-5 mr-3 text-primary" />
                     UNITÉ DE FILTRAGE
                   </Button>
@@ -289,7 +289,7 @@ const ProductsPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="flex flex-wrap gap-2 items-center"
                   >
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mr-2">ACTIF:</span>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mr-2">ACTIF:</span>
                     {activeFilterChips.map((chip) => (
                       <motion.div
                         key={`${chip.type}-${chip.value}`}
@@ -319,7 +319,7 @@ const ProductsPage = () => {
                         maxPrice: 100000,
                         inStockOnly: false
                       })}
-                      className="text-[10px] font-black text-zinc-600 hover:text-white uppercase tracking-widest ml-2 transition-colors underline underline-offset-4"
+                      className="text-[10px] font-black text-muted-foreground hover:text-foreground uppercase tracking-widest ml-2 transition-colors underline underline-offset-4"
                     >
                       Réinitialiser tout
                     </button>
@@ -329,12 +329,12 @@ const ProductsPage = () => {
 
               {/* Products Area */}
               {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-32 gap-6 bg-zinc-900/20 rounded-3xl border border-white/5">
+                <div className="flex flex-col items-center justify-center py-32 gap-6 bg-muted/20 rounded-3xl border border-border">
                   <div className="relative">
                     <Loader2 className="w-16 h-16 animate-spin text-primary" />
                     <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
                   </div>
-                  <p className="text-zinc-500 font-black uppercase tracking-[0.4em] text-xs">Synchronisation du catalogue...</p>
+                  <p className="text-muted-foreground font-black uppercase tracking-[0.4em] text-xs">Synchronisation du catalogue...</p>
                 </div>
               ) : sortedProducts.length > 0 ? (
                 <>
@@ -359,7 +359,7 @@ const ProductsPage = () => {
                           <PaginationItem>
                             <PaginationPrevious
                               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                              className={`cursor-pointer bg-zinc-900 border-white/5 text-white hover:bg-zinc-800 hover:text-primary ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              className={`cursor-pointer bg-card border-border text-foreground hover:bg-accent hover:text-primary ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                             />
                           </PaginationItem>
 
@@ -376,8 +376,8 @@ const ProductsPage = () => {
                                     onClick={() => setCurrentPage(page)}
                                     isActive={currentPage === page}
                                     className={`cursor-pointer ${currentPage === page
-                                      ? 'bg-primary text-white hover:bg-primary/90'
-                                      : 'bg-zinc-900 border-white/5 text-white hover:bg-zinc-800 hover:text-primary'
+                                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                      : 'bg-card border-border text-foreground hover:bg-accent hover:text-primary'
                                       }`}
                                   >
                                     {page}
@@ -387,7 +387,7 @@ const ProductsPage = () => {
                             } else if (page === currentPage - 2 || page === currentPage + 2) {
                               return (
                                 <PaginationItem key={page}>
-                                  <PaginationEllipsis className="text-zinc-600" />
+                                  <PaginationEllipsis className="text-muted-foreground" />
                                 </PaginationItem>
                               );
                             }
@@ -397,7 +397,7 @@ const ProductsPage = () => {
                           <PaginationItem>
                             <PaginationNext
                               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                              className={`cursor-pointer bg-zinc-900 border-white/5 text-white hover:bg-zinc-800 hover:text-primary ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              className={`cursor-pointer bg-card border-border text-foreground hover:bg-accent hover:text-primary ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
                             />
                           </PaginationItem>
                         </PaginationContent>
@@ -409,13 +409,13 @@ const ProductsPage = () => {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-center py-40 bg-zinc-900/20 rounded-3xl border border-dashed border-white/10"
+                  className="text-center py-40 bg-muted/20 rounded-3xl border border-dashed border-border"
                 >
-                  <Search className="w-16 h-16 text-zinc-800 mx-auto mb-6" />
-                  <h3 className="font-display text-2xl font-black text-white italic uppercase tracking-tighter mb-2">
+                  <Search className="w-16 h-16 text-muted-foreground/30 mx-auto mb-6" />
+                  <h3 className="font-display text-2xl font-black text-foreground italic uppercase tracking-tighter mb-2">
                     Aucune Correspondance
                   </h3>
-                  <p className="text-zinc-500 font-medium max-w-xs mx-auto mb-8">
+                  <p className="text-muted-foreground font-medium max-w-xs mx-auto mb-8">
                     Le matériel spécifié n'est pas disponible dans notre arsenal actuel.
                   </p>
                   <Button
@@ -430,7 +430,7 @@ const ProductsPage = () => {
                       maxPrice: 100000,
                       inStockOnly: false
                     })}
-                    className="border-white/10 text-white hover:bg-white/5 font-black uppercase tracking-widest h-12 rounded-xl"
+                    className="border-border text-foreground hover:bg-accent font-black uppercase tracking-widest h-12 rounded-xl"
                   >
                     Réinitialiser les paramètres
                   </Button>

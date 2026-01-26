@@ -74,7 +74,7 @@ export const HeroCarousel = () => {
             stopAutoplay();
             autoplayId = setInterval(() => {
                 emblaApi.scrollNext();
-            }, 5000);
+            }, 4000);
         };
 
         const stopAutoplay = () => {
@@ -110,150 +110,152 @@ export const HeroCarousel = () => {
     }, [emblaApi, onSelect]);
 
     return (
-        <div className="relative h-[85vh] sm:h-[90vh] md:h-screen w-full overflow-hidden bg-background pt-16 md:pt-20">
-            <div className="overflow-hidden h-full" ref={emblaRef}>
-                <div className="flex h-full">
-                    {slides.map((slide, index) => (
-                        <div key={index} className="relative flex-[0_0_100%] min-w-0 h-full">
-                            {/* Background Image with Overlay */}
-                            <div className="absolute inset-0 z-0">
-                                <img
-                                    src={slide.image}
-                                    alt={slide.title}
-                                    className="w-full h-full object-cover transition-transform duration-[10000ms] scale-105 hover:scale-100"
-                                />
-                                <div className={`absolute inset-0 bg-gradient-to-r ${slide.color || 'from-background/80'} via-background/80 to-background/40 z-10`} />
-                                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
-                            </div>
+        <div className="dark">
+            <div className="relative h-[85vh] sm:h-[90vh] md:h-screen w-full overflow-hidden bg-[#070708] pt-16 md:pt-20">
+                <div className="overflow-hidden h-full" ref={emblaRef}>
+                    <div className="flex h-full">
+                        {slides.map((slide, index) => (
+                            <div key={index} className="relative flex-[0_0_100%] min-w-0 h-full">
+                                {/* Background Image with Overlay */}
+                                <div className="absolute inset-0 z-0">
+                                    <img
+                                        src={slide.image}
+                                        alt={slide.title}
+                                        className="w-full h-full object-cover transition-transform duration-[10s] scale-105 hover:scale-100"
+                                    />
+                                    <div className={`absolute inset-0 bg-gradient-to-r ${slide.color || 'from-[#070708]/80'} via-[#070708]/80 to-[#070708]/40 z-10`} />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#070708] via-transparent to-transparent z-10" />
+                                </div>
 
-                            {/* Content */}
-                            <div className="container-custom relative z-20 h-full flex items-center justify-start">
-                                <div className="max-w-3xl text-left">
-                                    <AnimatePresence mode="wait">
-                                        {selectedIndex === index && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: 20 }}
-                                                transition={{ duration: 0.6, ease: "easeOut" }}
-                                            >
-                                                <div className="flex items-center justify-start gap-4 mb-6">
-                                                    {slide.badge && (
-                                                        <div className="relative group">
-                                                            <div className="absolute inset-0 bg-primary blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                            <span className="relative px-4 py-1.5 bg-primary text-white text-[10px] md:text-xs font-black uppercase tracking-[0.2em] rounded-sm transform -skew-x-12 inline-block border-l-4 border-white">
-                                                                <span className="transform skew-x-12 inline-block">
-                                                                    {slide.badge}
+                                {/* Content */}
+                                <div className="container-custom relative z-20 h-full flex items-center justify-start">
+                                    <div className="max-w-3xl text-left">
+                                        <AnimatePresence mode="wait">
+                                            {selectedIndex === index && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: 20 }}
+                                                    transition={{ duration: 0.6, ease: "easeOut" }}
+                                                >
+                                                    <div className="flex items-center justify-start gap-4 mb-6">
+                                                        {slide.badge && (
+                                                            <div className="relative group">
+                                                                <div className="absolute inset-0 bg-primary blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                                <span className="relative px-4 py-1.5 bg-primary text-white text-[10px] md:text-xs font-black uppercase tracking-[0.2em] rounded-sm transform -skew-x-12 inline-block border-l-4 border-white">
+                                                                    <span className="transform skew-x-12 inline-block">
+                                                                        {slide.badge}
+                                                                    </span>
                                                                 </span>
+                                                            </div>
+                                                        )}
+                                                        {slide.subtitle && (
+                                                            <span className="text-zinc-100 tracking-[0.2em] text-[10px] md:text-xs uppercase bg-zinc-800 px-2 py-0.5 rounded">
+                                                                {slide.subtitle}
                                                             </span>
-                                                        </div>
+                                                        )}
+                                                    </div>
+
+                                                    <h1 className="font-display text-4xl md:text-7xl lg:text-8xl font-black mb-6 leading-[1.1] tracking-tight text-white drop-shadow-2xl">
+                                                        {slide.title.split(' ').map((word, i) => (
+                                                            <span key={i} className={i === 1 ? "text-primary block md:inline" : ""}>
+                                                                {word}{' '}
+                                                            </span>
+                                                        ))}
+                                                    </h1>
+
+                                                    {slide.description && (
+                                                        <p className="text-base md:text-xl text-zinc-400 mb-8 max-w-xl leading-relaxed font-medium">
+                                                            {slide.description}
+                                                        </p>
                                                     )}
-                                                    {slide.subtitle && (
-                                                        <span className="text-zinc-100 font-bold tracking-[0.2em] text-[10px] md:text-xs uppercase bg-white/5 px-2 py-0.5 rounded">
-                                                            {slide.subtitle}
-                                                        </span>
-                                                    )}
-                                                </div>
 
-                                                <h1 className="font-display text-4xl md:text-7xl lg:text-8xl font-black mb-6 leading-[1.1] tracking-tight text-white drop-shadow-2xl">
-                                                    {slide.title.split(' ').map((word, i) => (
-                                                        <span key={i} className={i === 1 ? "text-primary block md:inline" : ""}>
-                                                            {word}{' '}
-                                                        </span>
-                                                    ))}
-                                                </h1>
+                                                    <div className="flex flex-col sm:flex-row gap-4 mb-12 items-start justify-start">
+                                                        <Link to={slide.buttonLink} className="w-full sm:w-auto">
+                                                            <Button size="lg" className="h-12 md:h-14 px-8 text-base md:text-lg font-bold btn-glow glow-primary w-full sm:w-auto">
+                                                                {slide.buttonText}
+                                                                <ArrowRight className="ml-2 w-5 h-5" />
+                                                            </Button>
+                                                        </Link>
+                                                        <Link to="/products" className="w-full sm:w-auto">
+                                                            <Button size="lg" variant="outline" className="h-12 md:h-14 px-8 text-base md:text-lg font-medium border-zinc-800 bg-zinc-900/50 text-zinc-100 hover:bg-zinc-800 w-full sm:w-auto">
+                                                                Découvrir la Boutique
+                                                            </Button>
+                                                        </Link>
+                                                    </div>
 
-                                                {slide.description && (
-                                                    <p className="text-base md:text-xl text-zinc-200 mb-8 max-w-xl leading-relaxed font-medium">
-                                                        {slide.description}
-                                                    </p>
-                                                )}
-
-                                                <div className="flex flex-col sm:flex-row gap-4 mb-12 items-start justify-start">
-                                                    <Link to={slide.buttonLink} className="w-full sm:w-auto">
-                                                        <Button size="lg" className="h-12 md:h-14 px-8 text-base md:text-lg font-bold btn-glow glow-primary w-full sm:w-auto">
-                                                            {slide.buttonText}
-                                                            <ArrowRight className="ml-2 w-5 h-5" />
-                                                        </Button>
-                                                    </Link>
-                                                    <Link to="/products" className="w-full sm:w-auto">
-                                                        <Button size="lg" variant="outline" className="h-12 md:h-14 px-8 text-base md:text-lg font-medium border-zinc-700 hover:bg-zinc-800 w-full sm:w-auto">
-                                                            Découvrir la Boutique
-                                                        </Button>
-                                                    </Link>
-                                                </div>
-
-                                                {/* Slide features */}
-                                                <div className="hidden md:flex items-center gap-8 border-t border-white/10 pt-8 mt-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                                                            <Zap className="w-5 h-5 text-yellow-500" />
+                                                    {/* Slide features */}
+                                                    <div className="hidden md:flex items-center gap-8 border-t border-zinc-800 pt-8 mt-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                                                                <Zap className="w-5 h-5 text-yellow-500" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-zinc-100 text-sm font-bold">Livraison Rapide</p>
+                                                                <p className="text-zinc-400 text-xs">Partout au Maroc</p>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <p className="text-white text-sm font-bold">Livraison Rapide</p>
-                                                            <p className="text-zinc-500 text-xs">Partout au Maroc</p>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                                                                <ShieldCheck className="w-5 h-5 text-green-500" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-zinc-100 text-sm font-bold">Garantie 1 an</p>
+                                                                <p className="text-zinc-400 text-xs">Support 24/7</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                                                                <Trophy className="w-5 h-5 text-primary" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-zinc-100 text-sm font-bold">Qualité Premium</p>
+                                                                <p className="text-zinc-400 text-xs">Marques Officielles</p>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                                                            <ShieldCheck className="w-5 h-5 text-green-500" />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-white text-sm font-bold">Garantie 1 an</p>
-                                                            <p className="text-zinc-500 text-xs">Support 24/7</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                                                            <Trophy className="w-5 h-5 text-primary" />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-white text-sm font-bold">Qualité Premium</p>
-                                                            <p className="text-zinc-500 text-xs">Marques Officielles</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="hidden md:flex absolute bottom-10 right-10 z-30 gap-4">
+                    <button
+                        onClick={scrollPrev}
+                        className="w-12 h-12 rounded-full border border-zinc-800 bg-[#070708]/50 backdrop-blur-md flex items-center justify-center text-zinc-100 hover:bg-primary hover:text-white hover:border-primary transition-all group"
+                    >
+                        <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+                    </button>
+                    <button
+                        onClick={scrollNext}
+                        className="w-12 h-12 rounded-full border border-zinc-800 bg-[#070708]/50 backdrop-blur-md flex items-center justify-center text-zinc-100 hover:bg-primary hover:text-white hover:border-primary transition-all group"
+                    >
+                        <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                </div>
+
+                {/* Pagination indicators */}
+                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+                    {slides.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => emblaApi?.scrollTo(index)}
+                            className={`h-1.5 transition-all duration-300 rounded-full ${selectedIndex === index ? 'w-10 bg-primary' : 'bg-zinc-800/50 hover:bg-zinc-800 w-2'
+                                }`}
+                        />
                     ))}
                 </div>
-            </div>
 
-            {/* Navigation Buttons */}
-            <div className="hidden md:flex absolute bottom-10 right-10 z-30 gap-4">
-                <button
-                    onClick={scrollPrev}
-                    className="w-12 h-12 rounded-full border border-white/10 bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-primary hover:border-primary transition-all group"
-                >
-                    <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
-                </button>
-                <button
-                    onClick={scrollNext}
-                    className="w-12 h-12 rounded-full border border-white/10 bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-primary hover:border-primary transition-all group"
-                >
-                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                </button>
+                {/* Decorative element */}
+                <div className="absolute top-1/4 -right-20 w-96 h-96 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+                <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
             </div>
-
-            {/* Pagination indicators */}
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 flex gap-3">
-                {slides.map((_, index) => (
-                    <button
-                        key={index}
-                        onClick={() => emblaApi?.scrollTo(index)}
-                        className={`h-1.5 transition-all duration-300 rounded-full ${selectedIndex === index ? 'w-10 bg-primary' : 'w-2 bg-white/20 hover:bg-white/40'
-                            }`}
-                    />
-                ))}
-            </div>
-
-            {/* Decorative element */}
-            <div className="absolute top-1/4 -right-20 w-96 h-96 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
         </div>
     );
 };

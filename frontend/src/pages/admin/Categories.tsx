@@ -189,7 +189,7 @@ const Categories = () => {
                                             const target = aliases[normalized] || normalized;
                                             const foundKey = Object.keys(LucideIcons).find(key => key.toLowerCase() === target);
                                             const Icon = foundKey ? (LucideIcons as any)[foundKey] : null;
-                                            return Icon ? <Icon className="w-5 h-5 text-zinc-400" /> : <div className="w-5 h-5 bg-zinc-800 rounded-md border border-white/5" />;
+                                            return Icon ? <Icon className="w-5 h-5 text-muted-foreground" /> : <div className="w-5 h-5 bg-muted rounded-md border border-border" />;
                                         })()}
                                     </div>
                                 </TableCell>
@@ -260,10 +260,10 @@ const Categories = () => {
                                         placeholder="Ex: Laptop, Smartphone, Gamepad2"
                                     />
                                 </div>
-                                <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-muted border border-border flex items-center justify-center">
                                     {(() => {
                                         const iconName = formData.icon;
-                                        if (!iconName) return <div className="w-1 h-3 bg-white/5" />;
+                                        if (!iconName) return <div className="w-1 h-3 bg-border" />;
                                         const normalized = iconName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
                                         const aliases: Record<string, string> = {

@@ -60,7 +60,7 @@ const WhyChooseUs = () => {
             <h2 className="font-display text-3xl md:text-5xl font-black mb-4 tracking-tight uppercase px-4">
               {sectionTitle}
             </h2>
-            <p className="text-zinc-100 max-w-2xl mx-auto text-base md:text-lg px-6 font-medium">
+            <p className="text-foreground/80 max-w-2xl mx-auto text-base md:text-lg px-6 font-medium">
               {sectionSubtitle}
             </p>
           </motion.div>
@@ -75,12 +75,12 @@ const WhyChooseUs = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -5, scale: 1.02 }}
-              className="relative p-5 md:p-8 rounded-xl md:rounded-2xl bg-zinc-900/40 border border-white/5 backdrop-blur-sm group hover:border-primary/50 transition-all duration-500 overflow-hidden"
+              className="relative p-5 md:p-8 rounded-xl md:rounded-2xl bg-card/40 border border-border backdrop-blur-sm group hover:border-primary/50 transition-all duration-500 overflow-hidden"
             >
               {/* Background Glow */}
               <div className="absolute -right-10 -top-10 w-32 h-32 bg-primary/10 blur-3xl rounded-full group-hover:bg-primary/20 transition-colors duration-500" />
 
-              <div className="relative z-10 w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-zinc-800 border border-white/10 flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-500 shadow-xl">
+              <div className="relative z-10 w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-muted border border-border flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-500 shadow-xl">
                 <feature.icon className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </div>
 
