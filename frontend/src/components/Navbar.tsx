@@ -90,23 +90,58 @@ const Navbar = () => {
         <div className="container-custom">
           <div className="flex items-center h-16 md:h-24 relative">
 
-            {/* Left Section: Nav Links */}
-            <div className="hidden md:flex flex-1 items-center gap-6 lg:gap-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className="group relative px-2 py-1 overflow-hidden"
+            {/* Left Section: Search & Nav Links */}
+            <div className="flex flex-1 items-center gap-2 md:gap-6">
+              {/* Search Block - Now on the left for all views */}
+              <div ref={searchRef} className={`relative flex items-center transition-all duration-300 ${isSearchOpen ? "w-32 md:w-48" : "w-10"}`}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative z-10 text-muted-foreground hover:text-foreground"
+                  onClick={handleButtonClick}
                 >
-                  <span className="text-[10px] lg:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-foreground transition-colors">
-                    {link.name}
-                  </span>
-                  <motion.div
-                    className="absolute bottom-0 left-0 w-full h-[1px] bg-primary origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
-                  />
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity" />
-                </Link>
-              ))}
+                  <Search className="w-5 h-5" />
+                </Button>
+                <AnimatePresence>
+                  {isSearchOpen && (
+                    <motion.form
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      onSubmit={handleSearch}
+                      className="absolute left-0 flex items-center w-full"
+                    >
+                      <input
+                        type="text"
+                        autoFocus
+                        placeholder="RECHERCHE..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-card border border-border rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:border-primary/50 text-[10px] font-bold text-foreground tracking-widest uppercase"
+                      />
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Desktop-only Nav Links */}
+              <div className="hidden md:flex items-center gap-6 lg:gap-8">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className="group relative px-2 py-1 overflow-hidden"
+                  >
+                    <span className="text-[10px] lg:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-foreground transition-colors">
+                      {link.name}
+                    </span>
+                    <motion.div
+                      className="absolute bottom-0 left-0 w-full h-[1px] bg-primary origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+                    />
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </Link>
+                ))}
+              </div>
             </div>
 
             {/* Center Section: Logo */}
@@ -131,37 +166,6 @@ const Navbar = () => {
 
             {/* Right Section: Actions */}
             <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
-              <div ref={searchRef} className={`relative flex items-center justify-end transition-all duration-300 ${isSearchOpen ? "w-32 lg:w-48" : "w-10"}`}>
-                <AnimatePresence>
-                  {isSearchOpen && (
-                    <motion.form
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      onSubmit={handleSearch}
-                      className="absolute right-0 flex items-center w-full"
-                    >
-                      <input
-                        type="text"
-                        autoFocus
-                        placeholder="RECHERCHE..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-card border border-border rounded-lg py-2 pl-4 pr-10 focus:outline-none focus:border-primary/50 text-[10px] font-bold text-foreground tracking-widest uppercase"
-                      />
-                    </motion.form>
-                  )}
-                </AnimatePresence>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative z-10 text-muted-foreground hover:text-foreground"
-                  onClick={handleButtonClick}
-                >
-                  <Search className="w-5 h-5" />
-                </Button>
-              </div>
-
               {/* Theme Toggle Button */}
               <Button
                 variant="ghost"
@@ -172,7 +176,7 @@ const Navbar = () => {
                 {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
 
-              <Link to="/cart" className="relative group p-2">
+              <Link to="/cart" className="hidden md:block relative group p-2">
                 <motion.div
                   animate={isPulsing ? {
                     scale: [1, 1.3, 1],
@@ -282,6 +286,36 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Mobile Floating Cart Bubble */}
+      <div className="md:hidden fixed bottom-6 right-6 z-[60]">
+        <Link to="/cart">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            whileTap={{ scale: 0.9 }}
+            className="relative w-16 h-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-[0_10px_30px_rgba(235,68,50,0.4)] border border-white/20 skew-x-[-4deg]"
+          >
+            <motion.div
+              animate={isPulsing ? {
+                scale: [1, 1.3, 1],
+                rotate: [0, 15, -15, 0],
+              } : {}}
+            >
+              <ShoppingCart className="w-7 h-7" />
+            </motion.div>
+
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-white text-primary text-[11px] font-black rounded-lg w-7 h-7 flex items-center justify-center shadow-lg border-2 border-primary skew-x-[4deg]">
+                {cartCount}
+              </span>
+            )}
+
+            {/* Pulsing Ring Effect */}
+            <div className="absolute inset-0 rounded-2xl border-2 border-primary animate-ping opacity-20" />
+          </motion.div>
+        </Link>
+      </div>
+
     </nav>
   );
 };
