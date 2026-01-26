@@ -13,12 +13,12 @@ const createOrderSchema = z.object({
     items: z.array(z.object({
         productId: z.string(),
         quantity: z.number().int().positive()
-    })).min(1),
-    customerName: z.string().min(2),
-    email: z.string().email().optional().or(z.literal('')),  // Optional email
-    phone: z.string().regex(phoneRegex, 'Invalid Moroccan phone number'),
-    city: z.string().min(2),
-    address: z.string().min(5)
+    })).min(1, 'Votre panier est vide'),
+    customerName: z.string().min(2, "Merci de saisir votre nom complet (min 2 caractères)"),
+    email: z.string().email("Merci de saisir une adresse email valide"),
+    phone: z.string().regex(phoneRegex, 'Merci de saisir un numéro de téléphone marocain valide (Ex: 06XXXXXXXX)'),
+    city: z.string().min(2, "Merci de sélectionner votre ville"),
+    address: z.string().min(5, "Merci de saisir votre adresse complète (min 5 caractères)")
 });
 
 // Generate order number

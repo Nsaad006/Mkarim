@@ -20,10 +20,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     addItem(product);
-    toast({
-      title: "MATÉRIEL AJOUTÉ",
-      description: `${product.name} est prêt pour déploiement.`,
-    });
   };
 
   const discount = product.originalPrice

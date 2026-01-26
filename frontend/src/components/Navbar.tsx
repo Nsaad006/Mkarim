@@ -20,8 +20,17 @@ const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { getItemCount } = useCart();
+  const { getItemCount, lastAddedTime } = useCart();
   const cartCount = getItemCount();
+  const [isPulsing, setIsPulsing] = useState(false);
+
+  useEffect(() => {
+    if (lastAddedTime > 0) {
+      setIsPulsing(true);
+      const timer = setTimeout(() => setIsPulsing(false), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [lastAddedTime]);
 
   const { data: settings } = useQuery({
     queryKey: ['settings'],
@@ -133,15 +142,37 @@ const Navbar = () => {
                 <Search className="w-5 h-5" />
               </Button>
             </div>
-            <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon">
-                <ShoppingCart className="w-6 h-6" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartCount}
-                  </span>
+            <Link to="/cart" className="relative group">
+              <motion.div
+                animate={isPulsing ? {
+                  scale: [1, 1.3, 1],
+                  rotate: [0, 10, -10, 0],
+                } : {}}
+                transition={{ duration: 0.5 }}
+              >
+                <Button variant="ghost" size="icon" className="relative hover:bg-primary/10 transition-colors">
+                  <ShoppingCart className={`w-6 h-6 transition-colors ${isPulsing ? 'text-primary' : ''}`} />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center shadow-[0_0_10px_rgba(235,68,50,0.5)] border-2 border-zinc-950">
+                      {cartCount}
+                    </span>
+                  )}
+                </Button>
+              </motion.div>
+
+              {/* +1 Animation */}
+              <AnimatePresence>
+                {isPulsing && (
+                  <motion.span
+                    initial={{ opacity: 0, y: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, y: -40, scale: 1.2 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute top-0 right-0 text-primary font-black italic pointer-events-none text-sm z-50 pointer-events-none"
+                  >
+                    +1
+                  </motion.span>
                 )}
-              </Button>
+              </AnimatePresence>
             </Link>
             <a href={`tel:${whatsappNumber.replace(/\s+/g, "")}`} className="hidden md:flex">
               <Button variant="outline" size="sm" className="gap-2">

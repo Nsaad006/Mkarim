@@ -46,26 +46,26 @@ const CartPage = () => {
     return (
         <div className="min-h-screen bg-zinc-950 flex flex-col selection:bg-primary selection:text-white">
             <Navbar />
-            <div className="container mx-auto px-4 pt-24 lg:pt-32 pb-32 flex-1">
-                <div className="flex items-center gap-4 mb-8 lg:mb-12">
-                    <div className="w-1.5 h-8 lg:w-2 lg:h-10 bg-primary skew-x-[-15deg]" />
-                    <h1 className="font-display text-3xl lg:text-6xl font-black text-white italic uppercase tracking-tighter">Votre <span className="text-primary">Panier</span></h1>
+            <div className="container-custom pt-24 lg:pt-32 pb-40 lg:pb-32 flex-1">
+                <div className="flex items-center gap-3 lg:gap-4 mb-6 lg:mb-12">
+                    <div className="w-1 h-6 lg:w-2 lg:h-10 bg-primary skew-x-[-15deg]" />
+                    <h1 className="font-display text-2xl lg:text-6xl font-black text-white italic uppercase tracking-tighter">Votre <span className="text-primary">Panier</span></h1>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
                     {/* Cart Items */}
-                    <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+                    <div className="lg:col-span-2 space-y-3 lg:space-y-6">
                         {state.items.map((item) => (
                             <motion.div
                                 key={item.product.id}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, x: -50 }}
-                                className="bg-zinc-900/50 backdrop-blur-xl rounded-2xl p-4 lg:p-6 border border-white/5 group hover:border-primary/30 transition-all duration-300"
+                                className="bg-zinc-900/40 backdrop-blur-xl rounded-xl lg:rounded-2xl p-3 lg:p-6 border border-white/5 group hover:border-primary/30 transition-all duration-300"
                             >
-                                <div className="flex flex-row gap-4 lg:gap-8">
+                                <div className="flex flex-row gap-3 lg:gap-8">
                                     {/* Product Image */}
-                                    <div className="w-20 h-20 lg:w-32 lg:h-32 rounded-xl lg:rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 flex-shrink-0 group-hover:border-primary/50 transition-colors">
+                                    <div className="w-16 h-16 lg:w-32 lg:h-32 rounded-lg lg:rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 flex-shrink-0 group-hover:border-primary/50 transition-colors">
                                         <img
                                             src={getImageUrl(item.product.image)}
                                             alt={item.product.name}
@@ -75,42 +75,40 @@ const CartPage = () => {
 
                                     {/* Product Info */}
                                     <div className="flex-1 flex flex-col justify-between min-w-0">
-                                        <div>
-                                            <div className="flex justify-between items-start gap-2">
-                                                <div className="min-w-0">
-                                                    <h3 className="font-display text-base lg:text-2xl font-black text-white italic tracking-tighter uppercase leading-tight truncate">{item.product.name}</h3>
-                                                    <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em] mt-1 lg:mt-2">
-                                                        {item.product.category?.name || item.product.categoryId?.replace("-", " ") || "MATÉRIEL"}
-                                                    </p>
-                                                </div>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => removeItem(item.product.id)}
-                                                    className="text-zinc-500 hover:text-primary hover:bg-primary/10 rounded-xl h-8 w-8 lg:h-10 lg:w-10 flex-shrink-0"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                        <div className="flex justify-between items-start gap-2">
+                                            <div className="min-w-0">
+                                                <h3 className="font-display text-sm lg:text-2xl font-black text-white italic tracking-tighter uppercase leading-tight truncate">{item.product.name}</h3>
+                                                <p className="text-[8px] lg:text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em] mt-0.5 lg:mt-2">
+                                                    {item.product.category?.name || item.product.categoryId?.replace("-", " ") || "MATÉRIEL"}
+                                                </p>
                                             </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => removeItem(item.product.id)}
+                                                className="text-zinc-600 hover:text-primary hover:bg-primary/10 rounded-lg h-7 w-7 lg:h-10 lg:w-10 flex-shrink-0"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </Button>
                                         </div>
 
-                                        <div className="flex items-center justify-between mt-4 lg:mt-6">
+                                        <div className="flex items-center justify-between mt-2 lg:mt-6">
                                             {/* Quantity Controls */}
                                             <div className="flex items-center gap-1 bg-zinc-950 rounded-lg lg:rounded-xl p-0.5 lg:p-1 border border-white/5">
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-7 w-7 lg:h-8 lg:w-8 text-white hover:bg-white/5 active:scale-95"
+                                                    className="h-6 w-6 lg:h-8 lg:w-8 text-white hover:bg-white/5 active:scale-95"
                                                     onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                                                     disabled={item.quantity <= 1}
                                                 >
                                                     <Minus className="w-3 h-3 lg:w-4 lg:h-4" />
                                                 </Button>
-                                                <span className="w-8 lg:w-10 text-center text-xs lg:text-sm font-black text-white italic">{item.quantity}</span>
+                                                <span className="w-6 lg:w-10 text-center text-[11px] lg:text-sm font-black text-white italic">{item.quantity}</span>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-7 w-7 lg:h-8 lg:w-8 text-white hover:bg-white/5 active:scale-95"
+                                                    className="h-6 w-6 lg:h-8 lg:w-8 text-white hover:bg-white/5 active:scale-95"
                                                     onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                                                 >
                                                     <Plus className="w-3 h-3 lg:w-4 lg:h-4" />
@@ -119,8 +117,8 @@ const CartPage = () => {
 
                                             {/* Price */}
                                             <div className="text-right">
-                                                <p className="text-xl lg:text-3xl font-black text-primary italic tracking-tighter">
-                                                    {(item.product.price * item.quantity).toLocaleString()} <span className="text-[10px] lg:text-xs not-italic text-zinc-500">{currency}</span>
+                                                <p className="text-lg lg:text-3xl font-black text-primary italic tracking-tight">
+                                                    {(item.product.price * item.quantity).toLocaleString()} <span className="text-[9px] lg:text-xs not-italic text-zinc-500">{currency}</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -153,8 +151,14 @@ const CartPage = () => {
                             </div>
 
                             <Link to="/checkout">
-                                <Button className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-lg mb-6" size="lg">
+                                <Button className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-lg mb-4" size="lg">
                                     Finaliser la Commande
+                                </Button>
+                            </Link>
+
+                            <Link to="/products">
+                                <Button variant="outline" className="w-full border-zinc-700 hover:bg-zinc-800 text-zinc-400 hover:text-white font-black uppercase tracking-widest h-12 rounded-xl transition-all active:scale-95 italic text-sm mb-8">
+                                    Revenir au Magasin
                                 </Button>
                             </Link>
 
@@ -175,19 +179,27 @@ const CartPage = () => {
                 </div>
 
                 {/* Sticky Mobile Summary Bar */}
-                <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-zinc-950/90 backdrop-blur-xl border-t border-white/10 p-4 sm:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center justify-between mb-4 px-2">
+                <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-zinc-950/95 backdrop-blur-xl border-t border-white/5 p-4 pb-[env(safe-area-inset-bottom,1rem)] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center justify-between mb-4 px-1">
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">Total arsenal</span>
-                            <span className="text-2xl font-black text-primary italic tracking-tighter leading-none">{getTotal().toLocaleString()} <span className="text-xs not-italic text-zinc-500">{currency}</span></span>
+                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest leading-none mb-1">Total arsenal</span>
+                            <span className="text-xl font-black text-primary italic tracking-tighter leading-none">{getTotal().toLocaleString()} <span className="text-[10px] not-italic text-zinc-500">{currency}</span></span>
                         </div>
-                        <span className="text-[9px] font-black text-green-500 uppercase italic tracking-tighter bg-green-500/10 px-2 py-1 rounded">Logistique incluse</span>
+                        <span className="text-[8px] font-black text-green-500 uppercase italic tracking-tighter bg-green-500/10 px-2 py-1 rounded">Logistique incluse</span>
                     </div>
-                    <Link to="/checkout" className="block w-full">
-                        <Button className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-14 rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all italic text-base">
-                            FINALISER LA COMMANDE
-                        </Button>
-                    </Link>
+
+                    <div className="flex flex-col gap-2">
+                        <Link to="/checkout" className="block w-full">
+                            <Button className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-14 rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all italic text-base">
+                                FINALISER LA COMMANDE
+                            </Button>
+                        </Link>
+                        <Link to="/products" className="block w-full">
+                            <Button variant="ghost" className="w-full text-zinc-600 hover:text-white font-black uppercase tracking-widest h-8 rounded-xl transition-all active:scale-95 italic text-[10px]">
+                                REVENIR AU MAGASIN
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
             <Footer />

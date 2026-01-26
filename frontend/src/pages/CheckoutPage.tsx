@@ -64,6 +64,8 @@ const CheckoutPage = () => {
     address: "",
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   // Redirect if cart is empty
   if (cartState.items.length === 0) {
     return (
@@ -85,18 +87,49 @@ const CheckoutPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
 
-    // Validate phone number
-    const phoneRegex = /^(\+212|0)[5-7]\d{8}$/;
-    if (!phoneRegex.test(formData.phone.replace(/\s/g, ""))) {
-      toast({
-        title: "Numéro invalide",
-        description: "Veuillez entrer un numéro de téléphone marocain valide.",
-        variant: "destructive",
-      });
+    // Custom Validation
+    if (!formData.fullName || formData.fullName.trim().length < 2) {
+      newErrors.fullName = "Champ obligatoire";
+    }
+
+    if (!formData.phone) {
+      newErrors.phone = "Champ obligatoire";
+    } else {
+      // Validate phone number format
+      const phoneRegex = /^(\+212|0)[5-7]\d{8}$/;
+      if (!phoneRegex.test(formData.phone.replace(/\s/g, ""))) {
+        newErrors.phone = "Numéro invalide (Ex: 06XXXXXXXX)";
+      }
+    }
+
+    if (!formData.city) {
+      newErrors.city = "Champ obligatoire";
+    }
+
+    if (!formData.address || formData.address.trim().length < 5) {
+      newErrors.address = "Champ obligatoire";
+    }
+
+    if (!formData.email) {
+      newErrors.email = "Champ obligatoire";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Email invalide";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Scroll to the first error
+      const firstError = Object.keys(newErrors)[0];
+      const element = document.getElementById(firstError);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
 
+    setErrors({});
     setIsSubmitting(true);
 
     try {
@@ -156,72 +189,96 @@ const CheckoutPage = () => {
   return (
     <div className="min-h-screen bg-zinc-950 selection:bg-primary selection:text-white">
       <Navbar />
-      <div className="container mx-auto px-4 pt-32 pb-24">
+      <div className="container-custom pt-24 lg:pt-32 pb-24">
         <Button
           variant="ghost"
           onClick={() => navigate("/cart")}
-          className="mb-10 gap-3 text-zinc-500 hover:text-white transition-colors font-black uppercase tracking-[0.2em] text-[10px]"
+          className="mb-6 lg:mb-10 gap-3 text-zinc-600 hover:text-white transition-colors font-black uppercase tracking-[0.2em] text-[10px]"
         >
           <ArrowLeft className="w-4 h-4 text-primary" />
           Retour au Panier
         </Button>
 
-        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
-          {/* Checkout Form */}
-          <div className="lg:col-span-2 order-1">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-12">
+          {/* Main Checkout Section */}
+          <div className="lg:col-span-2 space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-zinc-900/50 backdrop-blur-xl rounded-2xl md:rounded-3xl p-6 md:p-12 border border-white/5 shadow-2xl"
+              className="bg-zinc-900/40 backdrop-blur-xl rounded-2xl lg:rounded-3xl p-5 lg:p-12 border border-white/5 shadow-2xl"
             >
-              <div className="flex items-center gap-4 mb-8 md:mb-10 border-b border-white/5 pb-6 md:pb-8">
-                <div className="w-1.5 h-8 md:w-2 md:h-10 bg-primary skew-x-[-15deg]" />
-                <h1 className="font-display text-2xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">Finaliser <span className="text-primary tracking-tight">le Transfert</span></h1>
+              <div className="flex items-center gap-4 mb-8 lg:mb-10 border-b border-white/5 pb-5 lg:pb-8">
+                <div className="w-1 h-8 lg:w-2 lg:h-10 bg-primary skew-x-[-15deg]" />
+                <h1 className="font-display text-2xl lg:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
+                  Finaliser <span className="text-primary tracking-tight">VOTRE COMMANDE</span>
+                </h1>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                  <div className="space-y-2 md:space-y-3">
-                    <Label htmlFor="fullName" className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+              <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-8">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
                       <User className="w-3.5 h-3.5 text-primary" />
-                      Nom complet de l'opérateur
+                      Nom complet
                     </Label>
                     <Input
                       id="fullName"
-                      required
                       value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      placeholder="Ex: Omar Alami"
-                      className="bg-zinc-950 border-white/5 text-white h-12 md:h-14 rounded-xl focus:border-primary/50 transition-all font-bold placeholder:text-zinc-700"
+                      onChange={(e) => {
+                        setFormData({ ...formData, fullName: e.target.value });
+                        if (errors.fullName) setErrors({ ...errors, fullName: "" });
+                      }}
+                      placeholder="Votre nom et prénom"
+                      className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-zinc-700 ${errors.fullName ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                        }`}
                     />
+                    {errors.fullName && (
+                      <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.fullName}</p>
+                    )}
                   </div>
 
-                  <div className="space-y-2 md:space-y-3">
-                    <Label htmlFor="phone" className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
                       <Phone className="w-3.5 h-3.5 text-primary" />
-                      Numéro de liaison
+                      Téléphone
                     </Label>
                     <Input
                       id="phone"
                       type="tel"
-                      required
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, phone: e.target.value });
+                        if (errors.phone) setErrors({ ...errors, phone: "" });
+                      }}
                       placeholder="06 XX XX XX XX"
-                      className="bg-zinc-950 border-white/5 text-white h-12 md:h-14 rounded-xl focus:border-primary/50 transition-all font-bold placeholder:text-zinc-700"
+                      className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-zinc-700 ${errors.phone ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                        }`}
                     />
+                    {errors.phone && (
+                      <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.phone}</p>
+                    )}
                   </div>
 
-                  <div className="space-y-2 md:space-y-3">
-                    <Label htmlFor="city" className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
                       <MapPin className="w-3.5 h-3.5 text-primary" />
-                      Secteur de Déploiement
+                      Ville de livraison
                     </Label>
-                    <Select value={formData.city} onValueChange={(value) => setFormData({ ...formData, city: value })}>
-                      <SelectTrigger className="bg-zinc-950 border-white/5 text-white h-12 md:h-14 rounded-xl focus:border-primary/50 transition-all font-bold uppercase tracking-wider">
-                        <SelectValue placeholder="Choisir la ville" />
+                    <Select
+                      value={formData.city}
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, city: value });
+                        if (errors.city) setErrors({ ...errors, city: "" });
+                      }}
+                    >
+                      <SelectTrigger
+                        id="city"
+                        className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold uppercase tracking-wider ${errors.city ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                          }`}
+                      >
+                        <SelectValue placeholder="Sélectionner votre ville" />
                       </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                      <SelectContent className="bg-zinc-950 border-white/10 text-white">
                         {cities.map((city) => (
                           <SelectItem key={city.id} value={city.name} className="focus:bg-white/5 uppercase tracking-wide font-black text-[10px] cursor-pointer">
                             {city.name} — {city.shippingFee} {currency}
@@ -229,51 +286,65 @@ const CheckoutPage = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {errors.city && (
+                      <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.city}</p>
+                    )}
                   </div>
 
-                  <div className="space-y-2 md:space-y-3">
-                    <Label htmlFor="address" className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+                  <div className="space-y-2">
+                    <Label htmlFor="address" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
                       <Home className="w-3.5 h-3.5 text-primary" />
-                      Coordonnées de Livraison
+                      Adresse complète
                     </Label>
                     <Input
                       id="address"
-                      required
                       value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="Quartier, rue, numéro..."
-                      className="bg-zinc-950 border-white/5 text-white h-12 md:h-14 rounded-xl focus:border-primary/50 transition-all font-bold placeholder:text-zinc-700"
+                      onChange={(e) => {
+                        setFormData({ ...formData, address: e.target.value });
+                        if (errors.address) setErrors({ ...errors, address: "" });
+                      }}
+                      placeholder="Quartier, rue, appartement..."
+                      className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-zinc-700 ${errors.address ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                        }`}
                     />
+                    {errors.address && (
+                      <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.address}</p>
+                    )}
                   </div>
                 </div>
 
-                <div className="space-y-2 md:space-y-3">
-                  <Label htmlFor="email" className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-[11px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2 px-1">
                     <Mail className="w-3.5 h-3.5 text-primary" />
-                    Email pour le rapport (Optionnel)
+                    Adresse Email
                   </Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      if (errors.email) setErrors({ ...errors, email: "" });
+                    }}
                     placeholder="votre@email.com"
-                    className="bg-zinc-950 border-white/5 text-white h-12 md:h-14 rounded-xl focus:border-primary/50 transition-all font-bold placeholder:text-zinc-700"
+                    className={`bg-zinc-950/50 text-white h-13 lg:h-14 rounded-xl transition-all font-bold placeholder:text-zinc-700 ${errors.email ? "border-red-500 focus:border-red-500" : "border-white/10 focus:border-primary/50"
+                      }`}
                   />
+                  {errors.email && (
+                    <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.email}</p>
+                  )}
                 </div>
 
-                <div className="lg:hidden bg-zinc-950/50 rounded-2xl p-4 border border-white/5 mb-6">
-                  <div className="flex justify-between items-end">
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total à régler</span>
-                    <span className="text-3xl font-black text-primary italic tracking-tighter">{total.toLocaleString()} <span className="text-xs not-italic font-bold">{currency}</span></span>
-                  </div>
-                </div>
-
-                <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-14 md:h-16 rounded-xl md:rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-lg md:text-xl mt-4" size="lg" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-15 lg:h-16 rounded-xl lg:rounded-2xl shadow-[0_10px_30px_rgba(235,68,50,0.3)] hover:shadow-[0_10px_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-lg lg:text-xl mt-4"
+                  size="lg"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                      VERIFICATION...
+                      ENVOI EN COURS...
                     </>
                   ) : (
                     <>
@@ -286,57 +357,58 @@ const CheckoutPage = () => {
             </motion.div>
           </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1 order-2 lg:order-2">
-            <div className="bg-zinc-900 border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 sticky top-32 shadow-2xl relative overflow-hidden group">
+          {/* Totals Section */}
+          <div className="lg:col-span-1">
+            <div className="bg-zinc-900 border border-white/10 rounded-2xl lg:rounded-3xl p-5 lg:p-8 lg:sticky lg:top-32 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
 
-              <h2 className="font-display text-xl md:text-2xl font-black text-white italic uppercase tracking-tighter mb-6 md:mb-8 border-b border-white/5 pb-4">Résumé Tactique</h2>
+              <h2 className="font-display text-lg lg:text-2xl font-black text-white italic uppercase tracking-tighter mb-5 border-b border-white/5 pb-3">Récapitulatif</h2>
 
-              <div className="space-y-4 mb-8 md:mb-10">
-                <div className="max-h-48 md:max-h-64 overflow-y-auto pr-2 space-y-3 md:space-y-4 mb-4 md:mb-6 custom-scrollbar">
+              <div className="space-y-4">
+                <div className="max-h-40 lg:max-h-none overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                   {cartState.items.map((item) => (
-                    <div key={item.product.id} className="flex justify-between items-start gap-3 md:gap-4">
+                    <div key={item.product.id} className="flex justify-between items-start gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] md:text-xs font-black text-white uppercase italic tracking-tight line-clamp-1 truncate">{item.product.name}</p>
-                        <p className="text-[9px] md:text-[10px] font-black text-zinc-500 uppercase tracking-widest mt-0.5 md:mt-1">x{item.quantity}</p>
+                        <p className="text-[11px] lg:text-xs font-black text-white uppercase italic tracking-tight line-clamp-2">{item.product.name}</p>
+                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mt-1">x{item.quantity}</p>
                       </div>
-                      <span className="font-bold text-zinc-300 text-[10px] md:text-xs flex-shrink-0">
+                      <span className="font-bold text-zinc-400 text-[11px] lg:text-xs font-mono">
                         {(item.product.price * item.quantity).toLocaleString()} {currency}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-2 md:space-y-3 pt-4 md:pt-6 border-t border-white/5">
+                <div className="space-y-2 pt-5 border-t border-white/5">
                   <div className="flex justify-between items-center text-[10px] font-bold">
-                    <span className="text-zinc-500 uppercase tracking-widest">SOUS-TOTAL</span>
-                    <span className="text-zinc-200">{getTotal().toLocaleString()} {currency}</span>
+                    <span className="text-zinc-600 uppercase tracking-widest">SOUS-TOTAL</span>
+                    <span className="text-zinc-400">{getTotal().toLocaleString()} {currency}</span>
                   </div>
 
                   <div className="flex justify-between items-center text-[10px] font-bold">
-                    <span className="text-zinc-500 uppercase tracking-widest">LOGISTIQUE</span>
-                    <span className={`uppercase italic ${shippingFee === 0 && formData.city ? 'text-green-500 font-black' : 'text-zinc-200'}`}>
-                      {shippingFee > 0 ? `+${shippingFee} ${currency}` : shippingFee === 0 && formData.city ? 'OFFERTE' : '—'}
+                    <span className="text-zinc-600 uppercase tracking-widest">LIVRAISON</span>
+                    <span className={`uppercase italic font-black ${shippingFee === 0 && formData.city ? 'text-green-500' : 'text-zinc-400'}`}>
+                      {shippingFee > 0 ? `+${shippingFee} ${currency}` : shippingFee === 0 && formData.city ? 'OFFERTE' : 'À définir'}
                     </span>
                   </div>
 
-                  <div className="pt-4 md:pt-6 mt-2 md:mt-4 border-t border-white/10 flex justify-between items-end">
-                    <span className="font-display text-lg md:text-xl font-black text-white italic uppercase tracking-tighter leading-none">Total Net</span>
-                    <span className="text-3xl md:text-4xl font-black text-primary italic tracking-tighter leading-none">{total.toLocaleString()} <span className="text-xs md:text-sm not-italic font-bold">{currency}</span></span>
+                  <div className="pt-5 mt-2 border-t border-white/10 flex justify-between items-end">
+                    <span className="font-display text-lg lg:text-2xl font-black text-white italic uppercase tracking-tighter leading-none">Total Net</span>
+                    <span className="text-3xl lg:text-4xl font-black text-primary italic tracking-tighter leading-none">
+                      {total.toLocaleString()} <span className="text-[10px] lg:text-sm not-italic font-bold">{currency}</span>
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-green-500/10 border border-green-500/20 rounded-xl md:rounded-2xl p-4 md:p-6 relative overflow-hidden">
-                <div className="flex items-center gap-2 md:gap-3 text-green-500 mb-1 md:mb-2 relative z-10">
-                  <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 shadow-[0_0_10px_currentColor]" />
-                  <span className="font-black uppercase tracking-widest italic text-[9px] md:text-xs">PAIEMENT CASH A LA LIVRAISON</span>
+                <div className="mt-6 bg-green-500/5 border border-green-500/10 rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-green-500 mb-1">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="font-black uppercase tracking-widest italic text-[9px]">PAIEMENT À LA LIVRAISON</span>
+                  </div>
+                  <p className="text-[8px] font-bold text-green-500/50 uppercase leading-tight">
+                    Réglez en espèces lors de la réception de votre matériel.
+                  </p>
                 </div>
-                <p className="text-[8px] md:text-[10px] font-bold text-green-500/70 uppercase tracking-wider relative z-10 leading-tight">
-                  Réglez votre matériel en toute sécurité dès réception à domicile.
-                </p>
-                <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full -mr-12 -mt-12 blur-xl" />
               </div>
             </div>
           </div>

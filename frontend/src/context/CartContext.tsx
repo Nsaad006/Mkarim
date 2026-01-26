@@ -25,6 +25,7 @@ interface CartContextType {
     clearCart: () => void;
     getTotal: () => number;
     getItemCount: () => number;
+    lastAddedTime: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -39,7 +40,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
             );
 
             if (existingItemIndex > -1) {
-                const newItems = [...state.items];
+                const newItems = JSON.parse(JSON.stringify(state.items)); // Deep copy to trigger state update
                 newItems[existingItemIndex].quantity += 1;
                 return { items: newItems };
             }
@@ -76,6 +77,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [state, dispatch] = useReducer(cartReducer, { items: [] });
+    const [lastAddedTime, setLastAddedTime] = React.useState(0);
 
     // Load cart from localStorage on mount
     useEffect(() => {
@@ -97,6 +99,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const addItem = (product: Product) => {
         dispatch({ type: 'ADD_ITEM', product });
+        setLastAddedTime(Date.now());
     };
 
     const removeItem = (productId: string) => {
@@ -129,6 +132,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 clearCart,
                 getTotal,
                 getItemCount,
+                lastAddedTime,
             }}
         >
             {children}

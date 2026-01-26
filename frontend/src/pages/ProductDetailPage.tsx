@@ -82,10 +82,6 @@ const ProductDetailPage = () => {
   const handleAddToCart = () => {
     if (!product) return;
     addItem(product);
-    toast({
-      title: "Matériel Ajouté",
-      description: `${product.name} est dans votre panier.`,
-    });
   };
 
   const handleOrderNow = () => {
