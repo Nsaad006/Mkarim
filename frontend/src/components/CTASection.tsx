@@ -19,11 +19,15 @@ const CTASection = () => {
   const secondaryBtnLink = settings?.ctaSecondaryBtnLink || "/contact";
 
   return (
-    <section className="py-24 relative overflow-hidden bg-background">
+    <section className="py-12 md:py-24 relative overflow-hidden bg-background">
       {/* Dynamic Background */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(235,68,50,0.1),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+        <img
+          src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2670&auto=format&fit=crop"
+          alt="Gaming Setup"
+          className="w-full h-full object-cover opacity-20"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background" />
       </div>
 
       {/* Decorative Border Glow */}
@@ -31,7 +35,7 @@ const CTASection = () => {
       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent shadow-[0_0_20px_rgba(235,68,50,0.5)]" />
 
       <div className="container-custom relative z-10 px-4 md:px-0">
-        <div className="max-w-4xl mx-auto backdrop-blur-md rounded-2xl md:rounded-3xl border border-border bg-card/60 p-6 md:p-16 text-center shadow-2xl">
+        <div className="max-w-4xl mx-auto backdrop-blur-md rounded-2xl md:rounded-3xl border border-border bg-card/60 p-5 md:p-16 text-center shadow-2xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}

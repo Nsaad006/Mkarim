@@ -18,6 +18,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { citiesApi } from "@/api/cities";
@@ -211,6 +212,9 @@ const Cities = () => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>{selectedCity ? "Modifier Ville" : "Ajouter Ville"}</DialogTitle>
+                        <DialogDescription>
+                            Configurez les options de livraison pour cette ville.
+                        </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSave} className="space-y-4 py-4">
                         <div className="space-y-2">

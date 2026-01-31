@@ -66,7 +66,7 @@ const CategoriesSection = () => {
           </motion.div>
         </div>
 
-        <div className="px-4 md:px-12">
+        <div className="px-12 md:px-16">
           <Carousel
             opts={{
               align: "start",
@@ -153,8 +153,8 @@ const CategoriesSection = () => {
                 )
               })}
             </CarouselContent>
-            <CarouselPrevious className="-left-4 md:-left-12" />
-            <CarouselNext className="-right-4 md:-right-12" />
+            <CarouselPrevious className="-left-12 md:-left-16" />
+            <CarouselNext className="-right-12 md:-right-16" />
           </Carousel>
         </div>
       </div>

@@ -10,7 +10,10 @@ import {
   X,
   ChevronRight,
   ChevronLeft,
-  Search
+  Search,
+  Package,
+  LayoutGrid,
+  Sparkles
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { FilterSidebar } from "@/components/FilterSidebar";
 import {
   Pagination,
@@ -265,23 +268,56 @@ const ProductsPage = () => {
                   Catalogue <span className="text-primary tracking-tight">Tech</span>
                 </h1>
               </div>
-              <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border">
-                <div className="text-right hidden sm:block">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">ARTICLES TROUVÉS</p>
-                  <p className="text-xl font-black text-foreground italic tracking-tighter">{sortedProducts.length}</p>
+
+
+              {/* Desktop Count Card */}
+              <div className="hidden lg:block relative group overflow-hidden bg-card/50 backdrop-blur-xl p-1 rounded-2xl border border-border shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative flex items-center gap-4 px-6 py-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:border-primary/50 group-hover:scale-110 transition-all duration-300">
+                    <Package className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex flex-col">
+                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">Articles Trouvés</p>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-2xl font-black text-foreground italic tracking-tighter shadow-sm">{sortedProducts.length}</span>
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Items</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="w-[1px] h-8 bg-border hidden sm:block" />
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-48 bg-background border-border text-foreground font-bold uppercase tracking-wider h-12">
-                    <SelectValue placeholder="Trier par" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border text-foreground">
-                    <SelectItem value="featured">Recommandés</SelectItem>
-                    <SelectItem value="price-asc">Prix croissant</SelectItem>
-                    <SelectItem value="price-desc">Prix décroissant</SelectItem>
-                    <SelectItem value="name">Nom A-Z</SelectItem>
-                  </SelectContent>
-                </Select>
+              </div>
+
+              {/* Mobile Count Card */}
+              <div className="lg:hidden w-full relative overflow-hidden bg-card/50 backdrop-blur-xl rounded-2xl border border-border">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+
+                <div className="relative p-5 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-background to-muted border border-border flex items-center justify-center shadow-inner">
+                      <LayoutGrid className="w-6 h-6 text-foreground" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Sparkles className="w-3 h-3 text-primary animate-pulse" />
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Catalogue</span>
+                      </div>
+                      <h3 className="text-xl font-black text-foreground italic tracking-tighter">
+                        {sortedProducts.length} <span className="text-sm text-muted-foreground not-italic font-bold">Produits</span>
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Decorative line */}
+                  <div className="h-8 w-[1px] bg-border skew-x-[-15deg]" />
+
+                  <div className="text-right">
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-1">Status</span>
+                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 border border-green-500/20">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-[9px] font-bold text-green-500 uppercase">En Ligne</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -299,6 +335,8 @@ const ProductsPage = () => {
                   activeFilters={filters}
                   updateFilters={setFilters}
                   expand={true}
+                  currentSort={sortBy}
+                  onSortChange={setSortBy}
                 />
               </div>
             </aside>
@@ -315,12 +353,16 @@ const ProductsPage = () => {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 bg-transparent border-none w-[300px] sm:w-[350px]">
+                  <SheetTitle className="sr-only">Filtres</SheetTitle>
+                  <SheetDescription className="sr-only">Options de filtrage pour le catalogue produits</SheetDescription>
                   <FilterSidebar
                     products={allProducts}
                     categories={categories}
                     activeFilters={filters}
                     updateFilters={setFilters}
                     onClose={() => setShowFilters(false)}
+                    currentSort={sortBy}
+                    onSortChange={setSortBy}
                   />
                 </SheetContent>
               </Sheet>
@@ -510,7 +552,7 @@ const ProductsPage = () => {
         </div>
       </main>
       <Footer />
-    </div>
+    </div >
   );
 };
 

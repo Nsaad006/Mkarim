@@ -19,6 +19,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import {
     Select,
@@ -269,6 +270,9 @@ const AdminUsers = () => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Ajouter un Administrateur</DialogTitle>
+                        <DialogDescription>
+                            Remplissez les informations ci-dessous pour créer un nouvel administrateur.
+                        </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSave} className="space-y-4 py-4">
                         <div className="space-y-2">
@@ -345,6 +349,9 @@ const AdminUsers = () => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Modifier le Rôle</DialogTitle>
+                        <DialogDescription>
+                            Modifiez le rôle et les permissions de cet utilisateur.
+                        </DialogDescription>
                     </DialogHeader>
                     {editingUser && (
                         <div className="space-y-4 py-4">

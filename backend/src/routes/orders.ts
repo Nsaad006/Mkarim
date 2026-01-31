@@ -15,7 +15,7 @@ const createOrderSchema = z.object({
         quantity: z.number().int().positive()
     })).min(1, 'Votre panier est vide'),
     customerName: z.string().min(2, "Merci de saisir votre nom complet (min 2 caractères)"),
-    email: z.string().email("Merci de saisir une adresse email valide"),
+    email: z.string().email("Merci de saisir une adresse email valide").optional().or(z.literal("")),
     phone: z.string().regex(phoneRegex, 'Merci de saisir un numéro de téléphone marocain valide (Ex: 06XXXXXXXX)'),
     city: z.string().min(2, "Merci de sélectionner votre ville"),
     address: z.string().min(5, "Merci de saisir votre adresse complète (min 5 caractères)")

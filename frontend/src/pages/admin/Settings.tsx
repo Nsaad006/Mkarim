@@ -173,6 +173,15 @@ const Settings = () => {
                             <div className="bg-card rounded-xl border border-border p-6 space-y-4">
                                 <h2 className="text-xl font-semibold border-b pb-2">Informations Générales</h2>
                                 <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="space-y-2 col-span-2">
+                                        <Label>Logo de la boutique</Label>
+                                        <div className="max-w-xs">
+                                            <ImageUpload
+                                                value={formData.logo || ""}
+                                                onChange={(url) => setFormData({ ...formData, logo: url })}
+                                            />
+                                        </div>
+                                    </div>
                                     <div className="space-y-2">
                                         <Label>Nom de la boutique</Label>
                                         <Input

@@ -92,8 +92,8 @@ export const HeroCarousel = () => {
         const onInteraction = () => {
             stopAutoplay();
             clearTimeout(resumeTimeoutId);
-            // Wait 8 seconds before restarting autoplay
-            resumeTimeoutId = setTimeout(startAutoplay, 8000);
+            // Resume after the configured interval + 2 seconds buffer
+            resumeTimeoutId = setTimeout(startAutoplay, interval + 2000);
         };
 
         onSelect();
@@ -119,7 +119,7 @@ export const HeroCarousel = () => {
 
     return (
         <div className="dark">
-            <div className="relative h-[600px] md:h-[80vh] lg:h-screen w-full overflow-hidden bg-[#070708] pt-16 md:pt-20">
+            <div className="relative h-[700px] md:h-[85vh] lg:h-screen w-full overflow-hidden bg-[#070708] pt-16 md:pt-20">
                 <div className="overflow-hidden h-full" ref={emblaRef}>
                     <div className="flex h-full">
                         {slides.map((slide, index) => (
@@ -140,7 +140,7 @@ export const HeroCarousel = () => {
                                 </div>
 
                                 {/* Content */}
-                                <div className="container-custom relative z-20 h-full flex items-center justify-start">
+                                <div className="container-custom relative z-20 h-full flex items-center justify-start py-8">
                                     <div className="max-w-3xl text-left">
                                         <AnimatePresence mode="wait">
                                             {selectedIndex === index && (
@@ -150,11 +150,11 @@ export const HeroCarousel = () => {
                                                     exit={{ opacity: 0, y: 20 }}
                                                     transition={{ duration: 0.6, ease: "easeOut" }}
                                                 >
-                                                    <div className="flex items-center justify-start gap-4 mb-4 md:mb-6">
+                                                    <div className="flex items-center justify-start gap-3 md:gap-4 mb-4 md:mb-6 flex-wrap">
                                                         {slide.badge && (
                                                             <div className="relative group">
-                                                                <div className="absolute inset-0 bg-primary blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                                <span className="relative px-3 py-1 md:px-4 md:py-1.5 bg-primary text-white text-[9px] md:text-xs font-black uppercase tracking-[0.2em] rounded-sm transform -skew-x-12 inline-block border-l-4 border-white">
+                                                                <div className="absolute inset-0 bg-primary blur-lg opacity-60 group-hover:opacity-100 transition-opacity" />
+                                                                <span className="relative px-4 py-1.5 md:px-5 md:py-2 bg-primary text-white text-xs md:text-sm font-black uppercase tracking-[0.25em] rounded-md transform -skew-x-12 inline-block border-l-4 border-white shadow-2xl">
                                                                     <span className="transform skew-x-12 inline-block">
                                                                         {slide.badge}
                                                                     </span>
@@ -162,13 +162,13 @@ export const HeroCarousel = () => {
                                                             </div>
                                                         )}
                                                         {slide.subtitle && (
-                                                            <span className="text-zinc-100 tracking-[0.2em] text-[9px] md:text-xs uppercase bg-zinc-800 px-2 py-0.5 rounded">
+                                                            <span className="text-white tracking-[0.25em] text-xs md:text-sm font-bold uppercase bg-zinc-900/90 backdrop-blur-sm px-4 py-1.5 md:px-5 md:py-2 rounded-md border border-zinc-700 shadow-lg">
                                                                 {slide.subtitle}
                                                             </span>
                                                         )}
                                                     </div>
 
-                                                    <h1 className="font-display text-2xl sm:text-3xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-[1.1] tracking-tight text-white drop-shadow-2xl">
+                                                    <h1 className="font-display text-3xl sm:text-4xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-[1.1] tracking-tight text-white" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.8), 0 0 40px rgba(0,0,0,0.5)' }}>
                                                         {slide.title.split(' ').map((word, i) => (
                                                             <span key={i} className={i === 1 ? "text-primary block md:inline" : ""}>
                                                                 {word}{' '}
@@ -177,12 +177,12 @@ export const HeroCarousel = () => {
                                                     </h1>
 
                                                     {slide.description && (
-                                                        <p className="text-sm md:text-xl text-zinc-400 mb-6 md:mb-8 max-w-xl leading-relaxed font-medium line-clamp-2 md:line-clamp-none">
+                                                        <p className="text-base md:text-xl text-white font-semibold leading-relaxed line-clamp-2 md:line-clamp-none mb-6 md:mb-8 max-w-2xl" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.8), 0 0 30px rgba(0,0,0,0.6)' }}>
                                                             {slide.description}
                                                         </p>
                                                     )}
 
-                                                    <div className="flex flex-col sm:flex-row gap-4 mb-12 items-start justify-start">
+                                                    <div className="flex flex-col sm:flex-row gap-4 mb-8 md:mb-12 items-start justify-start">
                                                         <Link to={slide.buttonLink} className="w-full sm:w-auto">
                                                             <Button variant="gaming" size="xl" className="w-full sm:w-auto px-10">
                                                                 {slide.buttonText}

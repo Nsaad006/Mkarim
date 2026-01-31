@@ -8,6 +8,7 @@ export interface GlobalSettings {
     codEnabled: boolean;
     whatsappNumber: string;
     currency: string;
+    logo?: string;
 
     // Contact Information
     contactAddress: string;

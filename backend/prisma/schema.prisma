@@ -179,6 +179,7 @@ model Settings {
   codEnabled        Boolean  @default(true)
   whatsappNumber    String   @default("+212600000000")
   currency          String   @default("DH")
+  logo              String?  @default("/uploads/logo-placeholder.png")
   
   // Contact Information
   contactAddress    String   @default("Casablanca, Maroc")

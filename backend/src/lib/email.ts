@@ -49,16 +49,17 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 
         // Create the email in RFC 822 format
         const subjectEncoded = Buffer.from(subject).toString('base64');
-        const utf8Html = Buffer.from(html, 'utf-8').toString('base64');
+        const htmlBase64 = Buffer.from(html, 'utf-8').toString('base64');
 
         const rawMessage = [
             `From: "${emailSenderName || 'Store'}" <${emailGmailUser}>`,
             `To: ${to}`,
             `Subject: =?utf-8?B?${subjectEncoded}?=`,
             'Content-Type: text/html; charset=utf-8',
+            'Content-Transfer-Encoding: base64',
             'MIME-Version: 1.0',
             '',
-            html,
+            htmlBase64,
         ].join('\n');
 
         const encodedMessage = Buffer.from(rawMessage)

@@ -8,6 +8,8 @@ import { useTheme } from "@/context/ThemeContext";
 import { useQuery } from "@tanstack/react-query";
 import { settingsApi } from "@/api/settings";
 
+import { getImageUrl } from "@/lib/image-utils";
+
 const navLinks = [
   { name: "Nos Produits", path: "/products" },
   { name: "À Propos", path: "/about" },
@@ -40,6 +42,7 @@ const Navbar = () => {
 
   const storeName = settings?.storeName || "MKARIM SOLUTION";
   const whatsappNumber = settings?.whatsappNumber || "+212 6 00 00 00 00";
+  const logo = settings?.logo;
 
   const executeSearch = () => {
     if (searchQuery.trim()) {
@@ -160,19 +163,34 @@ const Navbar = () => {
             {/* 2. CENTER ZONE: Logo - Centered but with guaranteed space */}
             <div className="flex-shrink-0 px-2 flex justify-center z-20">
               <Link to="/" className="relative flex items-center justify-center group">
-                <div className="absolute -inset-4 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500 scale-75 group-hover:scale-100" />
-                <div className="absolute -inset-1 border border-primary/20 rounded-lg skew-x-[-15deg] group-hover:border-primary/50 transition-all duration-500" />
+                {/* Background effects only if no logo image */}
+                {!logo && (
+                  <>
+                    <div className="absolute -inset-4 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500 scale-75 group-hover:scale-100" />
+                    <div className="absolute -inset-1 border border-primary/20 rounded-lg skew-x-[-15deg] group-hover:border-primary/50 transition-all duration-500" />
+                  </>
+                )}
 
-                <span className="font-display text-sm sm:text-base md:text-xl lg:text-2xl font-black italic uppercase tracking-tighter relative whitespace-nowrap">
-                  {storeName.split(" ").length > 1 ? (
-                    <>
-                      <span className="text-primary drop-shadow-[0_0_10px_rgba(235,68,50,0.5)]">{storeName.split(" ")[0]}</span>
-                      <span className="text-foreground ml-1 sm:ml-2 opacity-90">{storeName.split(" ").slice(1).join(" ")}</span>
-                    </>
-                  ) : (
-                    <span className="text-primary drop-shadow-[0_0_10px_rgba(235,68,50,0.5)]">{storeName}</span>
-                  )}
-                </span>
+                {logo ? (
+                  <motion.img
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    src={getImageUrl(logo)}
+                    alt={storeName}
+                    className="h-8 md:h-10 lg:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <span className="font-display text-sm sm:text-base md:text-xl lg:text-2xl font-black italic uppercase tracking-tighter relative whitespace-nowrap">
+                    {storeName.split(" ").length > 1 ? (
+                      <>
+                        <span className="text-primary drop-shadow-[0_0_10px_rgba(235,68,50,0.5)]">{storeName.split(" ")[0]}</span>
+                        <span className="text-foreground ml-1 sm:ml-2 opacity-90">{storeName.split(" ").slice(1).join(" ")}</span>
+                      </>
+                    ) : (
+                      <span className="text-primary drop-shadow-[0_0_10px_rgba(235,68,50,0.5)]">{storeName}</span>
+                    )}
+                  </span>
+                )}
               </Link>
             </div>
 

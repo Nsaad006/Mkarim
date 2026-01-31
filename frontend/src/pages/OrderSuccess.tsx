@@ -87,12 +87,21 @@ const OrderSuccess = () => {
                         </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button onClick={() => navigate("/")} variant="outline" size="lg" className="border-border text-foreground hover:bg-accent font-black uppercase tracking-widest px-8 h-16 rounded-2xl italic flex-1">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-lg mx-auto">
+                        <Button
+                            onClick={() => navigate("/")}
+                            variant="outline"
+                            size="xl"
+                            className="w-full sm:flex-1 border-2 border-primary/20 hover:border-primary text-foreground hover:bg-primary/5 font-black uppercase tracking-widest rounded-2xl italic"
+                        >
                             <Home className="w-5 h-5 mr-3 text-primary" />
                             RETOUR ACCUEIL
                         </Button>
-                        <Button onClick={() => navigate("/products")} size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest px-8 h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] italic flex-1">
+                        <Button
+                            onClick={() => navigate("/products")}
+                            size="xl"
+                            className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] italic"
+                        >
                             <Package className="w-5 h-5 mr-3" />
                             REVOIR LE CATALOGUE
                         </Button>

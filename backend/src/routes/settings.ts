@@ -128,6 +128,7 @@ router.put('/', authenticate, authorize(['super_admin', 'editor']), async (req: 
                 ...(req.body.homeHeroBlur !== undefined && { homeHeroBlur: Number(req.body.homeHeroBlur) }),
                 ...(req.body.homeHeroAutoPlayInterval !== undefined && { homeHeroAutoPlayInterval: Number(req.body.homeHeroAutoPlayInterval) }),
                 ...(req.body.categoriesAutoPlayInterval !== undefined && { categoriesAutoPlayInterval: Number(req.body.categoriesAutoPlayInterval) }),
+                ...(req.body.logo !== undefined && { logo: req.body.logo }),
                 ...(req.body.aboutValues !== undefined && { aboutValues: req.body.aboutValues })
             }
         });
