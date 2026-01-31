@@ -31,6 +31,9 @@ router.get('/summary', async (req: Request, res: Response) => {
 // GET /api/stats - Dashboard statistics (admin/editor/viewer)
 router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer']), async (req: Request, res: Response) => {
     try {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
         const [totalOrders, totalProducts, totalCategories, totalCities] = await Promise.all([
             prisma.order.count(),
             prisma.product.count(),
@@ -46,16 +49,101 @@ router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer']), as
             where: { status: 'CONFIRMED' }
         });
 
-        const totalRevenue = await prisma.order.aggregate({
-            _sum: {
-                total: true
-            },
-            where: {
-                status: {
-                    in: ['CONFIRMED', 'SHIPPED', 'DELIVERED']
-                }
-            }
+        const deliveredOrders = await prisma.order.count({
+            where: { status: 'DELIVERED' }
         });
+
+        // Revenue this month (MTD)
+        const [retailRevenueResult, wholesaleRevenueResult] = await Promise.all([
+            prisma.order.aggregate({
+                _sum: { total: true },
+                where: {
+                    status: { in: ['CONFIRMED', 'SHIPPED', 'DELIVERED'] },
+                    createdAt: { gte: firstDayOfMonth }
+                }
+            }),
+            prisma.wholesaleOrder.aggregate({
+                _sum: { advanceAmount: true },
+                where: {
+                    createdAt: { gte: firstDayOfMonth }
+                }
+            })
+        ]);
+
+        const totalRevenue = (retailRevenueResult._sum.total || 0) + (wholesaleRevenueResult._sum.advanceAmount || 0);
+
+        // Financial Intelligence (Admin/Editor Only)
+        const isStaff = ['super_admin', 'editor'].includes((req as any).user.role);
+        let financialStats = {};
+
+        if (isStaff) {
+            const allProducts = await prisma.product.findMany({
+                select: {
+                    id: true,
+                    quantity: true,
+                    procurements: {
+                        select: { unitCostPrice: true, quantityPurchased: true }
+                    }
+                }
+            });
+
+            // Calculate Inventory Value using Weighted Average Cost
+            let currentInventoryValue = 0;
+            const wacMap = new Map<string, number>();
+
+            allProducts.forEach(p => {
+                const totalCost = p.procurements.reduce((sum, pr) => sum + (pr.unitCostPrice * pr.quantityPurchased), 0);
+                const totalQty = p.procurements.reduce((sum, pr) => sum + pr.quantityPurchased, 0);
+                const wac = totalQty > 0 ? totalCost / totalQty : 0;
+                wacMap.set(p.id, wac);
+                currentInventoryValue += p.quantity * wac;
+            });
+
+            // Calculate Profit this month (Retail)
+            const monthOrders = await prisma.order.findMany({
+                where: {
+                    status: { in: ['CONFIRMED', 'SHIPPED', 'DELIVERED'] },
+                    createdAt: { gte: firstDayOfMonth }
+                },
+                include: { items: true }
+            });
+
+            let currentMonthProfit = 0;
+            monthOrders.forEach(order => {
+                order.items.forEach(item => {
+                    const wac = wacMap.get(item.productId) || 0;
+                    currentMonthProfit += (item.price - wac) * item.quantity;
+                });
+            });
+
+            // Calculate Profit this month (Wholesale Advances)
+            const monthWholesaleOrders = await prisma.wholesaleOrder.findMany({
+                where: { createdAt: { gte: firstDayOfMonth } },
+                include: { items: true }
+            });
+
+            monthWholesaleOrders.forEach(order => {
+                if (order.totalAmount > 0 && order.advanceAmount > 0) {
+                    let orderTotalCost = 0;
+                    order.items.forEach(item => {
+                        const wac = wacMap.get(item.productId) || 0;
+                        orderTotalCost += wac * item.quantity;
+                    });
+
+                    // Pro-rate cost based on advance percentage
+                    const paidRatio = order.advanceAmount / order.totalAmount;
+                    const proratedCost = orderTotalCost * paidRatio;
+
+                    currentMonthProfit += (order.advanceAmount - proratedCost);
+                }
+            });
+
+            financialStats = {
+                currentInventoryValue: Math.round(currentInventoryValue),
+                capitalLockedInStock: Math.round(currentInventoryValue),
+                totalProfit: Math.round(currentMonthProfit)
+            };
+        }
 
         res.json({
             totalOrders,
@@ -64,24 +152,29 @@ router.get('/', authenticate, authorize(['super_admin', 'editor', 'viewer']), as
             totalCities,
             pendingOrders,
             confirmedOrders,
-            totalRevenue: totalRevenue._sum.total || 0
+            deliveredOrders,
+            totalRevenue,
+            ...financialStats
         });
     } catch (error) {
         console.error('Error fetching stats:', error);
-        res.status(500).json({ error: 'Failed to fetch statistics' });
+        res.status(500).json({ error: 'Failed' });
     }
 });
 
 // GET /api/stats/analytics - Detailed analytics (admin/editor)
 router.get('/analytics', authenticate, authorize(['super_admin', 'editor', 'viewer']), async (req: Request, res: Response) => {
     try {
-        const { days = 30, from, to } = req.query;
+        const { days = 30, from, to, year } = req.query;
+
+        // Determine the target year for financial stats
+        const targetYear = year ? Number(year) : new Date().getFullYear();
 
         const getLocalDateString = (date: Date) => {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            return `${y}-${m}-${day}`;
         };
 
         let startDate = new Date();
@@ -232,10 +325,66 @@ router.get('/analytics', authenticate, authorize(['super_admin', 'editor', 'view
             prisma.city.count()
         ]);
 
+        // Financial Calculations
+        const isStaff = ['super_admin', 'editor'].includes((req as any).user.role);
+        let financialData = {};
+
+        if (isStaff) {
+            // Get all unique products in the orders to find their costs
+            const productIds = Array.from(productMap.keys());
+            const procurements = await prisma.procurement.findMany({
+                where: { productId: { in: productIds } }
+            });
+
+            // Map weighted average cost for each product
+            const wacMap = new Map<string, number>();
+            productIds.forEach(pid => {
+                const productProcurements = procurements.filter(p => p.productId === pid);
+                const totalCost = productProcurements.reduce((sum, p) => sum + p.totalCost, 0);
+                const totalQty = productProcurements.reduce((sum, p) => sum + p.quantityPurchased, 0);
+                wacMap.set(pid, totalQty > 0 ? totalCost / totalQty : 0);
+            });
+
+            // Calculate profit for top products and total
+            let totalProfit = 0;
+            const topProductsWithProfit = topProducts.map(p => {
+                const wac = wacMap.get(p.id) || 0;
+                const profit = p.revenue - (wac * p.sales);
+                totalProfit += profit;
+                return { ...p, profit: Math.round(profit) };
+            });
+
+            const [totalCapital, allProducts] = await Promise.all([
+                prisma.procurement.aggregate({ _sum: { totalCost: true } }),
+                prisma.product.findMany({
+                    select: {
+                        id: true,
+                        quantity: true,
+                        procurements: { select: { unitCostPrice: true, quantityPurchased: true } }
+                    }
+                })
+            ]);
+
+            let inventoryValue = 0;
+            allProducts.forEach(p => {
+                const tc = p.procurements.reduce((sum, pr) => sum + (pr.unitCostPrice * pr.quantityPurchased), 0);
+                const tq = p.procurements.reduce((sum, pr) => sum + pr.quantityPurchased, 0);
+                const w = tq > 0 ? tc / tq : 0;
+                inventoryValue += p.quantity * w;
+            });
+
+            financialData = {
+                totalProfit: Math.round(totalProfit),
+                topProducts: topProductsWithProfit,
+                currentInventoryValue: Math.round(inventoryValue),
+                capitalLockedInStock: Math.round(inventoryValue)
+            };
+        }
+
         res.json({
             revenueHistory,
             salesByCity,
-            topProducts,
+            topProducts: (financialData as any).topProducts || topProducts,
             lowStock: lowStock.map(p => ({ ...p, status: p.quantity === 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK' })),
             outOfStock,
             stats: {
@@ -245,8 +394,62 @@ router.get('/analytics', authenticate, authorize(['super_admin', 'editor', 'view
                 deliveredOrders,
                 totalProducts,
                 totalCustomers,
-                totalCities
-            }
+                totalCities,
+                ...financialData
+            },
+            monthlyStats: isStaff ? await (async () => {
+                const yearStart = new Date(targetYear, 0, 1);
+                const yearEnd = new Date(targetYear, 11, 31, 23, 59, 59);
+
+                const yearOrders = await prisma.order.findMany({
+                    where: {
+                        createdAt: {
+                            gte: yearStart,
+                            lte: yearEnd
+                        },
+                        status: { in: ['CONFIRMED', 'SHIPPED', 'DELIVERED'] }
+                    },
+                    include: { items: true }
+                });
+
+                // Get costs for all products
+                const allProcurements = await prisma.procurement.findMany();
+                const wacMap = new Map<string, number>();
+                const productIds = Array.from(new Set(allProcurements.map(p => p.productId)));
+
+                productIds.forEach(pid => {
+                    const productProcurements = allProcurements.filter(p => p.productId === pid);
+                    const totalCost = productProcurements.reduce((sum, p) => sum + p.totalCost, 0);
+                    const totalQty = productProcurements.reduce((sum, p) => sum + p.quantityPurchased, 0);
+                    wacMap.set(pid, totalQty > 0 ? totalCost / totalQty : 0);
+                });
+
+                const months = [
+                    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+                ];
+
+                const monthlyData = months.map((name, index) => ({
+                    name,
+                    month: index,
+                    revenue: 0,
+                    profit: 0
+                }));
+
+                yearOrders.forEach(order => {
+                    const monthIdx = new Date(order.createdAt).getMonth();
+                    monthlyData[monthIdx].revenue += order.total;
+                    order.items.forEach(item => {
+                        const wac = wacMap.get(item.productId) || 0;
+                        monthlyData[monthIdx].profit += (item.price - wac) * item.quantity;
+                    });
+                });
+
+                return monthlyData.map(m => ({
+                    ...m,
+                    profit: Math.round(m.profit)
+                }));
+            })() : []
         });
 
     } catch (error) {

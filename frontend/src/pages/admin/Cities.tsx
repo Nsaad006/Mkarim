@@ -125,7 +125,7 @@ const Cities = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h1 className="text-3xl font-bold tracking-tight">Villes & Livraison</h1>
                 <Button onClick={openCreateDialog}>
                     <Plus className="mr-2 h-4 w-4" /> Ajouter une Ville
@@ -146,40 +146,42 @@ const Cities = () => {
                         </div>
                     </div>
 
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Ville</TableHead>
-                                <TableHead>Frais de Livraison</TableHead>
-                                <TableHead>Délai Estimé</TableHead>
-                                <TableHead>Active</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredCities.map((city) => (
-                                <TableRow key={city.id}>
-                                    <TableCell className="font-medium flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-muted-foreground" />
-                                        {city.name}
-                                    </TableCell>
-                                    <TableCell>{city.shippingFee} {currency}</TableCell>
-                                    <TableCell>{city.deliveryTime}</TableCell>
-                                    <TableCell>
-                                        <Switch
-                                            checked={city.active}
-                                            onCheckedChange={() => handleStatusToggle(city)}
-                                        />
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(city)}>
-                                            <Pencil className="w-4 h-4" />
-                                        </Button>
-                                    </TableCell>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="whitespace-nowrap">Ville</TableHead>
+                                    <TableHead className="whitespace-nowrap">Frais de Livraison</TableHead>
+                                    <TableHead className="whitespace-nowrap">Délai Estimé</TableHead>
+                                    <TableHead>Active</TableHead>
+                                    <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredCities.map((city) => (
+                                    <TableRow key={city.id}>
+                                        <TableCell className="font-medium flex items-center gap-2 whitespace-nowrap">
+                                            <MapPin className="w-4 h-4 text-muted-foreground" />
+                                            {city.name}
+                                        </TableCell>
+                                        <TableCell className="whitespace-nowrap">{city.shippingFee} {currency}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{city.deliveryTime}</TableCell>
+                                        <TableCell>
+                                            <Switch
+                                                checked={city.active}
+                                                onCheckedChange={() => handleStatusToggle(city)}
+                                            />
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="ghost" size="icon" onClick={() => openEditDialog(city)}>
+                                                <Pencil className="w-4 h-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </div>
 
                 <div className="space-y-6">

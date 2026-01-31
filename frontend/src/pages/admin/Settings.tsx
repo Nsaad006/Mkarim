@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsApi, GlobalSettings } from "@/api/settings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageUpload } from "@/components/ImageUpload";
+import { Slider } from "@/components/ui/slider";
 import { HeroSlideManager } from "@/components/admin/HeroSlideManager";
 
 const Settings = () => {
@@ -261,6 +262,49 @@ const Settings = () => {
 
                         {/* Hero Section Tab */}
                         <TabsContent value="hero" className="space-y-6 m-0">
+                            <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+                                <h2 className="text-xl font-semibold border-b pb-2">Style Global du Hero</h2>
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between">
+                                            <Label>Opacité du filtre sombre</Label>
+                                            <span className="text-sm text-muted-foreground">{formData.homeHeroOverlayOpacity ?? 80}%</span>
+                                        </div>
+                                        <Slider
+                                            value={[formData.homeHeroOverlayOpacity ?? 80]}
+                                            max={100}
+                                            step={5}
+                                            onValueChange={(vals) => setFormData({ ...formData, homeHeroOverlayOpacity: vals[0] })}
+                                        />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between">
+                                            <Label>Flou de l'image (Blur)</Label>
+                                            <span className="text-sm text-muted-foreground">{formData.homeHeroBlur ?? 0}px</span>
+                                        </div>
+                                        <Slider
+                                            value={[formData.homeHeroBlur ?? 0]}
+                                            max={20}
+                                            step={1}
+                                            onValueChange={(vals) => setFormData({ ...formData, homeHeroBlur: vals[0] })}
+                                        />
+                                    </div>
+                                    <div className="space-y-4 col-span-2 md:col-span-1">
+                                        <div className="flex justify-between">
+                                            <Label>Vitesse du diaporama (ms)</Label>
+                                            <span className="text-sm text-muted-foreground">{formData.homeHeroAutoPlayInterval ?? 5000}ms</span>
+                                        </div>
+                                        <Slider
+                                            value={[formData.homeHeroAutoPlayInterval ?? 5000]}
+                                            min={1000}
+                                            max={10000}
+                                            step={500}
+                                            onValueChange={(vals) => setFormData({ ...formData, homeHeroAutoPlayInterval: vals[0] })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
                             <HeroSlideManager
                                 onSlidesChange={setHeroSlidesChanges}
                             />
@@ -284,6 +328,19 @@ const Settings = () => {
                                         <Input
                                             value={formData.categoriesSubtitle || ""}
                                             onChange={(e) => setFormData({ ...formData, categoriesSubtitle: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-4 col-span-2">
+                                        <div className="flex justify-between">
+                                            <Label>Vitesse du défilement (ms)</Label>
+                                            <span className="text-sm text-muted-foreground">{formData.categoriesAutoPlayInterval ?? 3000}ms</span>
+                                        </div>
+                                        <Slider
+                                            value={[formData.categoriesAutoPlayInterval ?? 3000]}
+                                            min={1000}
+                                            max={10000}
+                                            step={500}
+                                            onValueChange={(vals) => setFormData({ ...formData, categoriesAutoPlayInterval: vals[0] })}
                                         />
                                     </div>
                                 </div>
@@ -433,6 +490,40 @@ const Settings = () => {
                                 <h2 className="text-xl font-semibold border-b pb-2">Page À Propos</h2>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
+                                        <Label>Image de Fond (Hero)</Label>
+                                        <ImageUpload
+                                            value={formData.aboutHeroImage || ""}
+                                            onChange={(url) => setFormData({ ...formData, aboutHeroImage: url })}
+                                        />
+                                    </div>
+
+                                    <div className="grid md:grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg">
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between">
+                                                <Label>Opacité du filtre</Label>
+                                                <span className="text-xs text-muted-foreground">{formData.aboutHeroOverlayOpacity ?? 90}%</span>
+                                            </div>
+                                            <Slider
+                                                value={[formData.aboutHeroOverlayOpacity ?? 90]}
+                                                max={100}
+                                                step={5}
+                                                onValueChange={(vals) => setFormData({ ...formData, aboutHeroOverlayOpacity: vals[0] })}
+                                            />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between">
+                                                <Label>Flou (Blur)</Label>
+                                                <span className="text-xs text-muted-foreground">{formData.aboutHeroBlur ?? 0}px</span>
+                                            </div>
+                                            <Slider
+                                                value={[formData.aboutHeroBlur ?? 0]}
+                                                max={20}
+                                                step={1}
+                                                onValueChange={(vals) => setFormData({ ...formData, aboutHeroBlur: vals[0] })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
                                         <Label>Titre</Label>
                                         <Input
                                             value={formData.aboutTitle || ""}
@@ -448,12 +539,71 @@ const Settings = () => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Mission</Label>
+                                        <Label>Mission (Paragraphe 1)</Label>
                                         <Textarea
                                             value={formData.aboutMission || ""}
                                             onChange={(e) => setFormData({ ...formData, aboutMission: e.target.value })}
+                                            rows={2}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Mission (Paragraphe 2)</Label>
+                                        <Textarea
+                                            value={formData.aboutMissionDetails || ""}
+                                            onChange={(e) => setFormData({ ...formData, aboutMissionDetails: e.target.value })}
                                             rows={3}
                                         />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Image de la Mission</Label>
+                                        <ImageUpload
+                                            value={formData.aboutImage || ""}
+                                            onChange={(url) => setFormData({ ...formData, aboutImage: url })}
+                                        />
+                                    </div>
+
+                                    {/* Values Section Editing */}
+                                    <div className="pt-4 space-y-4 border-t">
+                                        <h3 className="font-semibold text-lg">Nos Valeurs (4 Valeurs)</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {Array.isArray(formData.aboutValues) && formData.aboutValues.map((val: any, idx: number) => (
+                                                <div key={idx} className="p-4 bg-muted/30 border rounded-lg space-y-2">
+                                                    <p className="text-xs font-bold uppercase text-muted-foreground">Valeur #{idx + 1}</p>
+                                                    <Label>Titre</Label>
+                                                    <Input
+                                                        value={val.title}
+                                                        onChange={(e) => {
+                                                            const newValues = [...(formData.aboutValues as any[])];
+                                                            newValues[idx] = { ...newValues[idx], title: e.target.value };
+                                                            setFormData({ ...formData, aboutValues: newValues });
+                                                        }}
+                                                    />
+                                                    <Label>Description</Label>
+                                                    <Textarea
+                                                        value={val.description}
+                                                        onChange={(e) => {
+                                                            const newValues = [...(formData.aboutValues as any[])];
+                                                            newValues[idx] = { ...newValues[idx], description: e.target.value };
+                                                            setFormData({ ...formData, aboutValues: newValues });
+                                                        }}
+                                                        rows={2}
+                                                    />
+                                                </div>
+                                            ))}
+                                            {(!formData.aboutValues || formData.aboutValues.length === 0) && (
+                                                <Button type="button" variant="outline" onClick={() => setFormData({
+                                                    ...formData,
+                                                    aboutValues: [
+                                                        { title: "Confiance", description: "..." },
+                                                        { title: "Qualité", description: "..." },
+                                                        { title: "Service Client", description: "..." },
+                                                        { title: "Fiabilité", description: "..." }
+                                                    ]
+                                                })}>
+                                                    Initialiser les valeurs par défaut
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -492,8 +642,8 @@ const Settings = () => {
                 </Tabs>
 
                 <div className="flex justify-end sticky bottom-6">
-                    <Button size="lg" className="shadow-lg" disabled={mutation.isPending}>
-                        {mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    <Button size="xl" className="shadow-lg" disabled={mutation.isPending}>
+                        {mutation.isPending ? <Loader2 className="animate-spin" /> : <Save />}
                         Enregistrer les changements
                     </Button>
                 </div>

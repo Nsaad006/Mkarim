@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AxiosError } from "axios";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, AlertCircle, Star } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -33,6 +33,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useOutletContext } from "react-router-dom";
 import { productsApi } from "@/api/products";
 import { categoriesApi } from "@/api/categories";
+import { suppliersApi } from "@/api/suppliers";
 import { Product } from "@/data/products";
 import { ImageUpload } from "@/components/ImageUpload";
 import { MultiImageUpload } from "@/components/MultiImageUpload";
@@ -45,8 +46,15 @@ const AdminProducts = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+    const [adjustmentPassword, setAdjustmentPassword] = useState("");
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [passwordActionType, setPasswordActionType] = useState<'COST' | 'STOCK'>('COST');
+    const [pendingProductData, setPendingProductData] = useState<any>(null);
     const queryClient = useQueryClient();
+
+    // Get current user
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
 
     const [formData, setFormData] = useState({
         name: "",
@@ -59,12 +67,21 @@ const AdminProducts = () => {
         quantity: "0",
         badge: "",
         specs: "",
+        supplierId: "", // New required field
+        unitCostPrice: "", // New required field
+        isFeatured: false,
     });
 
     // Fetch categories (all, including inactive for admin)
     const { data: categories = [] } = useQuery({
         queryKey: ['categories', 'all'],
         queryFn: () => categoriesApi.getAll(true),
+    });
+
+    // Fetch suppliers for the creation form
+    const { data: suppliers = [] } = useQuery({
+        queryKey: ['suppliers'],
+        queryFn: suppliersApi.getAll,
     });
 
     // Fetch products
@@ -79,6 +96,7 @@ const AdminProducts = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-products'] });
             queryClient.invalidateQueries({ queryKey: ['products'] });
+            queryClient.invalidateQueries({ queryKey: ['stats-summary'] });
             toast({
                 title: "Produit créé",
                 description: "Le produit a été ajouté avec succès.",
@@ -102,6 +120,7 @@ const AdminProducts = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-products'] });
             queryClient.invalidateQueries({ queryKey: ['products'] });
+            queryClient.invalidateQueries({ queryKey: ['stats-summary'] });
             toast({
                 title: "Produit modifié",
                 description: "Le produit a été mis à jour avec succès.",
@@ -113,6 +132,27 @@ const AdminProducts = () => {
             toast({
                 title: "Erreur",
                 description: error.response?.data?.error || "Impossible de modifier le produit.",
+                variant: "destructive",
+            });
+        },
+    });
+
+    // Cost adjustment mutation
+    const adjustCostMutation = useMutation({
+        mutationFn: ({ id, cost, password }: { id: string, cost: number, password: string }) =>
+            productsApi.adjustCost(id, cost, password),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+            queryClient.invalidateQueries({ queryKey: ['stats-summary'] });
+            toast({ title: "Coût ajusté", description: "Le prix d'achat a été mis à jour avec succès." });
+            setIsPasswordDialogOpen(false);
+            setIsDialogOpen(false); // Close the main edit form too
+            setAdjustmentPassword("");
+        },
+        onError: (error: AxiosError<{ error: string }>) => {
+            toast({
+                title: "Erreur",
+                description: error.response?.data?.error || "Mot de passe incorrect ou erreur serveur.",
                 variant: "destructive",
             });
         },
@@ -162,6 +202,9 @@ const AdminProducts = () => {
             quantity: "0",
             badge: "",
             specs: "",
+            supplierId: "",
+            unitCostPrice: "",
+            isFeatured: false,
         });
         setEditingProduct(null);
     };
@@ -179,12 +222,70 @@ const AdminProducts = () => {
             quantity: product.quantity?.toString() || "0",
             badge: product.badge || "",
             specs: product.specs?.join(", ") || "",
+            supplierId: (product as any).procurements?.[0]?.supplierId || "",
+            unitCostPrice: (product as any).weightedAverageCost?.toString() || "",
+            isFeatured: (product as any).isFeatured || false,
         });
         setIsDialogOpen(true);
     };
 
+    const validateSpecs = (specsString: string, categoryId: string): { valid: boolean; error?: string } => {
+        if (!specsString || !specsString.trim()) return { valid: true };
+
+        const category = categories.find(c => c.id === categoryId);
+        if (!category) return { valid: true };
+
+        const slug = category.slug?.toLowerCase() || "";
+        const name = category.name?.toLowerCase() || "";
+
+        // Identify Category Type
+        const isPc = ['laptop', 'desktop', 'gaming-pc', 'pc portable', 'pc bureau', 'pc gamer'].some(k => slug.includes(k) || name.includes(k));
+        const isAccessory = ['monitor', 'mouse', 'keyboard', 'headset', 'souris', 'clavier', 'casque', 'ecran'].some(k => slug.includes(k) || name.includes(k));
+
+        // Format Validation
+        const specs = specsString.split(',').map(s => s.trim()).filter(s => s);
+        const formatRegex = /^\{[^}]+\}:.+/;
+
+
+
+        // Required Keys Validation
+        const keys = specs.map(s => s.match(/^\{([^}]+)\}/)?.[1]?.toLowerCase().trim() || "");
+
+        if (isPc) {
+            const requiredPcSpecs = ['marque_pc', 'cpu', 'gpu', 'ram', 'stockage', 'carte_mere', 'systeme_exploitation'];
+            const missing = requiredPcSpecs.filter(req => !keys.includes(req));
+            if (missing.length > 0) {
+                return {
+                    valid: false,
+                    error: `Spécifications PC manquantes : {${missing.join('}, {')}}`
+                };
+            }
+        } else if (isAccessory) {
+            if (!keys.includes('marque')) {
+                return {
+                    valid: false,
+                    error: "La spécification {marque} est obligatoire pour les accessoires."
+                };
+            }
+        }
+
+        return { valid: true };
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate Specifications
+        const specsValidation = validateSpecs(formData.specs, formData.categoryId);
+        if (!specsValidation.valid) {
+            toast({
+                title: "Erreur de Spécifications",
+                description: specsValidation.error,
+                variant: "destructive",
+                duration: 5000
+            });
+            return;
+        }
 
         const productData = {
             name: formData.name,
@@ -197,12 +298,49 @@ const AdminProducts = () => {
             quantity: parseInt(formData.quantity) || 0,
             badge: formData.badge || undefined,
             specs: formData.specs ? formData.specs.split(",").map(s => s.trim()) : [],
+            supplierId: formData.supplierId,
+            unitCostPrice: formData.unitCostPrice,
+            isFeatured: formData.isFeatured,
+            image: formData.images[0] || "",
         };
 
         if (editingProduct) {
-            updateMutation.mutate({ id: editingProduct.id, data: productData });
+            // 1. Check for Stock Increase (Requires Password & Super Admin)
+            const originalQty = editingProduct.quantity || 0;
+            const newQty = productData.quantity;
+
+            if (newQty > originalQty) {
+                if (user.role !== 'super_admin') {
+                    toast({
+                        title: "Accès refusé",
+                        description: "Seul le Super Admin peut ajouter du stock manuellement.",
+                        variant: "destructive"
+                    });
+                    return;
+                }
+                setPasswordActionType('STOCK');
+                setPendingProductData(productData);
+                setIsPasswordDialogOpen(true);
+                return;
+            }
+
+            // 2. Check for Cost Change (Requires Password)
+            const originalCost = editingProduct.weightedAverageCost || 0;
+            const newCost = parseInt(formData.unitCostPrice) || 0;
+
+            if (newCost !== originalCost && originalCost > 0) {
+                setPasswordActionType('COST');
+                setIsPasswordDialogOpen(true);
+                return;
+            }
+
+            // Standard update
+            updateMutation.mutate({
+                id: editingProduct.id,
+                data: productData,
+            });
         } else {
-            createMutation.mutate(productData as Omit<Product, 'id'>);
+            createMutation.mutate(productData);
         }
     };
 
@@ -286,26 +424,27 @@ const AdminProducts = () => {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold tracking-tight">Produits</h1>
-                <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
-                    <Plus className="mr-2 h-4 w-4" /> Ajouter un produit
+        <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h1 className="text-2xl font-bold tracking-tight">Produits</h1>
+                <Button size="sm" onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+                    <Plus className="mr-2 h-4 w-4" /> Ajouter
                 </Button>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="relative flex-1">
+            {/* Search and Filter Section */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-2 items-start sm:items-center bg-card p-4 rounded-xl border border-border">
+                <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
-                        placeholder="Rechercher un produit..."
+                        placeholder="Rechercher produit, SKU..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 bg-background h-9"
                     />
                 </div>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className="w-full sm:w-[200px] bg-background h-9">
                         <SelectValue placeholder="Toutes les catégories" />
                     </SelectTrigger>
                     <SelectContent>
@@ -319,67 +458,111 @@ const AdminProducts = () => {
                 </Select>
             </div>
 
-            <div className="bg-card rounded-xl border border-border overflow-x-auto overflow-y-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Image</TableHead>
-                            <TableHead>Nom</TableHead>
-                            <TableHead>Catégorie</TableHead>
-                            <TableHead>Prix</TableHead>
-                            <TableHead>Stock</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredProducts.map((product) => (
-                            <TableRow key={product.id}>
-                                <TableCell>
-                                    <img
-                                        src={getImageUrl(product.image)}
-                                        alt={product.name}
-                                        className="w-12 h-12 rounded object-cover bg-secondary"
-                                    />
-                                </TableCell>
-                                <TableCell className="font-medium">{product.name}</TableCell>
-                                <TableCell>{product.category?.name || 'Sans catégorie'}</TableCell>
-                                <TableCell>{product.price.toLocaleString()} {currency}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <div className={product.quantity === 0 ? "pointer-events-none opacity-50" : ""}>
+            {/* Products Table */}
+            <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader className="bg-muted/30">
+                            <TableRow>
+                                <TableHead className="w-[80px]">Image</TableHead>
+                                <TableHead>Nom du Produit</TableHead>
+                                <TableHead>Catégorie</TableHead>
+                                <TableHead>Prix Vente</TableHead>
+                                <TableHead>Coût (WAC)</TableHead>
+                                <TableHead>Stock</TableHead>
+                                <TableHead>Valeur</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredProducts.map((product) => (
+                                <TableRow key={product.id} className="hover:bg-muted/5 transition-colors">
+                                    <TableCell>
+                                        <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-secondary border border-border">
+                                            <img
+                                                src={getImageUrl(product.image)}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-medium">
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-1.5">
+                                                <span>{product.name}</span>
+                                                {(product as any).isFeatured && <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />}
+                                            </div>
+                                            {product.badge && (
+                                                <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 bg-muted rounded-md w-fit mt-1">
+                                                    {product.badge}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-secondary text-secondary-foreground">
+                                            {product.category?.name || 'Sans catégorie'}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="font-bold text-primary">
+                                        {product.price.toLocaleString()} {currency}
+                                    </TableCell>
+                                    <TableCell className="text-xs text-muted-foreground">
+                                        {product.weightedAverageCost && product.weightedAverageCost > 0 ? (
+                                            <span className="font-mono">{product.weightedAverageCost.toLocaleString()} {currency}</span>
+                                        ) : (
+                                            <span className="text-destructive font-bold flex items-center gap-1">
+                                                <AlertCircle className="w-3 h-3" />
+                                                0 {currency}
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-3">
                                             <Switch
                                                 checked={product.inStock}
                                                 onCheckedChange={() => handleStockToggle(product)}
                                                 disabled={product.quantity === 0}
+                                                className="scale-75 data-[state=checked]:bg-green-500"
                                             />
+                                            <div className="flex flex-col">
+                                                <span className={`text-[10px] font-bold uppercase tracking-wider ${product.quantity > 0 ? 'text-green-500' : 'text-destructive'}`}>
+                                                    {product.quantity > 0 ? 'EN STOCK' : 'ÉPUISÉ'}
+                                                </span>
+                                                <span className="text-[11px] font-medium text-muted-foreground">
+                                                    {product.quantity} unités
+                                                </span>
+                                            </div>
                                         </div>
-                                        <span className={`text-xs font-medium ${product.quantity === 0 ? 'text-muted-foreground' : ''}`}>
-                                            {product.inStock ? "En stock" : "Rupture"}
-                                            {product.quantity === 0 && " (Qté: 0)"}
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right space-x-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => handleEdit(product)}
-                                    >
-                                        <Pencil className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-destructive"
-                                        onClick={() => handleDelete(product.id, product.name)}
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                                    </TableCell>
+                                    <TableCell className="font-bold text-sm">
+                                        {(product.stockValue || 0).toLocaleString()} {currency}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 hover:bg-muted"
+                                                onClick={() => handleEdit(product)}
+                                            >
+                                                <Pencil className="w-4 h-4 text-muted-foreground" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 hover:bg-destructive/10 text-destructive/80 hover:text-destructive"
+                                                onClick={() => handleDelete(product.id, product.name)}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -458,7 +641,7 @@ const AdminProducts = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Stock Quantité</Label>
+                                <Label>Stock Initial/Quantité</Label>
                                 <Input
                                     type="number"
                                     required
@@ -471,6 +654,68 @@ const AdminProducts = () => {
                                     <p className="text-xs text-warning">⚠️ Quantité à 0 - Le produit sera automatiquement en rupture</p>
                                 )}
                             </div>
+
+                            {/* Supplier & Cost Price Section */}
+                            <div className="space-y-2">
+                                <Label>Prix d'Achat Unitaire ({currency})</Label>
+                                <div className="relative">
+                                    <Input
+                                        type="number"
+                                        required
+                                        value={formData.unitCostPrice}
+                                        onChange={(e) => setFormData({ ...formData, unitCostPrice: e.target.value })}
+                                        placeholder="Ex: 12000"
+                                        className={editingProduct && (editingProduct.weightedAverageCost || 0) > 0 ? "border-orange-500/50 bg-orange-50/5 pl-8" : "border-primary/50 bg-primary/5"}
+                                    />
+                                    {editingProduct && (editingProduct.weightedAverageCost || 0) > 0 && (
+                                        <div className="absolute left-2.5 top-2.5 text-orange-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                                        </div>
+                                    )}
+                                </div>
+                                {editingProduct && (editingProduct.weightedAverageCost || 0) > 0 && (
+                                    <p className="text-[10px] text-orange-600 font-medium italic">
+                                        Note: Une modification du coût nécessite votre mot de passe admin.
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                                <Switch
+                                    checked={formData.isFeatured}
+                                    onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
+                                />
+                                <Label>Produit en vedette (Accueil)</Label>
+                            </div>
+
+                            {/* Supplier is only shown for New products (historical correction happens on the cost price directly if existing) */}
+                            {/* Supplier Section (Always Visible) */}
+                            <div className="space-y-2">
+                                <Label>Fournisseur (Obligatoire)</Label>
+                                <Select
+                                    required
+                                    value={formData.supplierId}
+                                    onValueChange={(value) => setFormData({ ...formData, supplierId: value })}
+                                >
+                                    <SelectTrigger className="border-primary/50 bg-primary/5">
+                                        <SelectValue placeholder="Choisir un fournisseur" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {suppliers.map((s: any) => (
+                                            <SelectItem key={s.id} value={s.id}>
+                                                {s.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Info note for NEW product only */}
+                            {!editingProduct && (
+                                <div className="col-span-2 p-3 bg-primary/10 border border-primary/20 rounded-lg text-xs italic text-primary font-medium">
+                                    Note: L'ajout d'un nouveau produit générera automatiquement un <strong>Ordre d'Approvisionnement</strong> de <strong>{parseInt(formData.quantity) * (parseInt(formData.unitCostPrice) || 0)} {currency}</strong>.
+                                </div>
+                            )}
 
                             <div className="space-y-2 col-span-2">
                                 <Label>Images du produit (max 6)</Label>
@@ -487,9 +732,19 @@ const AdminProducts = () => {
                                 <Textarea
                                     value={formData.specs}
                                     onChange={(e) => setFormData({ ...formData, specs: e.target.value })}
-                                    placeholder="Intel i7, 16GB RAM, RTX 4070"
-                                    rows={2}
+                                    placeholder="Ex: {cpu}: Intel i7, {ram}: 16GB, {gpu}: RTX 4070"
+                                    rows={4}
                                 />
+                                <div className="text-[11px] text-muted-foreground mt-1.5 p-2 bg-muted/40 rounded border border-border space-y-1">
+                                    <p className="font-semibold text-primary">Format recommandé : <code className="bg-background px-1 rounded border overflow-hidden">{'\{clé\}: valeur'}</code></p>
+                                    <p className="text-[10px] italic">Les spécifications sans clé sont acceptées comme "Options Spéciales".</p>
+                                    <p>
+                                        <span className="font-semibold">PC :</span> {'\{marque_pc\}, \{cpu\}, \{gpu\}, \{ram\}, \{stockage\}, \{carte_mere\}, \{systeme_exploitation\}'}
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">Accessoires :</span> {'\{marque\}'} obligatoire
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="flex items-center space-x-2 col-span-2">
@@ -529,6 +784,85 @@ const AdminProducts = () => {
                             </Button>
                         </div>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Password Verification Dialog */}
+            <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <span className="p-1.5 bg-orange-100 rounded-full">
+                                <AlertCircle className="w-5 h-5 text-orange-600" />
+                            </span>
+                            Confirmation Sécurisée
+                        </DialogTitle>
+                        <DialogDescription className="pt-2">
+                            {passwordActionType === 'COST'
+                                ? "Vous êtes sur le point de modifier le Prix d'Achat historique. Cette action impactera votre calcul de profit."
+                                : "Vous êtes sur le point d'ajouter du stock manuellement. Cette action est réservée aux administrateurs."
+                            }
+                            <br />Veuillez saisir votre mot de passe pour confirmer.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="adjustment-password">Mot de passe Administrateur</Label>
+                            <Input
+                                id="adjustment-password"
+                                type="password"
+                                value={adjustmentPassword}
+                                onChange={(e) => setAdjustmentPassword(e.target.value)}
+                                placeholder="••••••••"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        if (passwordActionType === 'COST') {
+                                            adjustCostMutation.mutate({
+                                                id: editingProduct!.id,
+                                                cost: parseInt(formData.unitCostPrice),
+                                                password: adjustmentPassword
+                                            });
+                                        } else {
+                                            updateMutation.mutate({
+                                                id: editingProduct!.id,
+                                                data: { ...pendingProductData, password: adjustmentPassword }
+                                            });
+                                            setIsPasswordDialogOpen(false);
+                                            setAdjustmentPassword("");
+                                        }
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
+                            Annuler
+                        </Button>
+                        <Button
+                            className="bg-orange-600 hover:bg-orange-700"
+                            disabled={adjustCostMutation.isPending || updateMutation.isPending}
+                            onClick={() => {
+                                if (passwordActionType === 'COST') {
+                                    adjustCostMutation.mutate({
+                                        id: editingProduct!.id,
+                                        cost: parseInt(formData.unitCostPrice),
+                                        password: adjustmentPassword
+                                    });
+                                } else {
+                                    updateMutation.mutate({
+                                        id: editingProduct!.id,
+                                        data: { ...pendingProductData, password: adjustmentPassword }
+                                    });
+                                    setIsPasswordDialogOpen(false);
+                                    setAdjustmentPassword("");
+                                }
+                            }}
+                        >
+                            {adjustCostMutation.isPending || updateMutation.isPending ? "Vérification..." : "Confirmer"}
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

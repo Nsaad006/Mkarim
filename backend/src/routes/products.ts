@@ -8,7 +8,7 @@ const router = Router();
 // GET /api/products - List all products with optional filters
 router.get('/', async (req, res) => {
     try {
-        const { categoryId, category, inStock, search } = req.query;
+        const { categoryId, category, inStock, search, featured } = req.query;
 
         const where: Prisma.ProductWhereInput = {};
 
@@ -38,6 +38,10 @@ router.get('/', async (req, res) => {
             where.inStock = inStock === 'true';
         }
 
+        if (featured !== undefined) {
+            where.isFeatured = featured === 'true';
+        }
+
         if (search) {
             const searchStr = String(search).toLowerCase();
             where.OR = [
@@ -54,14 +58,110 @@ router.get('/', async (req, res) => {
                 }
             },
             include: {
-                category: true
+                category: true,
+                procurements: {
+                    select: {
+                        unitCostPrice: true,
+                        quantityPurchased: true,
+                        supplierId: true // Include supplierId
+                    }
+                }
             }
         });
 
-        res.json(products);
+        // Calculate weighted average cost for each product
+        const productsWithStats = products.map(p => {
+            const totalCost = p.procurements.reduce((sum, pr) => sum + (pr.unitCostPrice * pr.quantityPurchased), 0);
+            const totalQty = p.procurements.reduce((sum, pr) => sum + pr.quantityPurchased, 0);
+            const wac = totalQty > 0 ? Math.round(totalCost / totalQty) : 0;
+            const stockValue = p.quantity * wac;
+
+            const { procurements, ...productData } = p;
+            return {
+                ...productData,
+                weightedAverageCost: wac,
+                stockValue
+            };
+        });
+
+        res.json(productsWithStats);
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ error: 'Failed to fetch products' });
+    }
+});
+
+router.post('/:id/adjust-cost', authenticate, authorize(['super_admin', 'editor']), async (req: any, res: Response) => {
+    try {
+        const id = req.params.id;
+        const { unitCostPrice, password } = req.body;
+        const adminId = req.user?.id;
+
+        if (unitCostPrice === undefined || !password) {
+            return res.status(400).json({ error: 'Nouveau prix et mot de passe requis' });
+        }
+
+        // 1. Verify password
+        const admin = await prisma.admin.findUnique({ where: { id: adminId } });
+        if (!admin) return res.status(404).json({ error: 'Admin non trouvé' });
+
+        const isPasswordCorrect = await require('bcryptjs').compare(password, admin.password);
+        if (!isPasswordCorrect) {
+            return res.status(401).json({ error: 'Mot de passe incorrect' });
+        }
+
+        const newCost = Number(unitCostPrice);
+
+        // 2. Transact the adjustment
+        const result = await prisma.$transaction(async (tx) => {
+            // Find the first procurement (usually the initial one)
+            const firstProcurement = await tx.procurement.findFirst({
+                where: { productId: id },
+                orderBy: { purchaseDate: 'asc' }
+            });
+
+            if (!firstProcurement) {
+                // If no procurement exists, just create one now (effectively fixing the product)
+                const product = await tx.product.findUnique({ where: { id } });
+                if (!product) throw new Error('Produit non trouvé');
+
+                const totalCost = product.quantity * newCost;
+
+                const procurement = await tx.procurement.create({
+                    data: {
+                        supplierId: (await tx.supplier.findFirst())?.id || '', // Fallback to any supplier
+                        productId: id,
+                        quantityPurchased: product.quantity,
+                        unitCostPrice: newCost,
+                        totalCost,
+                        createdByAdminId: adminId
+                    }
+                });
+
+                return procurement;
+            }
+
+            // If procurement exists, calculate difference and adjust
+            const oldTotalCost = firstProcurement.totalCost;
+            const newTotalCost = firstProcurement.quantityPurchased * newCost;
+            const difference = newTotalCost - oldTotalCost;
+
+            const updatedProcurement = await tx.procurement.update({
+                where: { id: firstProcurement.id },
+                data: {
+                    unitCostPrice: newCost,
+                    totalCost: newTotalCost
+                },
+                include: { product: true }
+            });
+
+            return updatedProcurement;
+        });
+
+        res.json(result);
+    } catch (error) {
+        console.error('Error adjusting cost:', error);
+        res.status(500).json({ error: 'Erreur lors de l\'ajustement du coût' });
     }
 });
 
@@ -73,7 +173,13 @@ router.get('/:id', async (req, res) => {
         const product = await prisma.product.findUnique({
             where: { id },
             include: {
-                category: true
+                category: true,
+                procurements: {
+                    include: {
+                        supplier: true
+                    },
+                    orderBy: { purchaseDate: 'desc' }
+                }
             }
         });
 
@@ -81,42 +187,81 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        res.json(product);
+        // Calculate stats
+        const totalCost = product.procurements.reduce((sum, pr) => sum + (pr.unitCostPrice * pr.quantityPurchased), 0);
+        const totalQty = product.procurements.reduce((sum, pr) => sum + pr.quantityPurchased, 0);
+        const wac = totalQty > 0 ? Math.round(totalCost / totalQty) : 0;
+        const stockValue = product.quantity * wac;
+
+        res.json({
+            ...product,
+            weightedAverageCost: wac,
+            stockValue
+        });
     } catch (error) {
         console.error('Error fetching product:', error);
         res.status(500).json({ error: 'Failed to fetch product' });
     }
 });
 
-// POST /api/products - Create product (admin)
-router.post('/', authenticate, authorize(['super_admin', 'editor']), async (req: Request, res: Response) => {
+router.post('/', authenticate, authorize(['super_admin', 'editor']), async (req: any, res: Response) => {
     try {
-        const { name, description, price, originalPrice, image, images, categoryId, inStock, quantity, badge, specs } = req.body;
+        const {
+            name, description, price, originalPrice, image, images,
+            categoryId, inStock, quantity, badge, specs, isFeatured,
+            supplierId, unitCostPrice // New required fields
+        } = req.body;
+
+        if (!supplierId || unitCostPrice === undefined) {
+            return res.status(400).json({ error: 'Supplier and unit cost price are required for new products' });
+        }
+
+        const initialQuantity = Number(quantity) || 0;
+        const costPrice = Number(unitCostPrice);
+        const adminId = req.user?.id;
 
         // Handle images array - ensure it's an array
         const imageArray = images && Array.isArray(images) ? images : (image ? [image] : []);
         const primaryImage = imageArray[0] || image || '';
 
-        const newProduct = await prisma.product.create({
-            data: {
-                name,
-                description,
-                price: Number(price),
-                originalPrice: originalPrice ? Number(originalPrice) : null,
-                image: primaryImage,  // First image as primary
-                images: imageArray,    // All images
-                categoryId,
-                inStock: inStock ?? true,
-                quantity: Number(quantity) || 0,
-                badge,
-                specs: specs || []
-            },
-            include: {
-                category: true
-            }
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Create product
+            const newProduct = await tx.product.create({
+                data: {
+                    name,
+                    description,
+                    price: Number(price),
+                    originalPrice: originalPrice ? Number(originalPrice) : null,
+                    image: primaryImage,
+                    images: imageArray,
+                    categoryId,
+                    inStock: inStock ?? true,
+                    quantity: initialQuantity,
+                    badge,
+                    specs: specs || [],
+                    isFeatured: isFeatured ?? false
+                },
+                include: {
+                    category: true
+                }
+            });
+
+            // 2. Create initial procurement
+            await tx.procurement.create({
+                data: {
+                    supplierId,
+                    productId: newProduct.id,
+                    quantityPurchased: initialQuantity,
+                    unitCostPrice: costPrice,
+                    totalCost: initialQuantity * costPrice,
+                    createdByAdminId: adminId
+                }
+            });
+
+            return newProduct;
         });
 
-        res.status(201).json(newProduct);
+        res.status(201).json(result);
     } catch (error) {
         console.error('Error creating product:', error);
         res.status(500).json({ error: 'Failed to create product' });
@@ -126,8 +271,12 @@ router.post('/', authenticate, authorize(['super_admin', 'editor']), async (req:
 // PUT /api/products/:id - Update product (admin)
 router.put('/:id', authenticate, authorize(['super_admin', 'editor']), async (req: Request, res: Response) => {
     try {
-        const id = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
-        const { name, description, price, originalPrice, image, images, categoryId, inStock, quantity, badge, specs } = req.body;
+        const id = req.params.id;
+        const {
+            name, description, price, originalPrice, image, images,
+            categoryId, inStock, quantity, badge, specs, isFeatured,
+            supplierId, unitCostPrice, password // Fields to "fix" existing data
+        } = req.body;
 
         const updateData: any = {
             ...(name && { name }),
@@ -138,7 +287,8 @@ router.put('/:id', authenticate, authorize(['super_admin', 'editor']), async (re
             ...(inStock !== undefined && { inStock: Boolean(inStock) }),
             ...(quantity !== undefined && { quantity: Number(quantity) }),
             ...(badge !== undefined && { badge }),
-            ...(specs && { specs })
+            ...(specs && { specs }),
+            ...(isFeatured !== undefined && { isFeatured: Boolean(isFeatured) })
         };
 
         // Handle images array update
@@ -151,15 +301,121 @@ router.put('/:id', authenticate, authorize(['super_admin', 'editor']), async (re
             updateData.image = image;
         }
 
-        const updatedProduct = await prisma.product.update({
+        // Fetch existing product to compare quantity
+        const existingProduct = await prisma.product.findUnique({
             where: { id },
-            data: updateData,
-            include: {
-                category: true
-            }
+            include: { procurements: { orderBy: { purchaseDate: 'desc' }, take: 1 } }
         });
 
-        res.json(updatedProduct);
+        if (!existingProduct) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+
+        const oldQuantity = existingProduct.quantity;
+        const newQuantity = quantity !== undefined ? Number(quantity) : oldQuantity;
+        const qtyDifference = newQuantity - oldQuantity;
+
+        // Security Check: Adding stock manually requires Super Admin + Password
+        if (qtyDifference > 0) {
+            const adminId = (req as any).user?.id;
+            const { password } = req.body;
+
+            if (!password) {
+                return res.status(400).json({ error: 'Mot de passe requis pour ajouter du stock.' });
+            }
+
+            const admin = await prisma.admin.findUnique({ where: { id: adminId } });
+            if (!admin) {
+                return res.status(404).json({ error: 'Admin non trouvé' });
+            }
+
+            if (admin.role !== 'super_admin') {
+                return res.status(403).json({ error: 'Seul le Super Admin peut ajouter du stock manuellement.' });
+            }
+
+            const isPasswordCorrect = await require('bcryptjs').compare(password, admin.password);
+            if (!isPasswordCorrect) {
+                return res.status(401).json({ error: 'Mot de passe incorrect.' });
+            }
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Update product
+            const updatedProduct = await tx.product.update({
+                where: { id },
+                data: updateData,
+                include: {
+                    category: true,
+                    procurements: {
+                        orderBy: { purchaseDate: 'desc' },
+                        take: 1
+                    }
+                }
+            });
+
+            const adminId = (req as any).user?.id;
+
+            // 2. Logic for INCREASING stock (Procurement)
+            if (qtyDifference > 0) {
+                const costPrice = unitCostPrice ? Number(unitCostPrice) :
+                    (existingProduct.procurements[0]?.unitCostPrice || 0);
+
+                const finalSupplierId = supplierId || existingProduct.procurements[0]?.supplierId;
+
+                if (!finalSupplierId || costPrice <= 0) {
+                    // If we can't determine cost or supplier, we might want to warn or skip, 
+                    // but for "adding stock" we really need these.
+                    // For now, let's create it if we have a supplier.
+                }
+
+                if (finalSupplierId) {
+                    const totalCost = qtyDifference * costPrice;
+
+                    await tx.procurement.create({
+                        data: {
+                            supplierId: finalSupplierId,
+                            productId: updatedProduct.id,
+                            quantityPurchased: qtyDifference,
+                            unitCostPrice: costPrice,
+                            totalCost,
+                            createdByAdminId: adminId
+                        }
+                    });
+                }
+            }
+            // 3. Logic for "Fixing" product with NO procurements (if not caught by qtyDifference)
+            else if (supplierId && unitCostPrice !== undefined && updatedProduct.procurements.length === 0) {
+                const costPrice = Number(unitCostPrice);
+                const qty = updatedProduct.quantity;
+                const totalCost = qty * costPrice;
+
+                await tx.procurement.create({
+                    data: {
+                        supplierId,
+                        productId: updatedProduct.id,
+                        quantityPurchased: qty,
+                        unitCostPrice: costPrice,
+                        totalCost,
+                        createdByAdminId: adminId
+                    }
+                });
+            }
+
+            // 4. Update existing latest procurement supplier if explicitly changed
+            if (supplierId && updatedProduct.procurements.length > 0) {
+                const latest = updatedProduct.procurements[0];
+                if (latest.supplierId !== supplierId) {
+                    await tx.procurement.update({
+                        where: { id: latest.id },
+                        data: { supplierId }
+                    });
+                }
+            }
+
+            return updatedProduct;
+        });
+
+        res.json(result);
     } catch (error) {
         console.error('Error updating product:', error);
         if ((error as Prisma.PrismaClientKnownRequestError).code === 'P2025') {
@@ -182,6 +438,17 @@ router.delete('/:id', authenticate, authorize(['super_admin', 'editor']), async 
         if (ordersWithProduct) {
             return res.status(400).json({
                 error: 'Cannot delete product that exists in orders. Consider marking it as out of stock instead.'
+            });
+        }
+
+        // Check if product exists in wholesale orders
+        const wholesaleOrdersWithProduct = await prisma.wholesaleOrderItem.findFirst({
+            where: { productId: id }
+        });
+
+        if (wholesaleOrdersWithProduct) {
+            return res.status(400).json({
+                error: 'Cannot delete product that exists in wholesale orders.'
             });
         }
 

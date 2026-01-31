@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,53 @@ import { motion } from "framer-motion";
 import { getImageUrl } from "@/lib/image-utils";
 import { useSettings } from "@/context/SettingsContext";
 
+const QuantityInput = ({
+    value,
+    onChange
+}: {
+    value: number,
+    onChange: (val: number) => void
+}) => {
+    const [localValue, setLocalValue] = useState(value.toString());
+
+    // Update local value if prop changes (e.g. from buttons)
+    useEffect(() => {
+        setLocalValue(value.toString());
+    }, [value]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setLocalValue(val);
+
+        const num = parseInt(val);
+        if (!isNaN(num) && num >= 1) {
+            onChange(num);
+        }
+    };
+
+    const handleBlur = () => {
+        const num = parseInt(localValue);
+        if (isNaN(num) || num < 1) {
+            setLocalValue("1");
+            onChange(1);
+        } else {
+            setLocalValue(num.toString());
+            onChange(num);
+        }
+    };
+
+    return (
+        <input
+            type="number"
+            min="1"
+            value={localValue}
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            className="w-6 lg:w-10 bg-transparent text-center text-[11px] lg:text-sm font-black text-foreground italic border-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+    );
+};
+
 const CartPage = () => {
     const { state, removeItem, updateQuantity, getTotal } = useCart();
     const { currency } = useSettings();
@@ -16,23 +64,23 @@ const CartPage = () => {
         return (
             <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-white">
                 <Navbar />
-                <div className="container mx-auto px-4 pt-48 pb-16 flex-1 flex flex-col justify-center">
+                <div className="container mx-auto px-4 pt-32 pb-12 flex-1 flex flex-col justify-center">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="max-w-md mx-auto text-center"
                     >
-                        <div className="w-32 h-32 bg-muted border border-border rounded-3xl flex items-center justify-center mx-auto mb-8 relative shadow-2xl">
-                            <ShoppingBag className="w-16 h-16 text-primary" />
+                        <div className="w-24 h-24 bg-muted border border-border rounded-3xl flex items-center justify-center mx-auto mb-6 relative shadow-2xl">
+                            <ShoppingBag className="w-12 h-12 text-primary" />
                             <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full" />
                         </div>
-                        <h1 className="font-display text-4xl font-black text-foreground italic uppercase tracking-tighter mb-4">Votre panier est <span className="text-primary italic">vide</span></h1>
-                        <p className="text-muted-foreground font-medium mb-10 max-w-xs mx-auto">
+                        <h1 className="font-display text-3xl font-black text-foreground italic uppercase tracking-tighter mb-3">Votre panier est <span className="text-primary italic">vide</span></h1>
+                        <p className="text-muted-foreground font-medium mb-8 max-w-xs mx-auto text-sm">
                             Le matériel de vos rêves attend d'être ajouté à votre arsenal.
                         </p>
                         <Link to="/products">
-                            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest px-8 h-14 rounded-xl shadow-[0_0_30px_rgba(235,68,50,0.3)] italic">
-                                <ShoppingBag className="w-5 h-5 mr-3" />
+                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_0_30px_rgba(235,68,50,0.3)] italic px-8 gap-2 w-auto">
+                                <ShoppingBag className="w-4 h-4" />
                                 Découvrir le Catalogue
                             </Button>
                         </Link>
@@ -46,26 +94,26 @@ const CartPage = () => {
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-white">
             <Navbar />
-            <div className="container-custom pt-24 lg:pt-32 pb-40 lg:pb-32 flex-1">
-                <div className="flex items-center gap-3 lg:gap-4 mb-6 lg:mb-12">
+            <div className="container-custom pt-20 lg:pt-24 pb-24 lg:pb-16 flex-1">
+                <div className="flex items-center gap-3 lg:gap-4 mb-4 lg:mb-6">
                     <div className="w-1 h-6 lg:w-2 lg:h-10 bg-primary skew-x-[-15deg]" />
-                    <h1 className="font-display text-2xl lg:text-6xl font-black text-foreground italic uppercase tracking-tighter">Votre <span className="text-primary">Panier</span></h1>
+                    <h1 className="font-display text-xl lg:text-4xl font-black text-foreground italic uppercase tracking-tighter">Votre <span className="text-primary">Panier</span></h1>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+                <div className="grid xl:grid-cols-3 gap-8 lg:gap-12">
                     {/* Cart Items */}
-                    <div className="lg:col-span-2 space-y-3 lg:space-y-6">
+                    <div className="xl:col-span-2 space-y-3 lg:space-y-6">
                         {state.items.map((item) => (
                             <motion.div
                                 key={item.product.id}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, x: -50 }}
-                                className="bg-card backdrop-blur-xl rounded-xl lg:rounded-2xl p-3 lg:p-6 border border-border group hover:border-primary/30 transition-all duration-300"
+                                className="bg-card backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-border group hover:border-primary/30 transition-all duration-300 shadow-lg"
                             >
-                                <div className="flex flex-row gap-3 lg:gap-8">
+                                <div className="flex flex-row gap-3 sm:gap-4 md:gap-6">
                                     {/* Product Image */}
-                                    <div className="w-16 h-16 lg:w-32 lg:h-32 rounded-lg lg:rounded-2xl overflow-hidden bg-muted border border-border flex-shrink-0 group-hover:border-primary/50 transition-colors">
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden bg-muted border border-border flex-shrink-0 group-hover:border-primary/50 transition-colors">
                                         <img
                                             src={getImageUrl(item.product.image)}
                                             alt={item.product.name}
@@ -74,51 +122,54 @@ const CartPage = () => {
                                     </div>
 
                                     {/* Product Info */}
-                                    <div className="flex-1 flex flex-col justify-between min-w-0">
-                                        <div className="flex justify-between items-start gap-2">
+                                    <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5 sm:py-1">
+                                        <div className="flex justify-between items-start gap-2 sm:gap-4">
                                             <div className="min-w-0">
-                                                <h3 className="font-display text-sm lg:text-2xl font-black text-foreground italic tracking-tighter uppercase leading-tight truncate">{item.product.name}</h3>
-                                                <p className="text-[8px] lg:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5 lg:mt-2">
+                                                <h3 className="font-display text-sm sm:text-lg md:text-xl font-black text-foreground italic uppercase tracking-tighter leading-tight truncate">{item.product.name}</h3>
+                                                <p className="text-[10px] sm:text-xs font-black text-muted-foreground uppercase tracking-[0.2em] mt-1">
                                                     {item.product.category?.name || item.product.categoryId?.replace("-", " ") || "MATÉRIEL"}
                                                 </p>
                                             </div>
                                             <Button
-                                                variant="ghost"
+                                                variant="outline"
                                                 size="icon"
                                                 onClick={() => removeItem(item.product.id)}
-                                                className="text-zinc-600 hover:text-primary hover:bg-primary/10 rounded-lg h-7 w-7 lg:h-10 lg:w-10 flex-shrink-0"
+                                                className="text-zinc-500 hover:text-primary hover:bg-primary/10 border-border rounded-lg h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 transition-colors"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5" />
+                                                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                             </Button>
                                         </div>
 
-                                        <div className="flex items-center justify-between mt-2 lg:mt-6">
+                                        <div className="flex flex-row items-center justify-between mt-2 sm:mt-4 md:mt-6 gap-2 sm:gap-4">
                                             {/* Quantity Controls */}
-                                            <div className="flex items-center gap-1 bg-background rounded-lg lg:rounded-xl p-0.5 lg:p-1 border border-border">
+                                            <div className="flex items-center gap-0 sm:gap-2 bg-background rounded-lg sm:rounded-xl p-0.5 sm:p-1 border border-border">
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-6 w-6 lg:h-8 lg:w-8 text-foreground hover:bg-accent active:scale-95"
+                                                    className="h-6 w-6 sm:h-8 sm:w-8 text-foreground hover:bg-accent active:scale-95"
                                                     onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                                                     disabled={item.quantity <= 1}
                                                 >
-                                                    <Minus className="w-3 h-3 lg:w-4 lg:h-4" />
+                                                    <Minus className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
                                                 </Button>
-                                                <span className="w-6 lg:w-10 text-center text-[11px] lg:text-sm font-black text-foreground italic">{item.quantity}</span>
+                                                <QuantityInput
+                                                    value={item.quantity}
+                                                    onChange={(val) => updateQuantity(item.product.id, val)}
+                                                />
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-6 w-6 lg:h-8 lg:w-8 text-foreground hover:bg-accent active:scale-95"
+                                                    className="h-6 w-6 sm:h-8 sm:w-8 text-foreground hover:bg-accent active:scale-95"
                                                     onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                                                 >
-                                                    <Plus className="w-3 h-3 lg:w-4 lg:h-4" />
+                                                    <Plus className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
                                                 </Button>
                                             </div>
 
                                             {/* Price */}
                                             <div className="text-right">
-                                                <p className="text-lg lg:text-3xl font-black text-primary italic tracking-tight">
-                                                    {(item.product.price * item.quantity).toLocaleString()} <span className="text-[9px] lg:text-xs not-italic text-muted-foreground">{currency}</span>
+                                                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-black text-primary italic tracking-tight">
+                                                    {(item.product.price * item.quantity).toLocaleString()} <span className="text-[9px] sm:text-xs not-italic text-muted-foreground ml-0.5">{currency}</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -128,49 +179,53 @@ const CartPage = () => {
                         ))}
                     </div>
 
-                    {/* Order Summary (Desktop) */}
-                    <div className="hidden lg:block lg:col-span-1">
-                        <div className="bg-card border border-border rounded-3xl p-8 sticky top-32 shadow-2xl relative overflow-hidden group">
+                    {/* Order Summary (Desktop/Tablet) */}
+                    <div className="hidden md:block xl:col-span-1">
+                        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 xl:sticky xl:top-24 shadow-2xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl" />
 
-                            <h2 className="font-display text-2xl font-black text-foreground italic uppercase tracking-tighter mb-8 border-b border-border pb-4">Résumé Tactique</h2>
+                            <h2 className="font-display text-xl lg:text-2xl font-black text-foreground italic uppercase tracking-tighter mb-4 border-b border-border pb-3">Résumé Tactique</h2>
 
-                            <div className="space-y-4 mb-10">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Sous-total matériel</span>
-                                    <span className="font-bold text-foreground">{getTotal().toLocaleString()} {currency}</span>
+                            <div className="space-y-3 mb-6">
+                                <div className="flex justify-between items-center text-xs sm:text-sm font-bold">
+                                    <span className="text-muted-foreground uppercase tracking-[0.2em]">Sous-total matériel</span>
+                                    <span className="text-foreground">{getTotal().toLocaleString()} {currency}</span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Logistique nationale</span>
-                                    <span className="text-xs font-black text-green-500 uppercase italic">Calculée au déploiement</span>
+                                <div className="flex justify-between items-center text-xs sm:text-sm font-bold">
+                                    <span className="text-muted-foreground uppercase tracking-[0.2em]">Logistique nationale</span>
+                                    <span className="text-green-500 uppercase italic font-black">Calculée au déploiement</span>
                                 </div>
-                                <div className="pt-6 border-t border-border flex justify-between items-end">
-                                    <span className="font-display text-xl font-black text-foreground italic uppercase tracking-tighter">Total</span>
-                                    <span className="text-4xl font-black text-primary italic tracking-tighter">{(getTotal()).toLocaleString()} <span className="text-sm not-italic font-bold">{currency}</span></span>
+                                <div className="pt-4 border-t border-white/5 flex flex-col gap-1">
+                                    <span className="font-display text-lg sm:text-xl font-black text-foreground italic uppercase tracking-tighter leading-none">Total arsenal</span>
+                                    <span className="text-3xl sm:text-4xl font-black text-primary italic tracking-tighter leading-none">
+                                        {(getTotal()).toLocaleString()} <span className="text-xs sm:text-sm not-italic font-bold">{currency}</span>
+                                    </span>
                                 </div>
                             </div>
 
-                            <Link to="/checkout">
-                                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-lg mb-4" size="lg">
-                                    Finaliser la Commande
-                                </Button>
-                            </Link>
+                            <div className="space-y-3">
+                                <Link to="/checkout" className="block w-full">
+                                    <Button className="w-full h-12 sm:h-14 italic text-sm sm:text-base tracking-tighter font-black uppercase bg-primary hover:bg-primary/90 text-primary-foreground">
+                                        Finaliser la Commande
+                                    </Button>
+                                </Link>
 
-                            <Link to="/products">
-                                <Button variant="outline" className="w-full border-border hover:bg-accent text-muted-foreground hover:text-foreground font-black uppercase tracking-widest h-12 rounded-xl transition-all active:scale-95 italic text-sm mb-8">
-                                    Revenir au Magasin
-                                </Button>
-                            </Link>
+                                <Link to="/products" className="block w-full">
+                                    <Button variant="outline" className="w-full h-10 sm:h-12 italic text-xs sm:text-sm font-bold border-white/10 hover:bg-white/5 uppercase tracking-widest">
+                                        Revenir au Magasin
+                                    </Button>
+                                </Link>
+                            </div>
 
-                            <div className="space-y-4">
+                            <div className="mt-6 space-y-3">
                                 {[
                                     { text: "Paiement à la livraison", color: "bg-green-500" },
                                     { text: "Logistique Express 24-72h", color: "bg-primary" },
                                     { text: "Certification Qualité Mkarim", color: "bg-white" }
                                 ].map((row, i) => (
-                                    <div key={i} className="flex items-center gap-3 bg-muted p-3 rounded-xl border border-border">
-                                        <div className={`w-1.5 h-1.5 ${row.color} rounded-full shadow-[0_0_10px_currentColor]`} />
-                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{row.text}</span>
+                                    <div key={i} className="flex items-center gap-4 bg-white/5 p-3 rounded-lg border border-white/5">
+                                        <div className={`w-2 h-2 ${row.color} rounded-full shadow-[0_0_15px_currentColor]`} />
+                                        <span className="text-[9px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest">{row.text}</span>
                                     </div>
                                 ))}
                             </div>
@@ -179,26 +234,28 @@ const CartPage = () => {
                 </div>
 
                 {/* Sticky Mobile Summary Bar */}
-                <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border p-4 pb-[env(safe-area-inset-bottom,1rem)] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center justify-between mb-4 px-1">
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Total arsenal</span>
-                            <span className="text-xl font-black text-primary italic tracking-tighter leading-none">{(getTotal()).toLocaleString()} <span className="text-[10px] not-italic text-muted-foreground">{currency}</span></span>
+                <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border p-4 sm:p-6 md:p-8 pb-[env(safe-area-inset-bottom,1rem)] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+                    <div className="max-w-3xl mx-auto">
+                        <div className="flex items-center justify-between mb-4 sm:mb-6 px-1">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] sm:text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1.5 sm:mb-2 text-left">Total arsenal</span>
+                                <span className="text-xl sm:text-2xl md:text-3xl font-black text-primary italic tracking-tighter leading-none">{(getTotal()).toLocaleString()} <span className="text-[10px] sm:text-xs not-italic text-muted-foreground ml-0.5">{currency}</span></span>
+                            </div>
+                            <span className="text-[8px] sm:text-[10px] md:text-xs font-black text-green-500 uppercase italic tracking-tighter bg-green-500/10 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md border border-green-500/20">Logistique incluse</span>
                         </div>
-                        <span className="text-[8px] font-black text-green-500 uppercase italic tracking-tighter bg-green-500/10 px-2 py-1 rounded">Logistique incluse</span>
-                    </div>
 
-                    <div className="flex flex-col gap-2">
-                        <Link to="/checkout" className="block w-full">
-                            <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest h-14 rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all italic text-base">
-                                FINALISER LA COMMANDE
-                            </Button>
-                        </Link>
-                        <Link to="/products" className="block w-full">
-                            <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground font-black uppercase tracking-widest h-8 rounded-xl transition-all active:scale-95 italic text-[10px]">
-                                REVENIR AU MAGASIN
-                            </Button>
-                        </Link>
+                        <div className="flex flex-col gap-3 sm:gap-4">
+                            <Link to="/checkout" className="block w-full">
+                                <Button className="w-full h-12 sm:h-14 italic text-sm sm:text-base px-2 tracking-tighter sm:tracking-normal font-black uppercase bg-primary hover:bg-primary/90 text-primary-foreground">
+                                    FINALISER LA COMMANDE
+                                </Button>
+                            </Link>
+                            <Link to="/products" className="block w-full">
+                                <Button variant="ghost" className="w-full h-10 sm:h-12 italic text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-widest" size="sm">
+                                    REVENIR AU MAGASIN
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>

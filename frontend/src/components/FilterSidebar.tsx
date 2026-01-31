@@ -27,12 +27,14 @@ interface FilterSidebarProps {
     activeFilters: any;
     updateFilters: (filters: any) => void;
     onClose?: () => void;
+    expand?: boolean; // New prop to control expansion
 }
 
-export const FilterSidebar = ({ products, categories, activeFilters, updateFilters, onClose }: FilterSidebarProps) => {
+export const FilterSidebar = ({ products, categories, activeFilters, updateFilters, onClose, expand = false }: FilterSidebarProps) => {
 
     // Safety resolver for category icons
     const getCategoryIcon = (cat: any) => {
+        // ... (existing logic)
         // 1. Try resolving by explicitly stored DB icon name
         if (cat.icon) {
             const iconName = cat.icon;
@@ -107,12 +109,16 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
 
     // Extract Specs Dynamically based on current category products
     const dynamicSpecs = useMemo(() => {
-        if (!products || products.length === 0) return { cpus: [], gpus: [], others: [] };
+        if (!products || products.length === 0) return { cpus: [], gpus: [], others: [], rams: [], storages: [], brands: [] };
 
         const cpus = new Set<string>();
         const gpus = new Set<string>();
+        const rams = new Set<string>();
+        const storages = new Set<string>();
+        const brands = new Set<string>();
         const others = new Set<string>();
 
+        // Legacy keyword matchers (fallback)
         const cpuKeywords = ['ryzen', 'core i', 'intel', 'amd'];
         const gpuKeywords = ['rtx', 'gtx', 'radeon', 'rx', 'nvidia'];
 
@@ -130,10 +136,26 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
         relevantProducts.forEach(product => {
             if (product.specs && Array.isArray(product.specs)) {
                 product.specs.forEach(spec => {
-                    const lowerSpec = spec.toLowerCase();
-                    if (cpuKeywords.some(k => lowerSpec.includes(k))) cpus.add(spec);
-                    else if (gpuKeywords.some(k => lowerSpec.includes(k))) gpus.add(spec);
-                    else if (spec.trim() !== "") others.add(spec);
+                    // Try parsing structured format {key}: value
+                    const match = spec.match(/^\{([^}]+)\}:\s*(.+)$/);
+
+                    if (match) {
+                        const key = match[1].toLowerCase().trim();
+                        const value = match[2].trim();
+
+                        if (key === 'cpu') cpus.add(value);
+                        else if (key === 'gpu') gpus.add(value);
+                        else if (key === 'ram') rams.add(value);
+                        else if (key === 'stockage') storages.add(value);
+                        else if (key === 'marque' || key === 'marque_pc') brands.add(value);
+                        else others.add(`${key}: ${value}`); // Keep others generic
+                    } else {
+                        // Legacy handling
+                        const lowerSpec = spec.toLowerCase();
+                        if (cpuKeywords.some(k => lowerSpec.includes(k))) cpus.add(spec);
+                        else if (gpuKeywords.some(k => lowerSpec.includes(k))) gpus.add(spec);
+                        else if (spec.trim() !== "") others.add(spec);
+                    }
                 });
             }
         });
@@ -141,6 +163,9 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
         return {
             cpus: Array.from(cpus).sort(),
             gpus: Array.from(gpus).sort(),
+            rams: Array.from(rams).sort(),
+            storages: Array.from(storages).sort(),
+            brands: Array.from(brands).sort(),
             others: Array.from(others).sort().slice(0, 20)
         };
     }, [products, activeFilters.category, categories]);
@@ -159,26 +184,27 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
         if (onClose) onClose();
     };
 
+    const Container = expand ? 'div' : ScrollArea;
+
     return (
-        <div className="flex flex-col h-full bg-background/50 backdrop-blur-xl border-r border-border w-full lg:w-72">
+        <div className={`flex flex-col ${expand ? '' : 'h-full border-r'} bg-background/50 backdrop-blur-xl border-border w-full lg:w-72`}>
             {/* Header */}
-            <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-background/80 z-20">
+            <div className={`p-6 border-b border-border flex items-center justify-between bg-background/80 z-20 ${expand ? '' : 'sticky top-0'}`}>
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-6 bg-primary skew-x-[-15deg]" />
                     <h2 className="font-display font-black text-foreground text-lg uppercase italic tracking-tighter">Filtres</h2>
                 </div>
                 <Button
                     variant="ghost"
-                    size="sm"
                     onClick={resetAll}
-                    className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-widest gap-2"
+                    className="h-10 text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-widest gap-2"
                 >
-                    <RotateCcw className="w-3 h-3" />
+                    <RotateCcw className="w-4 h-4" />
                     Reset
                 </Button>
             </div>
 
-            <ScrollArea className="flex-1 px-4 py-6">
+            <Container className="flex-1 px-4 py-6">
                 <div className="space-y-8 pb-8">
 
                     {/* Price Range (Permanent Global Filter) */}
@@ -255,6 +281,38 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                         <h3 className="px-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-2">Spécifications Tactiques</h3>
 
                         <Accordion type="multiple" className="w-full space-y-2">
+                            {/* Brand Group */}
+                            {(dynamicSpecs.brands?.length || 0) > 0 && (
+                                <AccordionItem value="brands" className="border-none">
+                                    <AccordionTrigger className="flex items-center gap-3 py-3 px-4 bg-muted border border-border rounded-xl hover:bg-accent transition-all hover:no-underline">
+                                        <div className="flex items-center gap-3 flex-1 text-left">
+                                            <LucideIcons.Tag className="w-4 h-4 text-primary" />
+                                            <span className="text-xs font-black text-foreground uppercase tracking-wider">Marque</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 px-1">
+                                        <div className="space-y-1">
+                                            {dynamicSpecs.brands.map((brand) => (
+                                                <div
+                                                    key={brand}
+                                                    onClick={() => toggleArrayFilter('brands', brand)}
+                                                    className="flex items-center justify-between p-3 rounded-lg hover:bg-accent cursor-pointer group transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${activeFilters.brands?.includes(brand) ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'}`}>
+                                                            {activeFilters.brands?.includes(brand) && <Check className="w-3 h-3 text-primary-foreground" />}
+                                                        </div>
+                                                        <span className={`text-xs font-bold uppercase tracking-tight transition-colors ${activeFilters.brands?.includes(brand) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                                            {brand}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            )}
+
                             {/* CPU Group */}
                             {dynamicSpecs.cpus.length > 0 && (
                                 <AccordionItem value="cpus" className="border-none">
@@ -319,6 +377,70 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                                 </AccordionItem>
                             )}
 
+                            {/* RAM Group */}
+                            {(dynamicSpecs.rams?.length || 0) > 0 && (
+                                <AccordionItem value="rams" className="border-none">
+                                    <AccordionTrigger className="flex items-center gap-3 py-3 px-4 bg-muted border border-border rounded-xl hover:bg-accent transition-all hover:no-underline">
+                                        <div className="flex items-center gap-3 flex-1 text-left">
+                                            <LucideIcons.Cpu className="w-4 h-4 text-primary" />
+                                            <span className="text-xs font-black text-foreground uppercase tracking-wider">Mémoire (RAM)</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 px-1">
+                                        <div className="space-y-1">
+                                            {dynamicSpecs.rams.map((ram) => (
+                                                <div
+                                                    key={ram}
+                                                    onClick={() => toggleArrayFilter('rams', ram)}
+                                                    className="flex items-center justify-between p-3 rounded-lg hover:bg-accent cursor-pointer group transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${activeFilters.rams?.includes(ram) ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'}`}>
+                                                            {activeFilters.rams?.includes(ram) && <Check className="w-3 h-3 text-primary-foreground" />}
+                                                        </div>
+                                                        <span className={`text-xs font-bold uppercase tracking-tight transition-colors ${activeFilters.rams?.includes(ram) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                                            {ram}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            )}
+
+                            {/* Storage (Stockage) Group */}
+                            {(dynamicSpecs.storages?.length || 0) > 0 && (
+                                <AccordionItem value="storages" className="border-none">
+                                    <AccordionTrigger className="flex items-center gap-3 py-3 px-4 bg-muted border border-border rounded-xl hover:bg-accent transition-all hover:no-underline">
+                                        <div className="flex items-center gap-3 flex-1 text-left">
+                                            <LucideIcons.HardDrive className="w-4 h-4 text-primary" />
+                                            <span className="text-xs font-black text-foreground uppercase tracking-wider">Stockage</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 px-1">
+                                        <div className="space-y-1">
+                                            {dynamicSpecs.storages.map((storage) => (
+                                                <div
+                                                    key={storage}
+                                                    onClick={() => toggleArrayFilter('storages', storage)}
+                                                    className="flex items-center justify-between p-3 rounded-lg hover:bg-accent cursor-pointer group transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${activeFilters.storages?.includes(storage) ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'}`}>
+                                                            {activeFilters.storages?.includes(storage) && <Check className="w-3 h-3 text-primary-foreground" />}
+                                                        </div>
+                                                        <span className={`text-xs font-bold uppercase tracking-tight transition-colors ${activeFilters.storages?.includes(storage) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                                            {storage}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            )}
+
                             {/* Other Specs (dynamic per category) */}
                             {dynamicSpecs.others.length > 0 && (
                                 <AccordionItem value="others" className="border-none">
@@ -357,12 +479,12 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
 
 
                 </div>
-            </ScrollArea>
+            </Container>
 
             {/* Mobile Apply Button */}
             {onClose && (
                 <div className="p-6 border-t border-border bg-background/80">
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest h-14 rounded-xl shadow-lg" onClick={onClose}>
+                    <Button size="xl" className="w-full" onClick={onClose}>
                         Valider le Matériel
                     </Button>
                 </div>

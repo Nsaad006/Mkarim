@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Settings" ADD COLUMN     "aboutHeroBlur" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "aboutHeroOverlayOpacity" INTEGER NOT NULL DEFAULT 90,
+ADD COLUMN     "homeHeroBlur" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "homeHeroOverlayOpacity" INTEGER NOT NULL DEFAULT 80;

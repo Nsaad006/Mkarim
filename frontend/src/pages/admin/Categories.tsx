@@ -144,81 +144,83 @@ const Categories = () => {
                 </Button>
             </div>
 
-            <div className="bg-card rounded-xl border border-border p-6">
+            <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
                 <div className="mb-6 max-w-sm relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Rechercher..."
-                        className="pl-8"
+                        className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
 
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Nom</TableHead>
-                            <TableHead>Slug</TableHead>
-                            <TableHead>Icône</TableHead>
-                            <TableHead className="text-center">Aperçu</TableHead>
-                            <TableHead>Produits</TableHead>
-                            <TableHead>Statut</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredCategories.map((category) => (
-                            <TableRow key={category.id}>
-                                <TableCell className="font-medium">{category.name}</TableCell>
-                                <TableCell className="text-muted-foreground font-mono text-xs">{category.slug}</TableCell>
-                                <TableCell className="text-muted-foreground text-xs">{category.icon || "-"}</TableCell>
-                                <TableCell className="text-center">
-                                    <div className="flex justify-center">
-                                        {(() => {
-                                            const iconName = category.icon || "";
-                                            const normalized = iconName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-
-                                            const aliases: Record<string, string> = {
-                                                'motocycle': 'motorcycle',
-                                                'moto': 'motorcycle',
-                                                'scooter': 'bike',
-                                                'trottinette': 'bike'
-                                            };
-
-                                            const target = aliases[normalized] || normalized;
-                                            const foundKey = Object.keys(LucideIcons).find(key => key.toLowerCase() === target);
-                                            const Icon = foundKey ? (LucideIcons as any)[foundKey] : null;
-                                            return Icon ? <Icon className="w-5 h-5 text-muted-foreground" /> : <div className="w-5 h-5 bg-muted rounded-md border border-border" />;
-                                        })()}
-                                    </div>
-                                </TableCell>
-                                <TableCell>{category.productsCount || 0}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <Switch
-                                            checked={category.active}
-                                            onCheckedChange={() => handleStatusToggle(category)}
-                                        />
-                                        <span className="text-xs font-medium">
-                                            {category.active ? "Actif" : "Inactif"}
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex justify-end gap-2">
-                                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(category)}>
-                                            <Pencil className="w-4 h-4" />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(category.id)}>
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                    </div>
-                                </TableCell>
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader className="bg-muted/30">
+                            <TableRow>
+                                <TableHead>Nom</TableHead>
+                                <TableHead>Slug</TableHead>
+                                <TableHead>Icône</TableHead>
+                                <TableHead className="text-center">Aperçu</TableHead>
+                                <TableHead>Produits</TableHead>
+                                <TableHead>Statut</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredCategories.map((category) => (
+                                <TableRow key={category.id} className="hover:bg-muted/5 transition-colors">
+                                    <TableCell className="font-medium">{category.name}</TableCell>
+                                    <TableCell className="text-muted-foreground font-mono text-xs">{category.slug}</TableCell>
+                                    <TableCell className="text-muted-foreground text-xs">{category.icon || "-"}</TableCell>
+                                    <TableCell className="text-center">
+                                        <div className="flex justify-center">
+                                            {(() => {
+                                                const iconName = category.icon || "";
+                                                const normalized = iconName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+                                                const aliases: Record<string, string> = {
+                                                    'motocycle': 'motorcycle',
+                                                    'moto': 'motorcycle',
+                                                    'scooter': 'bike',
+                                                    'trottinette': 'bike'
+                                                };
+
+                                                const target = aliases[normalized] || normalized;
+                                                const foundKey = Object.keys(LucideIcons).find(key => key.toLowerCase() === target);
+                                                const Icon = foundKey ? (LucideIcons as any)[foundKey] : null;
+                                                return Icon ? <Icon className="w-5 h-5 text-muted-foreground" /> : <div className="w-5 h-5 bg-muted rounded-md border border-border" />;
+                                            })()}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>{category.productsCount || 0}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Switch
+                                                checked={category.active}
+                                                onCheckedChange={() => handleStatusToggle(category)}
+                                            />
+                                            <span className="text-xs font-medium">
+                                                {category.active ? "Actif" : "Inactif"}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="ghost" size="icon" onClick={() => openEditDialog(category)}>
+                                                <Pencil className="w-4 h-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(category.id)}>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

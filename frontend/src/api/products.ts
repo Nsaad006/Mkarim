@@ -5,6 +5,7 @@ export interface ProductFilters {
     categoryId?: string;
     inStock?: boolean;
     search?: string;
+    featured?: boolean;
 }
 
 export const productsApi = {
@@ -13,6 +14,7 @@ export const productsApi = {
         const params = new URLSearchParams();
         if (filters?.categoryId) params.append('categoryId', filters.categoryId);
         if (filters?.inStock !== undefined) params.append('inStock', String(filters.inStock));
+        if (filters?.featured !== undefined) params.append('featured', String(filters.featured));
         if (filters?.search) params.append('search', filters.search);
 
         const { data } = await apiClient.get<Product[]>(`/api/products?${params}`);
@@ -32,7 +34,7 @@ export const productsApi = {
     },
 
     // Update product (admin)
-    update: async (id: string, product: Partial<Product>): Promise<Product> => {
+    update: async (id: string, product: Partial<Product> & { password?: string }): Promise<Product> => {
         const { data } = await apiClient.put<Product>(`/api/products/${id}`, product);
         return data;
     },
@@ -40,5 +42,14 @@ export const productsApi = {
     // Delete product (admin)
     delete: async (id: string): Promise<void> => {
         await apiClient.delete(`/api/products/${id}`);
+    },
+
+    // Adjust cost price with password verification
+    adjustCost: async (id: string, newUnitCostPrice: number, password: string): Promise<any> => {
+        const { data } = await apiClient.post(`/api/products/${id}/adjust-cost`, {
+            unitCostPrice: newUnitCostPrice,
+            password
+        });
+        return data;
     },
 };

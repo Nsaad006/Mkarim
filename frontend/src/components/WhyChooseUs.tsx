@@ -84,11 +84,11 @@ const WhyChooseUs = () => {
                 <feature.icon className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </div>
 
-              <h3 className="relative z-10 font-display font-bold text-sm md:text-xl mb-1.5 md:mb-3 group-hover:text-primary transition-colors leading-tight">
+              <h3 className="relative z-10 font-display font-bold text-[12px] sm:text-sm md:text-xl mb-1 md:mb-3 group-hover:text-primary transition-colors leading-tight truncate">
                 {feature.title}
               </h3>
 
-              <p className="relative z-10 text-[11px] md:text-base text-muted-foreground leading-relaxed md:leading-relaxed line-clamp-2 md:line-clamp-none">
+              <p className="relative z-10 text-[9px] sm:text-[11px] md:text-base text-muted-foreground leading-relaxed md:leading-relaxed line-clamp-3 md:line-clamp-none">
                 {feature.description}
               </p>
 

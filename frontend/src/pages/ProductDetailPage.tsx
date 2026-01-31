@@ -1,6 +1,9 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShoppingCart, Truck, ShieldCheck, CreditCard, ArrowLeft, Check, Loader2 } from "lucide-react";
+import {
+  ShoppingCart, Truck, ShieldCheck, CreditCard, ArrowLeft, Check, Loader2,
+  Cpu, Zap, HardDrive, Tag, CircuitBoard, AppWindow, Monitor, LayoutGrid
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
@@ -48,6 +51,21 @@ const ProductDetailPage = () => {
       .filter((p) => p.id !== id && p.categoryId === product.categoryId)
       .slice(0, 4);
   }, [allProducts, product, id]);
+
+  // Helper to get icon for spec key
+  const getSpecIcon = (key?: string) => {
+    if (!key) return LayoutGrid;
+    const normalized = key.toLowerCase().trim();
+    if (normalized.includes('cpu') || normalized.includes('processeur')) return Cpu;
+    if (normalized.includes('gpu') || normalized.includes('graphique')) return Zap;
+    if (normalized.includes('ram') || normalized.includes('memoire')) return CircuitBoard;
+    if (normalized.includes('stockage') || normalized.includes('disque') || normalized.includes('ssd')) return HardDrive;
+    if (normalized.includes('marque')) return Tag;
+    if (normalized.includes('carte_mere') || normalized.includes('motherboard')) return CircuitBoard;
+    if (normalized.includes('systeme') || normalized.includes('os') || normalized.includes('windows')) return AppWindow;
+    if (normalized.includes('ecran') || normalized.includes('display')) return Monitor;
+    return LayoutGrid;
+  };
 
   if (isProductLoading) {
     return (
@@ -142,12 +160,12 @@ const ProductDetailPage = () => {
               <div className="flex flex-wrap items-center gap-8 bg-card backdrop-blur-md p-8 rounded-3xl border border-border relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-colors" />
                 <div className="relative z-10">
-                  <div className="flex items-baseline gap-4 mb-2">
-                    <span className="text-5xl font-black text-foreground italic tracking-tighter">
-                      {product.price.toLocaleString()} <span className="text-primary text-2xl not-italic underline decoration-primary/50 decoration-4 underline-offset-8 ml-1">{currency}</span>
+                  <div className="flex flex-col gap-1 mb-2">
+                    <span className="text-5xl lg:text-6xl font-black text-foreground italic tracking-tighter">
+                      {product.price.toLocaleString()} <span className="text-primary text-2xl lg:text-3xl ml-1">{currency}</span>
                     </span>
                     {product.originalPrice && (
-                      <span className="text-2xl text-muted-foreground/60 line-through font-bold tracking-tighter">
+                      <span className="text-xl lg:text-2xl text-muted-foreground/40 line-through font-bold tracking-tighter italic ml-1">
                         {product.originalPrice.toLocaleString()} {currency}
                       </span>
                     )}
@@ -168,21 +186,22 @@ const ProductDetailPage = () => {
                 ) : (
                   <>
                     <Button
-                      size="lg"
-                      className="flex-[1.5] bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest h-16 rounded-2xl shadow-[0_0_30px_rgba(235,68,50,0.3)] hover:shadow-[0_0_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-xl"
+                      size="xl"
+                      className="w-full sm:flex-[1.5] shrink-0 italic tracking-tighter sm:tracking-normal px-2 text-sm sm:text-lg shadow-[0_4px_20px_rgba(235,68,50,0.25)]"
                       onClick={handleOrderNow}
                       disabled={!product.inStock}
                     >
-                      COMMANDER MAINTENANT
+                      COMMANDER
                     </Button>
                     <Button
-                      size="lg"
                       variant="outline"
-                      className="flex-1 border-border text-foreground hover:bg-accent font-black uppercase tracking-widest h-16 rounded-2xl active:scale-95 italic text-lg"
+                      size="xl"
+                      className="w-full sm:flex-1 shrink-0 px-2 text-sm sm:text-lg"
                       onClick={handleAddToCart}
                       disabled={!product.inStock}
                     >
-                      + PANIER
+                      <ShoppingCart />
+                      PANIER
                     </Button>
                   </>
                 )}
@@ -193,12 +212,20 @@ const ProductDetailPage = () => {
                 <div className="space-y-4 pt-4">
                   <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-2">SPECIFICATIONS TECHNIQUES</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {product.specs.map((spec, index) => (
-                      <div key={index} className="flex items-center gap-4 bg-muted/50 border border-border p-4 rounded-xl group hover:border-primary/30 transition-colors duration-300">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                        <span className="text-sm font-bold text-foreground uppercase tracking-tight">{spec}</span>
-                      </div>
-                    ))}
+                    {product.specs.map((spec, index) => {
+                      // Parse the {key}: value format
+                      const match = spec.match(/^\{([^}]+)\}:\s*(.+)$/);
+                      const key = match ? match[1] : undefined;
+                      const displayValue = match ? match[2] : spec;
+                      const Icon = getSpecIcon(key);
+
+                      return (
+                        <div key={index} className="flex items-center gap-4 bg-muted/50 border border-border p-4 rounded-xl group hover:border-primary/30 transition-colors duration-300">
+                          <Icon className="w-5 h-5 text-primary shrink-0" />
+                          <span className="text-sm font-bold text-foreground uppercase tracking-tight">{displayValue}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

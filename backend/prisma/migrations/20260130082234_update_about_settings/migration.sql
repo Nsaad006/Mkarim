@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Settings" ADD COLUMN     "aboutImage" TEXT NOT NULL DEFAULT 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=1200',
+ADD COLUMN     "aboutMissionDetails" TEXT NOT NULL DEFAULT 'Avec le paiement à la livraison, nous facilitons l''accès à la technologie pour tous, partout au Maroc. Notre équipe passionnée est là pour vous conseiller et vous accompagner dans vos choix.',
+ADD COLUMN     "aboutValues" JSONB NOT NULL DEFAULT '[{"title":"Confiance","description":"Nous construisons des relations durables basées sur la transparence et l''honnêteté."},{"title":"Qualité","description":"Chaque produit est soigneusement sélectionné pour garantir des performances optimales."},{"title":"Service Client","description":"Notre équipe est dédiée à votre satisfaction, avant et après l''achat."},{"title":"Fiabilité","description":"Livraison rapide et sécurisée partout au Maroc."}]';

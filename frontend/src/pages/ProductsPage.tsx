@@ -9,6 +9,7 @@ import {
   Loader2,
   X,
   ChevronRight,
+  ChevronLeft,
   Search
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -44,13 +45,36 @@ const ProductsPage = () => {
   const [sortBy, setSortBy] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const PRODUCTS_PER_PAGE = 9;
+  const [itemsPerPage, setItemsPerPage] = useState(18); // Default to desktop
+
+  // Responsive items per page
+  useEffect(() => {
+    const handleResize = () => {
+      // lg breakpoint is usually 1024px.
+      // Mobile/Tablet -> 16 items
+      // Desktop -> 18 items
+      if (window.innerWidth < 820) {
+        setItemsPerPage(16);
+      } else {
+        setItemsPerPage(18);
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Advanced Filtering State
   const [filters, setFilters] = useState({
     category: searchParams.get("category") || "all",
     cpus: searchParams.get("cpus")?.split(",") || [],
     gpus: searchParams.get("gpus")?.split(",") || [],
+    rams: searchParams.get("rams")?.split(",") || [],
+    storages: searchParams.get("storages")?.split(",") || [],
+    brands: searchParams.get("brands")?.split(",") || [],
     others: searchParams.get("others")?.split(",") || [],
     games: searchParams.get("games")?.split(",") || [],
     minPrice: Number(searchParams.get("minPrice")) || 0,
@@ -64,6 +88,9 @@ const ProductsPage = () => {
     if (filters.category !== "all") params.category = filters.category;
     if (filters.cpus.length > 0) params.cpus = filters.cpus.join(",");
     if (filters.gpus.length > 0) params.gpus = filters.gpus.join(",");
+    if (filters.rams.length > 0) params.rams = filters.rams.join(",");
+    if (filters.storages.length > 0) params.storages = filters.storages.join(",");
+    if (filters.brands.length > 0) params.brands = filters.brands.join(",");
     if (filters.others.length > 0) params.others = filters.others.join(",");
     if (filters.games.length > 0) params.games = filters.games.join(",");
     if (filters.minPrice > 0) params.minPrice = filters.minPrice.toString();
@@ -118,6 +145,21 @@ const ProductsPage = () => {
         if (!filters.gpus.some(gpu => productText.includes(gpu.toLowerCase()))) return false;
       }
 
+      // RAM
+      if (filters.rams?.length > 0) {
+        if (!filters.rams.some(ram => productText.includes(ram.toLowerCase()))) return false;
+      }
+
+      // Storage
+      if (filters.storages?.length > 0) {
+        if (!filters.storages.some(storage => productText.includes(storage.toLowerCase()))) return false;
+      }
+
+      // Brands (Marque)
+      if (filters.brands?.length > 0) {
+        if (!filters.brands.some(brand => productText.includes(brand.toLowerCase()))) return false;
+      }
+
       // Dynamic Specs (Others)
       if (filters.others?.length > 0) {
         if (!filters.others.some(spec => productText.includes(spec.toLowerCase()))) return false;
@@ -144,9 +186,9 @@ const ProductsPage = () => {
   }, [filteredProducts, sortBy]);
 
   // Pagination logic
-  const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
-  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-  const endIndex = startIndex + PRODUCTS_PER_PAGE;
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
   const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
 
   // Reset to page 1 when filters change
@@ -194,6 +236,9 @@ const ProductsPage = () => {
     if (filters.category !== 'all') chips.push({ type: 'category', value: filters.category, label: `Cat: ${filters.category}` });
     filters.cpus.forEach(v => chips.push({ type: 'cpus', value: v, label: v.toUpperCase() }));
     filters.gpus.forEach(v => chips.push({ type: 'gpus', value: v, label: v.toUpperCase() }));
+    filters.rams.forEach(v => chips.push({ type: 'rams', value: v, label: v.toUpperCase() }));
+    filters.storages.forEach(v => chips.push({ type: 'storages', value: v, label: v.toUpperCase() }));
+    filters.brands.forEach(v => chips.push({ type: 'brands', value: v, label: v.toUpperCase() }));
     filters.others.forEach(v => chips.push({ type: 'others', value: v, label: v.toUpperCase() }));
     filters.games.forEach(v => chips.push({ type: 'games', value: v, label: v.toUpperCase() }));
     if (filters.minPrice > 0 || filters.maxPrice < 100000) {
@@ -247,12 +292,13 @@ const ProductsPage = () => {
 
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-72 flex-shrink-0">
-              <div className="sticky top-32 h-[calc(100vh-160px)] rounded-3xl overflow-hidden shadow-2xl">
+              <div className="sticky bottom-8 rounded-3xl overflow-hidden shadow-2xl border border-border bg-card">
                 <FilterSidebar
                   products={allProducts}
                   categories={categories}
                   activeFilters={filters}
                   updateFilters={setFilters}
+                  expand={true}
                 />
               </div>
             </aside>
@@ -261,9 +307,11 @@ const ProductsPage = () => {
             <div className="lg:hidden">
               <Sheet open={showFilters} onOpenChange={setShowFilters}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="w-full h-14 bg-card border-border text-foreground font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl">
-                    <SlidersHorizontal className="w-5 h-5 mr-3 text-primary" />
-                    UNITÉ DE FILTRAGE
+                  <Button variant="outline" className="w-full h-14 bg-card border-border text-foreground font-black uppercase tracking-tighter sm:tracking-normal rounded-2xl shadow-xl px-4">
+                    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                      <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                      <span className="text-[11px] sm:text-base font-black whitespace-nowrap">UNITÉ DE FILTRAGE</span>
+                    </div>
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 bg-transparent border-none w-[300px] sm:w-[350px]">
@@ -313,6 +361,9 @@ const ProductsPage = () => {
                         category: 'all',
                         cpus: [],
                         gpus: [],
+                        rams: [],
+                        storages: [],
+                        brands: [],
                         others: [],
                         games: [],
                         minPrice: 0,
@@ -338,7 +389,7 @@ const ProductsPage = () => {
                 </div>
               ) : sortedProducts.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4 md:gap-8">
                     {paginatedProducts.map((product, idx) => (
                       <motion.div
                         key={product.id}
@@ -357,25 +408,35 @@ const ProductsPage = () => {
                       <Pagination>
                         <PaginationContent className="gap-2">
                           <PaginationItem>
-                            <PaginationPrevious
+                            <PaginationLink
                               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                              className={`cursor-pointer bg-card border-border text-foreground hover:bg-accent hover:text-primary ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            />
+                              className={`cursor-pointer bg-card border-border text-foreground hover:bg-accent hover:text-primary gap-1 pl-2.5 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                              size="default"
+                              aria-label="Page précédente"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                              <span className="hidden sm:inline">Précédent</span>
+                            </PaginationLink>
                           </PaginationItem>
 
                           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                            const isCurrent = currentPage === page;
+                            const isNeighbor = page >= currentPage - 1 && page <= currentPage + 1;
+                            const isFirst = page === 1;
+                            const isLast = page === totalPages;
+
                             // Show first page, last page, current page, and pages around current
-                            if (
-                              page === 1 ||
-                              page === totalPages ||
-                              (page >= currentPage - 1 && page <= currentPage + 1)
-                            ) {
+                            if (isFirst || isLast || isNeighbor) {
+                              // On mobile, only show neighbors (current, prev, next).
+                              // Hide first/last if they are not neighbors.
+                              const responsiveClass = (!isNeighbor) ? "hidden sm:block" : "";
+
                               return (
-                                <PaginationItem key={page}>
+                                <PaginationItem key={page} className={responsiveClass}>
                                   <PaginationLink
                                     onClick={() => setCurrentPage(page)}
-                                    isActive={currentPage === page}
-                                    className={`cursor-pointer ${currentPage === page
+                                    isActive={isCurrent}
+                                    className={`cursor-pointer ${isCurrent
                                       ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                                       : 'bg-card border-border text-foreground hover:bg-accent hover:text-primary'
                                       }`}
@@ -386,7 +447,7 @@ const ProductsPage = () => {
                               );
                             } else if (page === currentPage - 2 || page === currentPage + 2) {
                               return (
-                                <PaginationItem key={page}>
+                                <PaginationItem key={page} className="hidden sm:block">
                                   <PaginationEllipsis className="text-muted-foreground" />
                                 </PaginationItem>
                               );
@@ -395,10 +456,15 @@ const ProductsPage = () => {
                           })}
 
                           <PaginationItem>
-                            <PaginationNext
+                            <PaginationLink
                               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                              className={`cursor-pointer bg-card border-border text-foreground hover:bg-accent hover:text-primary ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            />
+                              className={`cursor-pointer bg-card border-border text-foreground hover:bg-accent hover:text-primary gap-1 pr-2.5 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                              size="default"
+                              aria-label="Page suivante"
+                            >
+                              <span className="hidden sm:inline">Suivant</span>
+                              <ChevronRight className="h-4 w-4" />
+                            </PaginationLink>
                           </PaginationItem>
                         </PaginationContent>
                       </Pagination>
@@ -424,6 +490,9 @@ const ProductsPage = () => {
                       category: 'all',
                       cpus: [],
                       gpus: [],
+                      rams: [],
+                      storages: [],
+                      brands: [],
                       others: [],
                       games: [],
                       minPrice: 0,

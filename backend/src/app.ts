@@ -14,6 +14,10 @@ import statsRouter from './routes/stats';
 import contactsRouter from './routes/contacts';
 import uploadRouter from './routes/upload';
 import heroSlidesRouter from './routes/hero-slides';
+import suppliersRouter from './routes/suppliers';
+import procurementsRouter from './routes/procurements';
+import capitalRouter from './routes/capital';
+import wholesalersRouter from './routes/wholesalers';
 
 const app = express();
 
@@ -43,6 +47,10 @@ app.use('/api/contacts', contactsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/hero-slides', heroSlidesRouter);
+app.use('/api/suppliers', suppliersRouter);
+app.use('/api/procurements', procurementsRouter);
+app.use('/api/capital', capitalRouter);
+app.use('/api/wholesalers', wholesalersRouter);
 
 // Health check
 app.get('/health', (req, res) => {

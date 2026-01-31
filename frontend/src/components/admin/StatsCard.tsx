@@ -8,25 +8,26 @@ interface StatsCardProps {
     trend?: string;
     trendUp?: boolean;
     description?: string;
+    className?: string;
 }
 
-const StatsCard = ({ title, value, icon: Icon, trend, trendUp, description }: StatsCardProps) => {
+const StatsCard = ({ title, value, icon: Icon, trend, trendUp, description, className }: StatsCardProps) => {
     return (
-        <Card>
-            <CardContent className="p-6">
+        <Card className={className}>
+            <CardContent className="p-5">
                 <div className="flex items-center justify-between space-y-0 pb-2">
-                    <p className="text-sm font-medium text-muted-foreground">{title}</p>
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-primary" />
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</p>
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Icon className="w-4 h-4 text-primary" />
                     </div>
                 </div>
-                <div className="flex flex-col mt-3">
-                    <span className="text-3xl font-bold">{value}</span>
+                <div className="flex flex-col mt-2">
+                    <span className="text-2xl font-bold">{value}</span>
                     {description && (
-                        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{description}</p>
                     )}
                     {trend && (
-                        <p className={`text-xs font-medium mt-1 flex items-center ${trendUp ? "text-success" : "text-destructive"}`}>
+                        <p className={`text-[10px] font-medium mt-1 flex items-center ${trendUp ? "text-success" : "text-destructive"}`}>
                             {trendUp ? "↑" : "↓"} {trend}
                             <span className="text-muted-foreground ml-1">vs mois dernier</span>
                         </p>

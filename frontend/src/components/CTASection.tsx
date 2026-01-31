@@ -42,7 +42,7 @@ const CTASection = () => {
               Édition Limitée
             </span>
 
-            <h2 className="font-display text-3xl md:text-6xl font-black text-foreground mb-6 md:mb-8 tracking-tighter leading-tight md:leading-none">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-6xl font-black text-foreground mb-6 md:mb-8 tracking-tighter leading-tight md:leading-none">
               {ctaTitle.split(' ').map((word, i) => (
                 <span key={i} className={word.toLowerCase() === 'setup' || word.toLowerCase() === 'révolutionner' ? "text-primary" : ""}>
                   {word}{' '}
@@ -54,15 +54,15 @@ const CTASection = () => {
               {ctaSubtitle}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center">
-              <Link to={primaryBtnLink} className="w-full sm:w-auto">
-                <Button size="lg" className="h-14 md:h-16 px-8 md:px-10 text-lg md:text-xl font-black btn-glow glow-primary uppercase tracking-wider w-full sm:w-auto">
+            <div className="flex flex-col lg:flex-row gap-4 md:gap-6 justify-center items-center">
+              <Link to={primaryBtnLink} className="w-full lg:w-auto shrink-0">
+                <Button size="xl" className="w-full lg:w-auto px-6 md:px-10 shadow-[0_0_30px_rgba(235,68,50,0.3)] shrink-0">
                   {primaryBtnText}
-                  <ArrowRight className="ml-2 md:ml-3 w-5 h-5 md:w-6 md:h-6" />
+                  <ArrowRight />
                 </Button>
               </Link>
-              <Link to={secondaryBtnLink} className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="h-14 md:h-16 px-8 md:px-10 text-lg md:text-xl font-bold bg-transparent border-border text-foreground hover:bg-accent uppercase tracking-wider w-full sm:w-auto">
+              <Link to={secondaryBtnLink} className="w-full lg:w-auto shrink-0">
+                <Button size="xl" variant="outline" className="w-full lg:w-auto px-6 md:px-10 shrink-0">
                   {secondaryBtnText}
                 </Button>
               </Link>

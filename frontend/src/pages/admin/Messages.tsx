@@ -98,15 +98,15 @@ const Messages = () => {
                     />
                 </div>
 
-                <div className="rounded-md border">
+                <div className="rounded-md border overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Expéditeur</TableHead>
-                                <TableHead>Sujet</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="whitespace-nowrap">Status</TableHead>
+                                <TableHead className="whitespace-nowrap">Expéditeur</TableHead>
+                                <TableHead className="whitespace-nowrap">Sujet</TableHead>
+                                <TableHead className="whitespace-nowrap">Date</TableHead>
+                                <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -123,7 +123,7 @@ const Messages = () => {
                                 filteredMessages.map((msg) => (
                                     <TableRow key={msg.id} className={`hover:bg-muted/50 ${msg.status === 'NEW' ? 'bg-primary/5 font-medium' : ''}`}>
                                         <TableCell>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 whitespace-nowrap">
                                                 {msg.status === 'NEW' ? (
                                                     <span className="w-2 h-2 rounded-full bg-primary" title="Nouveau" />
                                                 ) : (
@@ -134,17 +134,17 @@ const Messages = () => {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
-                                                <span>{msg.name}</span>
-                                                <span className="text-xs text-muted-foreground">{msg.email}</span>
+                                                <span className="whitespace-nowrap">{msg.name}</span>
+                                                <span className="text-xs text-muted-foreground whitespace-nowrap">{msg.email}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="max-w-[200px] truncate">
                                             {msg.subject || "(Sans sujet)"}
                                         </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
+                                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                                             {new Date(msg.createdAt).toLocaleDateString()}
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right whitespace-nowrap">
                                             <div className="flex justify-end gap-2">
                                                 <Sheet>
                                                     <SheetTrigger asChild>

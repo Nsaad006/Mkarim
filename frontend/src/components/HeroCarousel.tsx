@@ -5,6 +5,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Gamepad2, Zap, Trophy, ShieldChe
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { heroSlidesApi } from '@/api/hero-slides';
+import { settingsApi } from '@/api/settings';
 import { useQuery } from '@tanstack/react-query';
 import { getImageUrl } from '@/lib/image-utils';
 
@@ -42,6 +43,11 @@ const DEFAULT_SLIDES = [
 ];
 
 export const HeroCarousel = () => {
+    const { data: settings } = useQuery({
+        queryKey: ['settings'],
+        queryFn: settingsApi.get,
+    });
+
     const { data: remoteSlides = [] } = useQuery({
         queryKey: ['hero-slides'],
         queryFn: heroSlidesApi.getAll,
@@ -70,11 +76,13 @@ export const HeroCarousel = () => {
         let autoplayId: ReturnType<typeof setInterval>;
         let resumeTimeoutId: ReturnType<typeof setTimeout>;
 
+        const interval = settings?.homeHeroAutoPlayInterval || 5000;
+
         const startAutoplay = () => {
             stopAutoplay();
             autoplayId = setInterval(() => {
                 emblaApi.scrollNext();
-            }, 4000);
+            }, interval);
         };
 
         const stopAutoplay = () => {
@@ -85,7 +93,7 @@ export const HeroCarousel = () => {
             stopAutoplay();
             clearTimeout(resumeTimeoutId);
             // Wait 8 seconds before restarting autoplay
-            resumeTimeoutId = setTimeout(startAutoplay, 1000);
+            resumeTimeoutId = setTimeout(startAutoplay, 8000);
         };
 
         onSelect();
@@ -107,7 +115,7 @@ export const HeroCarousel = () => {
             emblaApi.off('pointerUp', onInteraction);
             emblaApi.off('settle', onInteraction);
         };
-    }, [emblaApi, onSelect]);
+    }, [emblaApi, onSelect, settings]);
 
     return (
         <div className="dark">
@@ -122,8 +130,12 @@ export const HeroCarousel = () => {
                                         src={slide.image}
                                         alt={slide.title}
                                         className="w-full h-full object-cover transition-transform duration-[10s] scale-105 hover:scale-100"
+                                        style={{ filter: `blur(${settings?.homeHeroBlur ?? 0}px)` }}
                                     />
-                                    <div className={`absolute inset-0 bg-gradient-to-r ${slide.color || 'from-[#070708]/80'} via-[#070708]/80 to-[#070708]/40 z-10`} />
+                                    <div
+                                        className={`absolute inset-0 bg-gradient-to-r ${slide.color || 'from-[#070708]/80'} via-[#070708]/80 to-[#070708]/40 z-10`}
+                                        style={{ opacity: (settings?.homeHeroOverlayOpacity ?? 80) / 100 }}
+                                    />
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#070708] via-transparent to-transparent z-10" />
                                 </div>
 
@@ -156,7 +168,7 @@ export const HeroCarousel = () => {
                                                         )}
                                                     </div>
 
-                                                    <h1 className="font-display text-3xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-[1.1] tracking-tight text-white drop-shadow-2xl">
+                                                    <h1 className="font-display text-2xl sm:text-3xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-[1.1] tracking-tight text-white drop-shadow-2xl">
                                                         {slide.title.split(' ').map((word, i) => (
                                                             <span key={i} className={i === 1 ? "text-primary block md:inline" : ""}>
                                                                 {word}{' '}
@@ -172,13 +184,13 @@ export const HeroCarousel = () => {
 
                                                     <div className="flex flex-col sm:flex-row gap-4 mb-12 items-start justify-start">
                                                         <Link to={slide.buttonLink} className="w-full sm:w-auto">
-                                                            <Button size="lg" className="h-12 md:h-14 px-8 text-base md:text-lg font-bold btn-glow glow-primary w-full sm:w-auto">
+                                                            <Button variant="gaming" size="xl" className="w-full sm:w-auto px-10">
                                                                 {slide.buttonText}
-                                                                <ArrowRight className="ml-2 w-5 h-5" />
+                                                                <ArrowRight />
                                                             </Button>
                                                         </Link>
                                                         <Link to="/products" className="w-full sm:w-auto">
-                                                            <Button size="lg" variant="outline" className="h-12 md:h-14 px-8 text-base md:text-lg font-medium border-zinc-800 bg-zinc-900/50 text-zinc-100 hover:bg-zinc-800 w-full sm:w-auto">
+                                                            <Button size="xl" variant="outline" className="w-full sm:w-auto">
                                                                 Découvrir la Boutique
                                                             </Button>
                                                         </Link>

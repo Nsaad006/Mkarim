@@ -25,9 +25,12 @@ model Product {
   specs         String[] // Array of specs
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  isFeatured    Boolean  @default(false)
   
   category      Category    @relation(fields: [categoryId], references: [id])
   orderItems    OrderItem[]
+  procurements  Procurement[]
+  wholesaleItems WholesaleOrderItem[]
 }
 
 model Category {
@@ -112,6 +115,41 @@ model Admin {
   role      String   @default("editor")
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
+
+  procurements Procurement[]
+  capitalEntries CapitalEntry[]
+}
+
+model Supplier {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String
+  email     String?
+  city      String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  procurements Procurement[]
+}
+
+model Procurement {
+  id                String   @id @default(uuid())
+  supplierId        String
+  productId         String
+  quantityPurchased Int
+  unitCostPrice     Int
+  totalCost         Int      // quantityPurchased * unitCostPrice
+  purchaseDate      DateTime @default(now())
+  createdByAdminId  String?
+
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  admin    Admin?   @relation(fields: [createdByAdminId], references: [id])
+
+  @@index([supplierId])
+  @@index([productId])
+  @@index([createdByAdminId])
 }
 
 model Contact {
@@ -162,6 +200,8 @@ model Settings {
   // Home Page Content
   categoriesTitle     String   @default("NOS CATÉGORIES")
   categoriesSubtitle  String   @default("Découvrez notre large gamme de produits par univers.")
+  categoriesAutoPlayInterval Int @default(3000)
+  
   featuredTitle       String   @default("PRODUITS POPULAIRES")
   featuredSubtitle    String   @default("Les meilleures ventes et nouveautés sélectionnées pour vous.")
   whyTitle            String   @default("L'EXCELLENCE MKARIM SOLUTION")
@@ -179,6 +219,16 @@ model Settings {
   aboutTitle        String   @default("À Propos de MKARIM")
   aboutDescription  String   @default("MKARIM est votre partenaire de confiance pour tous vos besoins en matériel informatique et gaming au Maroc.")
   aboutMission      String   @default("Notre mission est de fournir des produits de haute qualité à des prix compétitifs avec un service client exceptionnel.")
+  aboutMissionDetails String @default("Avec le paiement à la livraison, nous facilitons l'accès à la technologie pour tous, partout au Maroc. Notre équipe passionnée est là pour vous conseiller et vous accompagner dans vos choix.")
+  aboutImage        String   @default("https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=1200")
+  aboutValues       Json     @default("[{\"title\":\"Confiance\",\"description\":\"Nous construisons des relations durables basées sur la transparence et l'honnêteté.\"},{\"title\":\"Qualité\",\"description\":\"Chaque produit est soigneusement sélectionné pour garantir des performances optimales.\"},{\"title\":\"Service Client\",\"description\":\"Notre équipe est dédiée à votre satisfaction, avant et après l'achat.\"},{\"title\":\"Fiabilité\",\"description\":\"Livraison rapide et sécurisée partout au Maroc.\"}]")
+  aboutHeroImage    String   @default("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600&q=80")
+  aboutHeroOverlayOpacity Int    @default(90) // 0-100
+  aboutHeroBlur           Int    @default(0)   // 0-20
+  
+  homeHeroOverlayOpacity  Int    @default(80) // 0-100
+  homeHeroBlur            Int    @default(0)   // 0-20
+  homeHeroAutoPlayInterval Int   @default(5000)
   
   // Low Stock Settings
   lowStockThreshold Int      @default(5)
@@ -209,4 +259,58 @@ model HeroSlide {
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model CapitalEntry {
+  id          String   @id @default(uuid())
+  amount      Int      // Positive for injection, negative for withdrawal
+  type        String   // 'INJECTION', 'WITHDRAWAL', 'PROCUREMENT', 'REVENUE'
+  description String?
+  date        DateTime @default(now())
+  adminId     String?
+  admin       Admin?   @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+}
+
+model Wholesaler {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  phone     String   @unique
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  orders    WholesaleOrder[]
+}
+
+model WholesaleOrder {
+  id             String            @id @default(uuid())
+  wholesalerId   String
+  orderNumber    String            @unique
+  totalAmount    Int
+  advanceAmount  Int               @default(0)
+  status         WholesaleStatus   @default(PENDING)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  
+  wholesaler     Wholesaler        @relation(fields: [wholesalerId], references: [id])
+  items          WholesaleOrderItem[]
+}
+
+model WholesaleOrderItem {
+  id               String         @id @default(uuid())
+  wholesaleOrderId String
+  productId        String
+  quantity         Int
+  unitPrice        Int
+  
+  order            WholesaleOrder @relation(fields: [wholesaleOrderId], references: [id], onDelete: Cascade)
+  product          Product        @relation(fields: [productId], references: [id])
+}
+
+enum WholesaleStatus {
+  PENDING
+  PAID
 }

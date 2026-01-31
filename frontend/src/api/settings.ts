@@ -56,6 +56,16 @@ export interface GlobalSettings {
     aboutTitle: string;
     aboutDescription: string;
     aboutMission: string;
+    aboutMissionDetails?: string;
+    aboutImage?: string;
+    aboutHeroImage?: string;
+    aboutHeroOverlayOpacity?: number;
+    aboutHeroBlur?: number;
+    homeHeroOverlayOpacity?: number;
+    homeHeroBlur?: number;
+    homeHeroAutoPlayInterval?: number;
+    categoriesAutoPlayInterval?: number;
+    aboutValues?: any;
 
     updatedAt: string;
     createdAt?: string;

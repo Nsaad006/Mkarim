@@ -15,6 +15,8 @@ import {
     Download,
     FileSpreadsheet
 } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
     exportOrdersToExcel,
     exportOrdersToPDF,
@@ -89,6 +91,7 @@ const Orders = () => {
             ordersApi.updateStatus(id, status),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['orders'] });
+            queryClient.invalidateQueries({ queryKey: ['stats-summary'] });
             toast({
                 title: "Statut mis à jour",
                 description: "La commande a été mise à jour avec succès.",
@@ -193,13 +196,13 @@ const Orders = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-3xl font-bold tracking-tight">Commandes</h1>
+                <h1 className="text-2xl font-bold tracking-tight">Commandes</h1>
                 <div className="flex gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
+                            <Button variant="outline" size="sm">
                                 <Download className="mr-2 h-4 w-4" /> Exporter
                             </Button>
                         </DropdownMenuTrigger>
@@ -215,21 +218,21 @@ const Orders = () => {
                 </div>
             </div>
 
-            <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+            <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
                 {/* Filters */}
-                <div className="flex flex-col sm:flex-row gap-4 mb-6 justify-between">
-                    <div className="relative w-full sm:w-72">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <div className="flex flex-col lg:flex-row gap-4 mb-6 justify-between items-start lg:items-center">
+                    <div className="relative w-full lg:w-96">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Rechercher commande, client..."
-                            className="pl-8"
+                            className="pl-10 h-9 w-full"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectTrigger className="w-full sm:w-[180px] h-9">
                                 <SelectValue placeholder="Filtrer par statut" />
                             </SelectTrigger>
                             <SelectContent>
@@ -241,8 +244,10 @@ const Orders = () => {
                                 <SelectItem value="cancelled">Annulée</SelectItem>
                             </SelectContent>
                         </Select>
-                        <DatePickerWithRange date={dateRange} setDate={setDateRange} />
-                        <Button variant="outline" size="icon">
+                        <div className="h-9 w-full sm:w-auto">
+                            <DatePickerWithRange date={dateRange} setDate={setDateRange} className="w-full sm:w-auto" />
+                        </div>
+                        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 hidden sm:inline-flex">
                             <Filter className="h-4 w-4" />
                         </Button>
                     </div>
@@ -274,7 +279,7 @@ const Orders = () => {
                                 </TableRow>
                             ) : filteredOrders.length > 0 ? (
                                 filteredOrders.map((order) => (
-                                    <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50">
+                                    <TableRow key={order.id} className="cursor-pointer hover:bg-muted/5 transition-colors">
                                         <TableCell className="font-mono font-medium">{order.orderNumber}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
@@ -283,7 +288,9 @@ const Orders = () => {
                                             </div>
                                         </TableCell>
                                         <TableCell>{order.city}</TableCell>
-                                        <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                                        <TableCell>
+                                            {format(new Date(order.createdAt), 'dd MMM yyyy', { locale: fr })}
+                                        </TableCell>
                                         <TableCell className="font-bold">{order.total.toLocaleString()} {currency}</TableCell>
                                         <TableCell>
                                             <StatusBadge status={order.status} />

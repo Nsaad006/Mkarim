@@ -99,7 +99,22 @@ async function main() {
     }
     console.log('');
 
-    // 5. Seed Products
+    // 5. Seed Suppliers
+    console.log('🏭 Seeding suppliers...');
+    const mainSupplier = await prisma.supplier.upsert({
+        where: { id: 'default-supplier' },
+        update: {},
+        create: {
+            id: 'default-supplier',
+            name: 'Fournisseur Principal',
+            phone: '+212 600000000',
+            email: 'supply@example.com',
+            city: 'Casablanca'
+        }
+    });
+    console.log(`   ✅ Supplier created: ${mainSupplier.name}\n`);
+
+    // 6. Seed Products
     console.log('🛒 Seeding products...');
     const productsData = [
         {
@@ -111,7 +126,7 @@ async function main() {
             categoryId: createdCategories['laptops'].id,
             quantity: 30,
             badge: 'Nouveau',
-            specs: ['Intel i7-12700H', '16GB RAM', '512GB SSD', 'Écran 15.6" 4K']
+            specs: ['{cpu}: Intel i7-12700H', '{ram}: 16GB RAM', '{stockage}: 512GB SSD', '{ecran}: 15.6" 4K', '{marque}: Dell']
         },
         {
             name: 'MacBook Pro 14" M3',
@@ -122,7 +137,7 @@ async function main() {
             categoryId: createdCategories['laptops'].id,
             quantity: 15,
             badge: 'Bestseller',
-            specs: ['Apple M3', '16GB RAM', '512GB SSD', 'Écran Retina 14"']
+            specs: ['{cpu}: Apple M3', '{ram}: 16GB RAM', '{stockage}: 512GB SSD', '{ecran}: Retina 14"', '{marque}: Apple']
         },
         {
             name: 'PC Gamer MKARIM Pro RTX 4070',
@@ -133,7 +148,7 @@ async function main() {
             categoryId: createdCategories['gaming-pc'].id,
             quantity: 50,
             badge: 'Bestseller',
-            specs: ['Intel Core i7-13700K', 'RTX 4070 12GB', '32GB DDR5', '1TB NVMe SSD']
+            specs: ['{cpu}: Intel Core i7-13700K', '{gpu}: RTX 4070 12GB', '{ram}: 32GB DDR5', '{stockage}: 1TB NVMe SSD', '{marque_pc}: MKARIM Custom']
         },
         {
             name: 'Logitech G Pro X Superlight',
@@ -144,7 +159,7 @@ async function main() {
             categoryId: createdCategories['gaming-mice'].id,
             quantity: 60,
             badge: 'Pro',
-            specs: ['Sans fil', '63g', 'Hero 25K', '70h autonomie']
+            specs: ['{connexion}: Sans fil', '{poids}: 63g', '{capteur}: Hero 25K', '{autonomie}: 70h', '{marque}: Logitech']
         },
         {
             name: 'Razer BlackWidow V3',
@@ -155,7 +170,7 @@ async function main() {
             categoryId: createdCategories['gaming-keyboards'].id,
             quantity: 35,
             badge: 'Promo',
-            specs: ['Switches mécaniques', 'RGB Chroma', 'Repose-poignet', 'USB-C']
+            specs: ['{switch}: Mécaniques', '{feature}: RGB Chroma', '{feature}: Repose-poignet', '{connexion}: USB-C', '{marque}: Razer']
         }
     ];
 
@@ -177,6 +192,35 @@ async function main() {
         }
         console.log(`   ✅ ${prod.name}`);
     }
+
+    // 7. Seed Procurements (Crucial for WAC & Profit Calculation)
+    console.log('📦 Seeding procurements (for profit analytics)...');
+    const allSeededProducts = await prisma.product.findMany();
+
+    for (const product of allSeededProducts) {
+        // Check if procurement exists
+        const existingProcurement = await prisma.procurement.findFirst({
+            where: { productId: product.id }
+        });
+
+        if (!existingProcurement) {
+            // Estimate cost price (e.g., 80% of selling price)
+            const estimatedCost = Math.round(product.price * 0.8);
+
+            await prisma.procurement.create({
+                data: {
+                    productId: product.id,
+                    quantityPurchased: product.quantity, // Initial stock from procurement
+                    unitCostPrice: estimatedCost,
+                    totalCost: estimatedCost * product.quantity,
+                    supplierId: mainSupplier.id,
+                    purchaseDate: new Date()
+                }
+            });
+            console.log(`   ✅ Procurement added for: ${product.name} (Cost: ${estimatedCost})`);
+        }
+    }
+    console.log('');
 
     // 6. Seed Hero Slides
     console.log('\n🎞️ Seeding hero slides...');

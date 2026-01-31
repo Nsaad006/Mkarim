@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { getImageUrl } from '@/lib/image-utils';
-import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from './ui/dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProductImageGalleryProps {
@@ -54,9 +54,13 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
                 <div
                     ref={containerRef}
                     className="relative aspect-square rounded-2xl overflow-hidden bg-card border border-border cursor-zoom-in group"
-                    onMouseEnter={() => setIsZoomed(true)}
+                    onMouseEnter={() => {
+                        if (window.innerWidth >= 1024) setIsZoomed(true);
+                    }}
                     onMouseLeave={() => setIsZoomed(false)}
-                    onMouseMove={handleMouseMove}
+                    onMouseMove={(e) => {
+                        if (window.innerWidth >= 1024) handleMouseMove(e);
+                    }}
                     onClick={() => setIsLightboxOpen(true)}
                 >
                     <motion.img
@@ -64,9 +68,9 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
                         initial={{ opacity: 0 }}
                         animate={{
                             opacity: 1,
-                            scale: isZoomed ? 2 : 1,
-                            x: isZoomed ? `${(50 - mousePos.x) * 0.5}%` : 0,
-                            y: isZoomed ? `${(50 - mousePos.y) * 0.5}%` : 0,
+                            scale: (isZoomed && window.innerWidth >= 1024) ? 2 : 1,
+                            x: (isZoomed && window.innerWidth >= 1024) ? `${(50 - mousePos.x) * 0.5}%` : 0,
+                            y: (isZoomed && window.innerWidth >= 1024) ? `${(50 - mousePos.y) * 0.5}%` : 0,
                         }}
                         transition={{
                             opacity: { duration: 0.3 },
@@ -79,8 +83,8 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
                         className="w-full h-full object-cover origin-center"
                     />
 
-                    {/* Magnifier Icon */}
-                    <div className="absolute top-4 right-4 p-2 bg-background/50 backdrop-blur-md rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* Magnifier Icon - Desktop Only */}
+                    <div className="absolute top-4 right-4 p-2 bg-background/50 backdrop-blur-md rounded-full shadow-lg opacity-0 md:group-hover:opacity-100 transition-opacity hidden md:block">
                         <Maximize2 className="w-5 h-5 text-foreground" />
                     </div>
 
@@ -104,7 +108,7 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
                                     setIsZoomed(false);
                                 }}
                                 onMouseLeave={() => {
-                                    setIsZoomed(true);
+                                    if (window.innerWidth >= 1024) setIsZoomed(true);
                                 }}
                             >
                                 <ChevronLeft className="w-5 h-5" />
@@ -119,7 +123,7 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
                                     setIsZoomed(false);
                                 }}
                                 onMouseLeave={() => {
-                                    setIsZoomed(true);
+                                    if (window.innerWidth >= 1024) setIsZoomed(true);
                                 }}
                             >
                                 <ChevronRight className="w-5 h-5" />
@@ -129,7 +133,7 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
 
                     {/* Image Counter */}
                     {imageList.length > 1 && (
-                        <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium z-20 border border-border transition-opacity ${isZoomed ? 'opacity-0' : 'opacity-100'}`}>
+                        <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium z-20 border border-border transition-opacity ${(isZoomed && window.innerWidth >= 1024) ? 'opacity-0' : 'opacity-100'}`}>
                             {selectedIndex + 1} / {imageList.length}
                         </div>
                     )}
@@ -161,6 +165,12 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
             {/* Lightbox Dialog */}
             <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
                 <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+                    {/* Accessibility requirements */}
+                    <DialogTitle className="sr-only">Vue agrandie du produit</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Affichage en plein écran de l'image de {productName}
+                    </DialogDescription>
+
                     <div className="relative w-full h-full flex items-center justify-center">
                         <Button
                             variant="ghost"

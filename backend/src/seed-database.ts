@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -7,12 +8,17 @@ async function main() {
 
     // 1. Seed Admin User
     console.log('👤 Seeding admin user...');
+
+    const hashedPassword = await bcrypt.hash('123456', 10);
+
     const admin = await prisma.admin.upsert({
         where: { email: 'admin@mkarim.ma' },
-        update: {},
+        update: {
+            password: hashedPassword // Ensure password is correct even if user exists
+        },
         create: {
             email: 'admin@mkarim.ma',
-            password: '123456', // Plain text for development
+            password: hashedPassword,
             name: 'Admin Principal',
             role: 'super_admin',
             active: true
@@ -74,7 +80,19 @@ async function main() {
     }
     console.log('');
 
-    // 4. Seed Products
+    // 4. Seed Supplier
+    console.log('🏭 Seeding supplier...');
+    const supplier = await prisma.supplier.create({
+        data: {
+            name: 'Fournisseur Global',
+            phone: '+212600000001',
+            email: 'supplier@example.com',
+            city: 'Casablanca'
+        }
+    });
+    console.log(`   ✅ Supplier created: ${supplier.name}\n`);
+
+    // 5. Seed Products & Procurements
     console.log('🛒 Seeding products...');
     const products = [
         // Laptops
@@ -262,13 +280,75 @@ async function main() {
     ];
 
     for (const product of products) {
-        await prisma.product.create({
+        const createdProduct = await prisma.product.create({
             data: {
                 ...product,
                 inStock: product.quantity > 0
             }
         });
+
+        // 6. Create Initial Procurement
+        if (createdProduct.quantity > 0) {
+            const unitCost = Math.round(product.price * 0.75); // Assume 75% margin
+            await prisma.procurement.create({
+                data: {
+                    supplierId: supplier.id,
+                    productId: createdProduct.id,
+                    quantityPurchased: createdProduct.quantity,
+                    unitCostPrice: unitCost,
+                    totalCost: unitCost * createdProduct.quantity,
+                    createdByAdminId: admin.id
+                }
+            });
+        }
+
         console.log(`   ✅ ${product.name}`);
+    }
+    console.log('');
+
+    // 7. Seed Hero Slides
+    console.log('🖼️  Seeding hero slides...');
+    const heroSlides = [
+        {
+            title: "PC GAMER ULTIME",
+            subtitle: "PERFORMANCE EXTRÊME",
+            description: "Dominez le jeu avec nos configurations RTX 40 Series. Puissance brute, refroidissement optimal et design spectaculaire.",
+            image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=1200",
+            buttonText: "VOIR LES CONFIGS",
+            buttonLink: "/category/gaming-pc",
+            badge: "NOUVEAU",
+            order: 0,
+            active: true
+        },
+        {
+            title: "LAPTOPS PRO & GAMING",
+            subtitle: "LIBERTÉ TOTALE",
+            description: "La puissance d'une tour dans un format portable. Découvrez notre sélection de PC portables haute performance.",
+            image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=1200",
+            buttonText: "DÉCOUVRIR",
+            buttonLink: "/category/laptops",
+            badge: "PROMOS",
+            order: 1,
+            active: true
+        },
+        {
+            title: "MONITEURS GAMING",
+            subtitle: "IMMERSION TOTALE",
+            description: "Vivez chaque détail avec nos écrans haute fréquence. 144Hz, 240Hz, 4K - le choix des champions.",
+            image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=1200",
+            buttonText: "S'ÉQUIPER",
+            buttonLink: "/category/gaming-monitors",
+            badge: null,
+            order: 2,
+            active: true
+        }
+    ];
+
+    for (const slide of heroSlides) {
+        await prisma.heroSlide.create({
+            data: slide
+        });
+        console.log(`   ✅ Slide created: ${slide.title}`);
     }
 
     console.log('\n✨ Database seeded successfully!');

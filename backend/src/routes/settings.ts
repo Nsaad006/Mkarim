@@ -114,7 +114,21 @@ router.put('/', authenticate, authorize(['super_admin', 'editor']), async (req: 
                 ...(req.body.emailClientSecret !== undefined && { emailClientSecret: req.body.emailClientSecret }),
                 ...(req.body.emailRefreshToken !== undefined && { emailRefreshToken: req.body.emailRefreshToken }),
                 ...(req.body.emailAdminReceiver !== undefined && { emailAdminReceiver: req.body.emailAdminReceiver }),
-                ...(req.body.emailEnabled !== undefined && { emailEnabled: Boolean(req.body.emailEnabled) })
+                ...(req.body.emailEnabled !== undefined && { emailEnabled: Boolean(req.body.emailEnabled) }),
+
+                // About Page Content
+                ...(req.body.aboutMissionDetails !== undefined && { aboutMissionDetails: req.body.aboutMissionDetails }),
+                ...(req.body.aboutImage !== undefined && { aboutImage: req.body.aboutImage }),
+                ...(req.body.aboutHeroImage !== undefined && { aboutHeroImage: req.body.aboutHeroImage }),
+                ...(req.body.aboutHeroOverlayOpacity !== undefined && { aboutHeroOverlayOpacity: Number(req.body.aboutHeroOverlayOpacity) }),
+                ...(req.body.aboutHeroBlur !== undefined && { aboutHeroBlur: Number(req.body.aboutHeroBlur) }),
+                ...(req.body.homeHeroOverlayOpacity !== undefined && { homeHeroOverlayOpacity: Number(req.body.homeHeroOverlayOpacity) }),
+                ...(req.body.aboutHeroBlur !== undefined && { aboutHeroBlur: Number(req.body.aboutHeroBlur) }),
+                ...(req.body.homeHeroOverlayOpacity !== undefined && { homeHeroOverlayOpacity: Number(req.body.homeHeroOverlayOpacity) }),
+                ...(req.body.homeHeroBlur !== undefined && { homeHeroBlur: Number(req.body.homeHeroBlur) }),
+                ...(req.body.homeHeroAutoPlayInterval !== undefined && { homeHeroAutoPlayInterval: Number(req.body.homeHeroAutoPlayInterval) }),
+                ...(req.body.categoriesAutoPlayInterval !== undefined && { categoriesAutoPlayInterval: Number(req.body.categoriesAutoPlayInterval) }),
+                ...(req.body.aboutValues !== undefined && { aboutValues: req.body.aboutValues })
             }
         });
 

@@ -15,7 +15,7 @@ const FeaturedProducts = () => {
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['featured-products'],
-    queryFn: () => productsApi.getAll({ inStock: true }),
+    queryFn: () => productsApi.getAll({ inStock: true, featured: true }),
   });
 
   const sectionTitle = settings?.featuredTitle || "LES INCONTOURNABLES";
@@ -50,10 +50,10 @@ const FeaturedProducts = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <Link to="/products">
-              <Button variant="outline" className="h-12 border-border hover:bg-accent gap-2 px-6">
-                Voir tout le catalogue
-                <ArrowRight className="w-4 h-4" />
+            <Link to="/products" className="w-full sm:w-auto">
+              <Button variant="gaming" size="lg" className="w-full sm:w-auto">
+                VOIR TOUT LE CATALOGUE
+                <ArrowRight />
               </Button>
             </Link>
           </motion.div>
@@ -67,7 +67,7 @@ const FeaturedProducts = () => {
             </div>
           </div>
         ) : featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-8">
             {featuredProducts.map((product, index) => (
               <motion.div
                 key={product.id}
@@ -75,6 +75,7 @@ const FeaturedProducts = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="h-full"
               >
                 <ProductCard product={product} />
               </motion.div>

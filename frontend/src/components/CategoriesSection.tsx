@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { type LucideIcon } from "lucide-react";
 import * as icons from "lucide-react";
+import Autoplay from "embla-carousel-autoplay";
 
 import { categoriesApi } from "@/api/categories";
 import { settingsApi } from "@/api/settings";
@@ -52,12 +53,10 @@ const CategoriesSection = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="font-display text-4xl md:text-5xl font-black mb-4 tracking-tight">
-              {sectionTitle.includes("<span") ? (
+              {sectionTitle.includes("<") ? (
                 <span dangerouslySetInnerHTML={{ __html: sectionTitle }} />
               ) : (
-                <>
-                  EXPLOREZ NOS <span className="text-primary">UNIVERS</span>
-                </>
+                sectionTitle
               )}
             </h2>
             <div className="w-24 h-1.5 bg-primary mx-auto mb-6 rounded-full" />
@@ -73,6 +72,11 @@ const CategoriesSection = () => {
               align: "start",
               loop: true,
             }}
+            plugins={[
+              Autoplay({
+                delay: settings?.categoriesAutoPlayInterval || 3000,
+              }),
+            ]}
             className="w-full"
           >
             <CarouselContent className="-ml-2">
@@ -140,7 +144,7 @@ const CategoriesSection = () => {
                           <IconComponent className="w-5 h-5 md:w-7 md:h-7 text-primary group-hover:text-primary-foreground transition-colors duration-500" />
                         </div>
 
-                        <h3 className="relative z-10 font-bold text-[10px] md:text-sm text-center group-hover:text-primary transition-colors duration-300 line-clamp-1 uppercase tracking-tight">
+                        <h3 className="relative z-10 font-bold text-[10px] md:text-[11px] lg:text-sm text-center group-hover:text-primary transition-colors duration-300 line-clamp-2 uppercase tracking-tighter leading-tight min-h-[2.2em] flex items-center justify-center px-1">
                           {category.name}
                         </h3>
                       </Link>

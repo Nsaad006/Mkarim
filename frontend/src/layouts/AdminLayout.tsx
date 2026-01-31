@@ -14,7 +14,9 @@ import {
     FolderOpen,
     ShieldCheck,
     Mail,
-    Search
+    Search,
+    Truck,
+    Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +26,10 @@ import { authApi } from "@/api/auth";
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin", roles: ["super_admin", "editor", "viewer"] },
     { icon: ShoppingBag, label: "Commandes", path: "/admin/orders", roles: ["super_admin", "editor", "viewer", "commercial", "magasinier"] },
+    { icon: Briefcase, label: "Grossistes", path: "/admin/wholesalers", roles: ["super_admin", "editor"] },
     { icon: Package, label: "Produits", path: "/admin/products", roles: ["super_admin", "editor", "viewer"] },
+    { icon: Truck, label: "Fournisseurs", path: "/admin/suppliers", roles: ["super_admin", "editor"] },
+    { icon: Package, label: "Approvisionnements", path: "/admin/procurements", roles: ["super_admin", "editor"] },
     { icon: FolderOpen, label: "Catégories", path: "/admin/categories", roles: ["super_admin", "editor", "viewer"] },
     { icon: MapPin, label: "Livraison", path: "/admin/cities", roles: ["super_admin", "editor", "viewer"] },
     { icon: Users, label: "Clients", path: "/admin/customers", roles: ["super_admin", "editor", "viewer"] },
@@ -68,7 +73,7 @@ const AdminLayout = () => {
             <div className="gaming-glow-bottom" />
             {/* Sidebar */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                className={`fixed inset-y-0 left-0 z-50 w-60 bg-card border-r border-border transform transition-transform duration-200 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
                     } lg:translate-x-0 flex flex-col`}
             >
                 <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
@@ -77,16 +82,17 @@ const AdminLayout = () => {
                     </Link>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-1">
+                <div className="flex-1 overflow-y-auto p-3 space-y-1">
                     {filteredSidebarItems.map((item) => {
                         const isActive = location.pathname === item.path;
                         return (
                             <Link key={item.path} to={item.path}>
                                 <Button
                                     variant={isActive ? "secondary" : "ghost"}
-                                    className={`w-full justify-start gap-3 ${isActive ? "bg-primary/10 text-primary hover:bg-primary/20" : "text-muted-foreground"}`}
+                                    size="sm"
+                                    className={`w-full justify-start gap-3 text-sm font-medium h-9 mb-1 ${isActive ? "bg-primary/10 text-primary hover:bg-primary/20" : "text-muted-foreground"}`}
                                 >
-                                    <item.icon className="w-5 h-5" />
+                                    <item.icon className="w-4 h-4" />
                                     {item.label}
                                 </Button>
                             </Link>
@@ -94,7 +100,7 @@ const AdminLayout = () => {
                     })}
                 </div>
 
-                <div className="p-4 border-t border-border flex-shrink-0">
+                <div className="p-3 border-t border-border flex-shrink-0">
                     <Button
                         variant="outline"
                         className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -107,9 +113,9 @@ const AdminLayout = () => {
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
+            <div className="flex-1 flex flex-col min-w-0 lg:ml-60">
                 {/* Header */}
-                <header className="h-16 border-b border-border bg-card/50 backdrop-blur-md flex items-center justify-between px-4 sm:px-8 sticky top-0 z-30">
+                <header className="h-16 border-b border-border bg-card/50 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
                     <div className="flex items-center gap-4">
                         <Button
                             variant="ghost"
@@ -138,7 +144,7 @@ const AdminLayout = () => {
                                 {user.role.replace('_', ' ')}
                             </p>
                         </div>
-                        <Avatar>
+                        <Avatar className="h-8 w-8">
                             <AvatarImage src="https://github.com/shadcn.png" />
                             <AvatarFallback>AD</AvatarFallback>
                         </Avatar>
@@ -146,7 +152,7 @@ const AdminLayout = () => {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 p-4 sm:p-8 relative z-10">
+                <main className="flex-1 p-4 sm:p-6 relative z-10">
                     <Outlet context={{ searchQuery }} />
                 </main>
             </div>

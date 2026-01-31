@@ -19,27 +19,53 @@ import { Download } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
 import { getImageUrl } from "@/lib/image-utils";
 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+
 const Analytics = () => {
     const { currency } = useSettings();
     const [days, setDays] = useState(30);
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
     const { data: summary, isLoading } = useQuery({
-        queryKey: ['stats-summary', days, dateRange],
-        queryFn: () => statsApi.getSummary(days, dateRange),
+        queryKey: ['stats-summary', days, dateRange, selectedYear],
+        queryFn: () => statsApi.getSummary(days, dateRange, undefined, selectedYear),
     });
 
     const dailyRevenueHistory = summary?.revenueHistory || [];
     const cityData = summary?.salesByCity || [];
     const topProducts = summary?.topProducts || [];
+    const monthlyStats = summary?.monthlyStats || [];
+
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isStaff = ["super_admin", "editor"].includes(user.role);
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Analytics Profonds</h1>
                 <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Année:</span>
+                        <Select value={String(selectedYear)} onValueChange={(value) => setSelectedYear(Number(value))}>
+                            <SelectTrigger className="w-[100px]">
+                                <SelectValue placeholder="Année" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {[2024, 2025, 2026, 2027].map(year => (
+                                    <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <DatePickerWithRange date={dateRange} setDate={setDateRange} />
-                    <Button variant="outline">
+                    <Button variant="outline" className="border-primary/20 hover:bg-primary/5">
                         <Download className="mr-2 h-4 w-4" /> Exporter
                     </Button>
                 </div>
@@ -48,17 +74,15 @@ const Analytics = () => {
             <div className="grid md:grid-cols-2 gap-6">
                 {/* Revenue Chart */}
                 <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-                    <h3 className="font-semibold mb-6">Revenus (Derniers {days} jours)</h3>
+                    <h3 className="font-semibold mb-6">Flux de Revenus Quotidiens</h3>
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={dailyRevenueHistory}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="date" axisLine={false} tickLine={false} />
-                                <YAxis width={80} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}${currency.toLowerCase()}`} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" />
+                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af' }} />
+                                <YAxis width={80} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}${currency}`} tick={{ fill: '#9ca3af' }} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#f3f4f6' }}
-                                    labelStyle={{ color: '#9ca3af' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
                                 />
                                 <Line
                                     type="monotone"
@@ -66,6 +90,7 @@ const Analytics = () => {
                                     stroke="#9b87f5"
                                     strokeWidth={3}
                                     dot={{ r: 4, fill: "#9b87f5" }}
+                                    activeDot={{ r: 6, fill: "#fff" }}
                                 />
                             </LineChart>
                         </ResponsiveContainer>
@@ -74,48 +99,154 @@ const Analytics = () => {
 
                 {/* Sales by City */}
                 <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-                    <h3 className="font-semibold mb-6">Ventes par Ville</h3>
+                    <h3 className="font-semibold mb-6">Performance par Géographie</h3>
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={cityData} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#374151" />
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={120} axisLine={false} tickLine={false} />
+                                <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontWeight: 'bold' }} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#f3f4f6' }}
-                                    cursor={{ fill: '#374151', opacity: 0.2 }}
+                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
                                 />
-                                <Bar dataKey="value" fill="#9b87f5" radius={[0, 4, 4, 0]} barSize={30} />
+                                <Bar dataKey="value" fill="#9b87f5" radius={[0, 4, 4, 0]} barSize={20} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             </div>
 
+            {/* Financial Health Chart (Stock vs Profit) */}
+            {isStaff && (
+                <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-xl font-bold tracking-tight">Santé Financière : Stock vs Profit</h3>
+                            <p className="text-sm text-muted-foreground mt-1">Comparaison entre la valeur immobilisée en stock et les bénéfices générés.</p>
+                        </div>
+                    </div>
+                    <div className="h-[350px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={monthlyStats}>
+                                <defs>
+                                    <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#22c55e" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="#22c55e" stopOpacity={0.2} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} tickFormatter={(val) => `${val}${currency}`} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                                    itemStyle={{ fontWeight: 'bold' }}
+                                />
+                                <Bar dataKey="revenue" name="Valeur de Vente" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} />
+                                <Bar dataKey="profit" name="Profit Estimé" fill="url(#profitGradient)" radius={[4, 4, 0, 0]} barSize={20} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            )}
+
+            <div className="grid lg:grid-cols-2 gap-6">
+                {/* Monthly Performance Tables */}
+                <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+                    <div className="p-6 border-b border-border bg-muted/30">
+                        <h3 className="font-bold flex items-center gap-2 text-blue-500">
+                            📊 Revenu Mensuel (CA)
+                        </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-muted/10 text-muted-foreground uppercase text-[10px] font-bold">
+                                <tr>
+                                    <th className="px-6 py-4 text-left">Mois</th>
+                                    <th className="px-6 py-4 text-right">Chiffre d'Affaire</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                                {monthlyStats.filter(m => m.revenue > 0).map((m) => (
+                                    <tr key={m.name} className="hover:bg-muted/5 transition-colors">
+                                        <td className="px-6 py-4 font-medium">{m.name}</td>
+                                        <td className="px-6 py-4 text-right font-bold text-foreground">
+                                            {m.revenue.toLocaleString()} {currency}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+                    <div className="p-6 border-b border-border bg-muted/30">
+                        <h3 className="font-bold flex items-center gap-2 text-green-500">
+                            💰 Profit Mensuel Estimé
+                        </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-muted/10 text-muted-foreground uppercase text-[10px] font-bold">
+                                <tr>
+                                    <th className="px-6 py-4 text-left">Mois</th>
+                                    <th className="px-6 py-4 text-right">Bénéfice Net Est.</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                                {monthlyStats.filter(m => m.profit > 0).map((m) => (
+                                    <tr key={m.name} className="hover:bg-muted/5 transition-colors">
+                                        <td className="px-6 py-4 font-medium text-green-500">{m.name}</td>
+                                        <td className="px-6 py-4 text-right font-bold text-green-400">
+                                            +{m.profit.toLocaleString()} {currency}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             {/* Top Products */}
-            <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-                <h3 className="font-semibold mb-6">Top Produits Vendus</h3>
+            <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+                <div className="p-6 border-b border-border flex items-center justify-between bg-muted/20">
+                    <h3 className="font-bold tracking-tight">Top Performance Produits</h3>
+                    <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-4 py-1 bg-muted rounded-full">Derniers {days} jours</span>
+                </div>
                 <div className="relative overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-muted-foreground uppercase bg-muted/50 rounded-lg">
+                        <thead className="text-[10px] text-muted-foreground uppercase bg-muted/30 font-bold tracking-widest whitespace-nowrap">
                             <tr>
-                                <th className="px-6 py-3">Produit</th>
-                                <th className="px-6 py-3">Catégorie</th>
-                                <th className="px-6 py-3 text-center">Ventes</th>
-                                <th className="px-6 py-3 text-right">Revenu Total</th>
+                                <th className="px-6 py-4">Produit Principal</th>
+                                <th className="px-6 py-4">Catégorie</th>
+                                <th className="px-6 py-4 text-center">Volume</th>
+                                <th className="px-6 py-4 text-right">CA Total</th>
+                                {isStaff && <th className="px-6 py-4 text-right text-primary">Profit Net Est.</th>}
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-border">
                             {topProducts.map((produit) => (
-                                <tr key={produit.id} className="border-b last:border-0 border-border hover:bg-muted/50">
-                                    <td className="px-6 py-4 font-medium flex items-center gap-3">
-                                        <img src={getImageUrl(produit.image)} alt="" className="w-8 h-8 rounded bg-secondary object-cover" />
-                                        {produit.name}
+                                <tr key={produit.id} className="group hover:bg-muted/10 transition-all duration-300">
+                                    <td className="px-6 py-4 font-bold flex items-center gap-4">
+                                        <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-secondary shadow-sm group-hover:scale-110 transition-transform">
+                                            <img src={getImageUrl(produit.image)} alt="" className="w-full h-full object-cover" />
+                                        </div>
+                                        <span className="line-clamp-1">{produit.name}</span>
                                     </td>
-                                    <td className="px-6 py-4">{produit.category}</td>
-                                    <td className="px-6 py-4 text-center font-bold text-lg">{produit.sales}</td>
-                                    <td className="px-6 py-4 text-right">{produit.revenue.toLocaleString()} {currency}</td>
+                                    <td className="px-6 py-4">
+                                        <span className="px-2.5 py-0.5 bg-secondary/50 rounded-full text-[10px] font-bold uppercase tracking-tight">{produit.category}</span>
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-bold text-lg text-muted-foreground">{produit.sales}</td>
+                                    <td className="px-6 py-4 text-right font-bold">{produit.revenue.toLocaleString()} {currency}</td>
+                                    {isStaff && (
+                                        <td className="px-6 py-4 text-right">
+                                            <span className="px-3 py-1 bg-primary/10 text-primary font-bold rounded-lg border border-primary/20 whitespace-nowrap">
+                                                {produit.profit?.toLocaleString() || 0} {currency}
+                                            </span>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>

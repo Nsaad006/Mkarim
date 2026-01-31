@@ -199,13 +199,13 @@ const CheckoutPage = () => {
           Retour au Panier
         </Button>
 
-        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-12">
+        <div className="flex flex-col xl:grid xl:grid-cols-3 gap-6 lg:gap-12 items-stretch">
           {/* Main Checkout Section */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="xl:col-span-2 space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-card backdrop-blur-xl rounded-2xl lg:rounded-3xl p-5 lg:p-12 border border-border shadow-2xl"
+              className="bg-card backdrop-blur-xl rounded-2xl lg:rounded-3xl p-5 md:p-10 lg:p-14 border border-border shadow-2xl h-full"
             >
               <div className="flex items-center gap-4 mb-8 lg:mb-10 border-b border-border pb-5 lg:pb-8">
                 <div className="w-1 h-8 lg:w-2 lg:h-10 bg-primary skew-x-[-15deg]" />
@@ -273,10 +273,10 @@ const CheckoutPage = () => {
                     >
                       <SelectTrigger
                         id="city"
-                        className={`bg-background text-foreground h-13 lg:h-14 rounded-xl transition-all font-bold uppercase tracking-wider ${errors.city ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary/50"
+                        className={`bg-background text-foreground h-13 lg:h-14 rounded-xl transition-all font-bold uppercase tracking-tighter md:tracking-normal text-xs lg:text-sm ${errors.city ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary/50"
                           }`}
                       >
-                        <SelectValue placeholder="Sélectionner votre ville" />
+                        <SelectValue placeholder="SÉLECTIONNER VOTRE VILLE" />
                       </SelectTrigger>
                       <SelectContent className="bg-card border-border text-foreground">
                         {cities.map((city) => (
@@ -337,19 +337,19 @@ const CheckoutPage = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest h-15 lg:h-16 rounded-xl lg:rounded-2xl shadow-[0_10px_30px_rgba(235,68,50,0.3)] hover:shadow-[0_10px_40px_rgba(235,68,50,0.5)] transition-all active:scale-95 italic text-lg lg:text-xl mt-4"
-                  size="lg"
+                  size="xl"
+                  className="w-full italic mt-4"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                      ENVOI EN COURS...
+                      <Loader2 className="animate-spin" />
+                      <span>ENVOI EN COURS...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-6 h-6 mr-3" />
-                      CONFIRMER LA COMMANDE
+                      <CheckCircle2 />
+                      <span>CONFIRMER LA COMMANDE</span>
                     </>
                   )}
                 </Button>
@@ -358,54 +358,54 @@ const CheckoutPage = () => {
           </div>
 
           {/* Totals Section */}
-          <div className="lg:col-span-1">
-            <div className="bg-card border border-border rounded-2xl lg:rounded-3xl p-5 lg:p-8 lg:sticky lg:top-32 shadow-2xl relative overflow-hidden">
+          <div className="xl:col-span-1 h-full">
+            <div className="bg-card border border-border rounded-2xl lg:rounded-3xl p-5 md:p-12 lg:p-8 xl:sticky xl:top-32 shadow-2xl relative overflow-hidden h-full">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
 
               <h2 className="font-display text-lg lg:text-2xl font-black text-foreground italic uppercase tracking-tighter mb-5 border-b border-border pb-3">Récapitulatif</h2>
 
               <div className="space-y-4">
-                <div className="max-h-40 lg:max-h-none overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                <div className="max-h-60 lg:max-h-none overflow-y-auto pr-2 space-y-4 custom-scrollbar">
                   {cartState.items.map((item) => (
                     <div key={item.product.id} className="flex justify-between items-start gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] lg:text-xs font-black text-foreground uppercase italic tracking-tight line-clamp-2">{item.product.name}</p>
-                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">x{item.quantity}</p>
+                        <p className="text-xs sm:text-sm font-black text-foreground uppercase italic tracking-tight line-clamp-2">{item.product.name}</p>
+                        <p className="text-[10px] sm:text-xs font-black text-muted-foreground uppercase tracking-widest mt-1">x{item.quantity}</p>
                       </div>
-                      <span className="font-bold text-muted-foreground text-[11px] lg:text-xs font-mono">
+                      <span className="font-bold text-muted-foreground text-xs sm:text-sm font-mono mt-0.5">
                         {(item.product.price * item.quantity).toLocaleString()} {currency}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-2 pt-5 border-t border-white/5">
-                  <div className="flex justify-between items-center text-[10px] font-bold">
+                <div className="space-y-3 pt-5 border-t border-white/5">
+                  <div className="flex justify-between items-center text-[10px] sm:text-xs font-bold">
                     <span className="text-zinc-600 uppercase tracking-widest">SOUS-TOTAL</span>
-                    <span className="text-zinc-400">{getTotal().toLocaleString()} {currency}</span>
+                    <span className="text-zinc-400">{(getTotal()).toLocaleString()} {currency}</span>
                   </div>
 
-                  <div className="flex justify-between items-center text-[10px] font-bold">
+                  <div className="flex justify-between items-center text-[10px] sm:text-xs font-bold">
                     <span className="text-zinc-600 uppercase tracking-widest">LIVRAISON</span>
                     <span className={`uppercase italic font-black ${shippingFee === 0 && formData.city ? 'text-green-500' : 'text-zinc-400'}`}>
                       {shippingFee > 0 ? `+${shippingFee} ${currency}` : shippingFee === 0 && formData.city ? 'OFFERTE' : 'À définir'}
                     </span>
                   </div>
 
-                  <div className="pt-5 mt-2 border-t border-white/10 flex justify-between items-end">
-                    <span className="font-display text-lg lg:text-2xl font-black text-foreground italic uppercase tracking-tighter leading-none">Total Net</span>
-                    <span className="text-3xl lg:text-4xl font-black text-primary italic tracking-tighter leading-none">
-                      {total.toLocaleString()} <span className="text-[10px] lg:text-sm not-italic font-bold">{currency}</span>
+                  <div className="pt-5 mt-2 border-t border-white/10 flex flex-row md:flex-col justify-between items-end md:items-start md:gap-2">
+                    <span className="font-display text-lg sm:text-xl lg:text-2xl font-black text-foreground italic uppercase tracking-tighter leading-none">Total Net</span>
+                    <span className="text-3xl sm:text-4xl md:text-5xl font-black text-primary italic tracking-tighter leading-none">
+                      {total.toLocaleString()} <span className="text-[10px] sm:text-xs lg:text-sm not-italic font-bold">{currency}</span>
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-6 bg-green-500/5 border border-green-500/10 rounded-xl p-4">
-                  <div className="flex items-center gap-2 text-green-500 mb-1">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span className="font-black uppercase tracking-widest italic text-[9px]">PAIEMENT À LA LIVRAISON</span>
+                <div className="mt-6 bg-green-500/5 border border-green-500/10 rounded-xl p-4 sm:p-5">
+                  <div className="flex items-center gap-2 text-green-500 mb-2">
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="font-black uppercase tracking-widest italic text-[10px] sm:text-xs">PAIEMENT À LA LIVRAISON</span>
                   </div>
-                  <p className="text-[8px] font-bold text-green-500/50 uppercase leading-tight">
+                  <p className="text-[9px] sm:text-[11px] md:text-xs font-bold text-green-500/50 uppercase leading-relaxed text-justify">
                     Réglez en espèces lors de la réception de votre matériel.
                   </p>
                 </div>

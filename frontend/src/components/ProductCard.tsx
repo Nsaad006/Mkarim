@@ -44,7 +44,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className="group relative flex flex-col bg-card/40 border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_30px_rgba(235,68,50,0.15)] hover:-translate-y-1 cursor-pointer"
+      className="group relative flex flex-col h-full bg-card/40 border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_30px_rgba(235,68,50,0.15)] hover:-translate-y-1 cursor-pointer"
       onClick={handleCardClick}
     >
       {/* Image Section */}
@@ -52,7 +52,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <img
           src={getImageUrl(product.image)}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
+          className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-110 md:group-hover:rotate-1"
         />
 
         {/* Overlay Gradient */}
@@ -94,46 +94,46 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         </div>
 
-        <h3 className="font-display text-[13px] md:text-lg font-black text-foreground italic tracking-tighter leading-tight mb-2 line-clamp-2 min-h-[2.5rem] md:min-h-[3.5rem] uppercase group-hover:text-primary transition-colors">
+        <h3 className="font-display text-[13px] md:text-lg font-black text-foreground italic tracking-tighter leading-tight mb-1 md:mb-2 line-clamp-2 min-h-[2.2rem] md:min-h-[3.5rem] uppercase group-hover:text-primary transition-colors">
           {product.name}
         </h3>
 
-        <div className="flex-grow" />
-
         {/* Pricing */}
-        <div className="flex items-baseline gap-2 mb-4">
-          <span className="text-lg md:text-2xl font-black text-primary italic tracking-tight">
-            {product.price.toLocaleString()} <span className="text-[9px] not-italic text-muted-foreground">{currency}</span>
+        <div className="flex flex-col gap-0 mb-3 md:mb-4">
+          <span className="text-base sm:text-lg md:text-2xl font-black text-primary italic tracking-tight leading-tight">
+            {product.price.toLocaleString()} <span className="text-[10px] md:text-sm ml-0.5">{currency}</span>
           </span>
           {product.originalPrice && (
-            <span className="text-[9px] md:text-xs text-muted-foreground/60 line-through font-bold">
-              {product.originalPrice.toLocaleString()}
+            <span className="text-[10px] md:text-xs text-muted-foreground/40 line-through font-bold italic">
+              {product.originalPrice.toLocaleString()} {currency}
             </span>
           )}
         </div>
 
         {/* Actions - Integrated Side-by-Side */}
-        <div className="flex gap-1.5 mt-auto">
+        <div className="flex items-center gap-1 mt-auto">
           <Button
             variant="outline"
-            size="sm"
-            className="flex-none w-10 h-10 md:w-auto md:flex-1 md:h-11 border-border text-foreground hover:bg-accent p-0 md:px-3 rounded-lg active:scale-95 transition-all"
+            size="icon"
+            className="shrink-0 w-10 h-10"
+            disabled={!product.inStock}
             onClick={(e) => {
               e.stopPropagation();
-              handleAddToCart(e);
+              if (product.inStock) {
+                handleAddToCart(e);
+              }
             }}
           >
             <ShoppingCart className="w-4 h-4" />
-            <span className="hidden md:inline ml-2 text-[10px] font-black uppercase tracking-widest text-center">PANIER</span>
           </Button>
 
           <Link
             to={`/product/${product.id}`}
-            className="flex-1"
+            className="flex-[3] min-w-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button className="w-full h-10 md:h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-[10px] md:text-xs rounded-lg shadow-[0_4px_10px_rgba(235,68,50,0.2)] active:scale-95 transition-all italic" size="sm">
-              COMMANDER
+            <Button className="w-full italic px-2 overflow-hidden" size="default">
+              <span className="text-[9px] sm:text-xs font-black tracking-tighter sm:tracking-normal whitespace-nowrap">COMMANDER</span>
             </Button>
           </Link>
         </div>

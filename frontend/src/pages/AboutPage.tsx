@@ -7,28 +7,10 @@ import { useQuery } from "@tanstack/react-query";
 import { statsApi } from "@/api/stats";
 import { settingsApi } from "@/api/settings";
 
-const values = [
-  {
-    icon: Shield,
-    title: "Confiance",
-    description: "Nous construisons des relations durables basées sur la transparence et l'honnêteté.",
-  },
-  {
-    icon: Award,
-    title: "Qualité",
-    description: "Chaque produit est soigneusement sélectionné pour garantir des performances optimales.",
-  },
-  {
-    icon: Users,
-    title: "Service Client",
-    description: "Notre équipe est dédiée à votre satisfaction, avant et après l'achat.",
-  },
-  {
-    icon: Truck,
-    title: "Fiabilité",
-    description: "Livraison rapide et sécurisée partout au Maroc.",
-  },
-];
+import { getImageUrl } from '@/lib/image-utils';
+
+// Map icons to the 4 slots
+const icons = [Shield, Award, Users, Truck];
 
 const AboutPage = () => {
   const { data: settings } = useQuery({
@@ -48,20 +30,63 @@ const AboutPage = () => {
     totalCities: summary?.totalCities || 50
   };
 
+  const displayValues = settings?.aboutValues && Array.isArray(settings.aboutValues) && settings.aboutValues.length > 0
+    ? settings.aboutValues.map((v: any, i: number) => ({
+      ...v,
+      icon: icons[i] || Shield
+    }))
+    : [
+      {
+        icon: Shield,
+        title: "Confiance",
+        description: "Nous construisons des relations durables basées sur la transparence et l'honnêteté.",
+      },
+      {
+        icon: Award,
+        title: "Qualité",
+        description: "Chaque produit est soigneusement sélectionné pour garantir des performances optimales.",
+      },
+      {
+        icon: Users,
+        title: "Service Client",
+        description: "Notre équipe est dédiée à votre satisfaction, avant et après l'achat.",
+      },
+      {
+        icon: Truck,
+        title: "Fiabilité",
+        description: "Livraison rapide et sécurisée partout au Maroc.",
+      },
+    ];
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-white">
       <Navbar />
       <main className="pt-24 lg:pt-32">
         {/* Hero Section */}
-        <section className="relative section-padding overflow-hidden">
-          <div className="container-custom relative z-10">
+        <section className="relative section-padding overflow-hidden min-h-[50vh] flex items-center">
+          {/* Background Image with Overlay */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src={getImageUrl(settings?.aboutHeroImage || "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600&q=80")}
+              alt="About Hero Background"
+              className="w-full h-full object-cover"
+              style={{ filter: `blur(${settings?.aboutHeroBlur ?? 0}px)` }}
+            />
+            <div
+              className="absolute inset-0 bg-background/90"
+              style={{ opacity: (settings?.aboutHeroOverlayOpacity ?? 90) / 100 }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
+          </div>
+
+          <div className="container-custom relative z-10 w-full">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               className="max-w-4xl mx-auto text-center"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-muted border border-border text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-8 skew-x-[-12deg]">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-muted/20 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-8 skew-x-[-12deg] backdrop-blur-md shadow-lg shadow-primary/10">
                 <span className="skew-x-[12deg]">NOTRE HISTOIRE</span>
               </div>
               <h1 className="font-display text-5xl md:text-7xl font-black mb-8 tracking-tighter text-foreground uppercase italic leading-[0.9]">
@@ -71,13 +96,11 @@ const AboutPage = () => {
                   </>
                 )}
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed font-medium">
+              <p className="text-xl text-muted-foreground leading-relaxed font-medium max-w-2xl mx-auto">
                 {settings?.aboutDescription || "Votre destination ultime pour le gaming au Maroc. Performance, passion et innovation au service des gamers."}
               </p>
             </motion.div>
           </div>
-          {/* Decorative elements */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px] pointer-events-none" />
         </section>
 
         {/* Mission Section */}
@@ -101,9 +124,7 @@ const AboutPage = () => {
                     {settings?.aboutMission || "Rendre accessible à tous les Marocains des solutions informatiques et gaming de haute qualité. Nous croyons que chaque client mérite le meilleur."}
                   </p>
                   <p className="text-muted-foreground text-lg leading-relaxed">
-                    Avec le paiement à la livraison, nous facilitons l'accès à la technologie
-                    pour tous, partout au Maroc. Notre équipe passionnée est là pour vous
-                    conseiller et vous accompagner dans vos choix.
+                    {settings?.aboutMissionDetails || "Avec le paiement à la livraison, nous facilitons l'accès à la technologie pour tous, partout au Maroc. Notre équipe passionnée est là pour vous conseiller et vous accompagner dans vos choix."}
                   </p>
                 </div>
               </motion.div>
@@ -117,7 +138,7 @@ const AboutPage = () => {
               >
                 <div className="aspect-square md:aspect-video rounded-3xl overflow-hidden bg-muted border border-border relative group">
                   <img
-                    src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=1200"
+                    src={getImageUrl(settings?.aboutImage || "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=1200")}
                     alt="Gaming Setup"
                     className="w-full h-full object-cover opacity-50 transition-transform duration-700 group-hover:scale-110"
                   />
@@ -153,9 +174,9 @@ const AboutPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {values.map((value, index) => (
+              {displayValues.map((value: any, index: number) => (
                 <motion.div
-                  key={value.title}
+                  key={index}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}

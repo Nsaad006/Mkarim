@@ -165,102 +165,104 @@ const AdminUsers = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h1 className="text-3xl font-bold tracking-tight">Utilisateurs Admin</h1>
                 <Button onClick={() => setIsDialogOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" /> Ajouter un Admin
                 </Button>
             </div>
 
-            <div className="bg-card rounded-xl border border-border p-6">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Utilisateur</TableHead>
-                            <TableHead>Rôle</TableHead>
-                            <TableHead>Dernière Connexion</TableHead>
-                            <TableHead>Statut</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
+            <div className="bg-card rounded-xl border border-border p-6 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        <span>Chargement des administrateurs...</span>
-                                    </div>
-                                </TableCell>
+                                <TableHead className="whitespace-nowrap">Utilisateur</TableHead>
+                                <TableHead className="whitespace-nowrap">Rôle</TableHead>
+                                <TableHead className="whitespace-nowrap">Dernière Connexion</TableHead>
+                                <TableHead className="whitespace-nowrap">Statut</TableHead>
+                                <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                             </TableRow>
-                        ) : admins.length > 0 ? (
-                            admins.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                                                {user.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium">{user.name}</p>
-                                                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                                    <Mail className="w-3 h-3" /> {user.email}
-                                                </p>
-                                            </div>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-24 text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            <span>Chargement des administrateurs...</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="gap-1 capitalize">
-                                            <Shield className="w-3 h-3" />
-                                            {user.role.replace('_', ' ')}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground text-sm">
-                                        Active
-                                    </TableCell>
-                                    <TableCell>
-                                        <Switch
-                                            checked={user.active}
-                                            onCheckedChange={(checked) => statusMutation.mutate({ id: user.id, active: checked })}
-                                            disabled={statusMutation.isPending}
-                                        />
-                                    </TableCell>
-                                    <TableCell className="text-right space-x-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => {
-                                                setEditingUser(user);
-                                                setIsEditDialogOpen(true);
-                                            }}
-                                        >
-                                            <Pencil className="w-4 h-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-destructive"
-                                            onClick={() => {
-                                                if (window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
-                                                    deleteMutation.mutate(user.id);
-                                                }
-                                            }}
-                                            disabled={deleteMutation.isPending}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
+                                </TableRow>
+                            ) : admins.length > 0 ? (
+                                admins.map((user) => (
+                                    <TableRow key={user.id}>
+                                        <TableCell className="min-w-[200px]">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                                                    {user.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium">{user.name}</p>
+                                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                                        <Mail className="w-3 h-3" /> {user.email}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                            <Badge variant="outline" className="gap-1 capitalize">
+                                                <Shield className="w-3 h-3" />
+                                                {user.role.replace('_', ' ')}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                                            Active
+                                        </TableCell>
+                                        <TableCell>
+                                            <Switch
+                                                checked={user.active}
+                                                onCheckedChange={(checked) => statusMutation.mutate({ id: user.id, active: checked })}
+                                                disabled={statusMutation.isPending}
+                                            />
+                                        </TableCell>
+                                        <TableCell className="text-right space-x-2 whitespace-nowrap">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    setEditingUser(user);
+                                                    setIsEditDialogOpen(true);
+                                                }}
+                                            >
+                                                <Pencil className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive"
+                                                onClick={() => {
+                                                    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
+                                                        deleteMutation.mutate(user.id);
+                                                    }
+                                                }}
+                                                disabled={deleteMutation.isPending}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                        Aucun administrateur trouvé.
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                    Aucun administrateur trouvé.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

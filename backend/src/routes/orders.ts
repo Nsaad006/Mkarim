@@ -218,7 +218,24 @@ router.patch('/:id/status', authenticate, authorize(['super_admin', 'editor', 'c
         const { status } = req.body;
         const user = (req as any).user;
 
-        // Role-based status update restrictions
+        // 1. Get current order with items
+        const currentOrder = await prisma.order.findUnique({
+            where: { id },
+            include: { items: true }
+        });
+
+        if (!currentOrder) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        const oldStatus = currentOrder.status;
+
+        // If status is same, just return
+        if (status === oldStatus) {
+            return res.json(currentOrder);
+        }
+
+        // 2. Role-based status update restrictions
         if (user.role === 'commercial') {
             // Commercial can only CONFIRM or CANCEL orders
             if (!['CONFIRMED', 'CANCELLED'].includes(status)) {
@@ -227,31 +244,22 @@ router.patch('/:id/status', authenticate, authorize(['super_admin', 'editor', 'c
                 });
             }
 
-            // Get current order to check its status
-            const order = await prisma.order.findUnique({
-                where: { id }
-            });
-
-            if (!order) {
-                return res.status(404).json({ error: 'Order not found' });
-            }
-
             // Commercial can only CONFIRM orders that are PENDING
-            if (status === 'CONFIRMED' && order.status !== 'PENDING') {
+            if (status === 'CONFIRMED' && oldStatus !== 'PENDING') {
                 return res.status(403).json({
                     error: 'Vous ne pouvez confirmer que les commandes en attente'
                 });
             }
 
             // Commercial can only CANCEL orders that are PENDING or CONFIRMED
-            if (status === 'CANCELLED' && !['PENDING', 'CONFIRMED'].includes(order.status)) {
+            if (status === 'CANCELLED' && !['PENDING', 'CONFIRMED'].includes(oldStatus)) {
                 return res.status(403).json({
                     error: 'Vous ne pouvez annuler que les commandes en attente ou confirmées'
                 });
             }
 
             // Cannot modify orders that are already SHIPPED, DELIVERED, or CANCELLED
-            if (['SHIPPED', 'DELIVERED', 'CANCELLED'].includes(order.status) && status !== 'CANCELLED') {
+            if (['SHIPPED', 'DELIVERED', 'CANCELLED'].includes(oldStatus) && status !== 'CANCELLED') {
                 return res.status(403).json({
                     error: 'Cette commande ne peut plus être modifiée'
                 });
@@ -265,34 +273,72 @@ router.patch('/:id/status', authenticate, authorize(['super_admin', 'editor', 'c
             }
 
             // Magasinier can only update orders that are already CONFIRMED
-            const order = await prisma.order.findUnique({
-                where: { id }
-            });
-
-            if (!order) {
-                return res.status(404).json({ error: 'Order not found' });
-            }
-
-            if (!['CONFIRMED', 'SHIPPED'].includes(order.status)) {
+            if (!['CONFIRMED', 'SHIPPED'].includes(oldStatus)) {
                 return res.status(403).json({
                     error: 'Magasinier can only update confirmed or shipped orders'
                 });
             }
         }
 
-        const updatedOrder = await prisma.order.update({
-            where: { id },
-            data: { status },
-            include: {
-                items: {
-                    include: {
-                        product: true
+        // 3. Perform Update with Stock Adjustment in transaction
+        const result = await prisma.$transaction(async (tx) => {
+            // Update order status
+            const updatedOrder = await tx.order.update({
+                where: { id },
+                data: { status },
+                include: {
+                    items: {
+                        include: {
+                            product: true
+                        }
                     }
                 }
+            });
+
+            // LOGIC: If changing TO Cancelled/Returned FROM a live status -> Return stock
+            const isCancelling = (status === 'CANCELLED' || status === 'RETURNED') &&
+                !(oldStatus === 'CANCELLED' || oldStatus === 'RETURNED');
+
+            // LOGIC: If changing FROM Cancelled/Returned TO a live status -> Deduct stock
+            const isReactivating = !(status === 'CANCELLED' || status === 'RETURNED') &&
+                (oldStatus === 'CANCELLED' || oldStatus === 'RETURNED');
+
+            if (isCancelling) {
+                for (const item of currentOrder.items) {
+                    await tx.product.update({
+                        where: { id: item.productId },
+                        data: {
+                            quantity: { increment: item.quantity },
+                            inStock: true // Definitely in stock now
+                        }
+                    });
+                }
+                console.log(`Order ${currentOrder.orderNumber}: Stock returned for ${currentOrder.items.length} items.`);
+            } else if (isReactivating) {
+                for (const item of currentOrder.items) {
+                    await tx.product.update({
+                        where: { id: item.productId },
+                        data: {
+                            quantity: { decrement: item.quantity }
+                        }
+                    });
+
+                    // Re-calculate inStock status
+                    const prod = await tx.product.findUnique({ where: { id: item.productId } });
+                    if (prod && prod.quantity <= 0) {
+                        await tx.product.update({
+                            where: { id: item.productId },
+                            data: { inStock: false }
+                        });
+                    }
+                }
+                console.log(`Order ${currentOrder.orderNumber}: Stock deducted again (reactivation).`);
             }
+
+            return updatedOrder;
         });
 
-        res.json(updatedOrder);
+        res.json(result);
     } catch (error) {
         console.error('Error updating order status:', error);
         if ((error as Prisma.PrismaClientKnownRequestError).code === 'P2025') {

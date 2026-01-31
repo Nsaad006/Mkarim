@@ -15,6 +15,9 @@ export interface Product {
   quantity: number; // Added
   badge?: string;
   specs?: string[];
+  weightedAverageCost?: number;
+  stockValue?: number;
+  isFeatured?: boolean;
 }
 
 export const products: Product[] = [

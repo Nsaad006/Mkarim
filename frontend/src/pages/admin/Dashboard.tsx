@@ -7,13 +7,14 @@ import {
     Clock,
     CheckCircle2,
     AlertCircle,
-    MessageSquare,
-    User,
     ChevronDown,
     ChevronUp,
-    Settings2
+    Settings2,
+    DollarSign,
+    Landmark,
+    TrendingUp
 } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -29,14 +30,34 @@ import {
 } from "recharts";
 import { ordersApi } from "@/api/orders";
 import { statsApi } from "@/api/stats";
-import { contactsApi } from "@/api/contacts";
 import { settingsApi } from "@/api/settings";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
 import { useOutletContext } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatsCard from "@/components/admin/StatsCard";
+import StatusBadge from "@/components/admin/StatusBadge";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { useSettings } from "@/context/SettingsContext";
 import { toast } from "@/hooks/use-toast";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 const Dashboard = () => {
     const queryClient = useQueryClient();
@@ -47,6 +68,7 @@ const Dashboard = () => {
     const [tempThreshold, setTempThreshold] = useState(5);
     const [showLowStock, setShowLowStock] = useState(false);
     const [showOutOfStock, setShowOutOfStock] = useState(false);
+
 
     // Fetch settings to get persisted threshold
     const { data: settings } = useQuery({
@@ -80,10 +102,18 @@ const Dashboard = () => {
         }
     };
 
-    // Fetch dashboard summary
+
+
+    // Fetch dashboard summary (analytics for charts)
     const { data: summary, isLoading: isStatsLoading } = useQuery({
         queryKey: ['stats-summary', lowStockThreshold],
         queryFn: () => statsApi.getSummary(7, undefined, lowStockThreshold),
+    });
+
+    // Fetch dashboard stats (KPI cards - MTD)
+    const { data: dashboardStats } = useQuery({
+        queryKey: ['dashboard-kpis'],
+        queryFn: statsApi.getDashboardStats,
     });
 
     // Fetch orders for the recent orders table
@@ -92,18 +122,19 @@ const Dashboard = () => {
         queryFn: () => ordersApi.getAll(),
     });
 
-    // Fetch messages for the dashboard
-    const { data: messages = [] } = useQuery({
-        queryKey: ['admin-contacts'],
-        queryFn: () => contactsApi.getAll(),
-    });
-
-    const kpis = summary?.stats || {
+    const kpis = dashboardStats || summary?.stats || {
         totalRevenue: 0,
         totalOrders: 0,
         pendingOrders: 0,
-        deliveredOrders: 0
+        deliveredOrders: 0,
+        totalCapitalInvested: 0,
+        currentInventoryValue: 0,
+        availableCapital: 0,
+        totalProfit: 0
     };
+
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isStaff = ["super_admin", "editor"].includes(user.role);
 
     const dailyRevenueHistory = summary?.revenueHistory || [];
     const cityData = summary?.salesByCity || [];
@@ -127,11 +158,12 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
                 <div className="flex gap-2">
+
                     <Link to="/admin/products">
-                        <Button>
+                        <Button size="sm">
                             <Package className="mr-2 h-4 w-4" />
                             Ajouter un Produit
                         </Button>
@@ -244,7 +276,7 @@ const Dashboard = () => {
                                                 <p className="font-medium text-sm line-clamp-1">{product.name}</p>
                                                 <p className="text-xs text-warning font-medium">Reste: {product.quantity}</p>
                                             </div>
-                                            <Link to="/admin/products">
+                                            <Link to="/admin/procurements">
                                                 <Button size="sm" variant="ghost" className="h-8">Approvisionner</Button>
                                             </Link>
                                         </div>
@@ -259,7 +291,7 @@ const Dashboard = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatsCard
                     title="Total Commandes"
                     value={kpis.totalOrders}
@@ -281,17 +313,36 @@ const Dashboard = () => {
                     trendUp={true}
                 />
                 <StatsCard
-                    title="Revenu Estimé"
+                    title="Revenu (Ce mois)"
                     value={`${kpis.totalRevenue.toLocaleString()} ${currency}`}
                     icon={CreditCard}
-                    trend="+18%"
-                    trendUp={true}
+                    description="CA généré ce mois-ci"
                 />
+
+                {/* Financial Cards (Admin/Staff Only) */}
+                {isStaff && (
+                    <>
+                        <StatsCard
+                            title="Valeur du Stock"
+                            value={`${kpis.currentInventoryValue?.toLocaleString() || 0} ${currency}`}
+                            icon={TrendingUp}
+                            description="Inventaire actuel (WAC)"
+                        />
+                        <StatsCard
+                            title="Profit (Ce mois)"
+                            value={`${kpis.totalProfit?.toLocaleString() || 0} ${currency}`}
+                            icon={TrendingUp}
+                            trendUp={true}
+                            description="Marge brute ce mois-ci"
+                            className="bg-primary/5 border-primary/20 sm:col-span-2 lg:col-span-1"
+                        />
+                    </>
+                )}
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-7">
                 {/* Revenue Chart */}
-                <div className="col-span-4 bg-card rounded-xl border border-border p-6">
+                <div className="lg:col-span-4 bg-card rounded-xl border border-border p-6 shadow-sm">
                     <h3 className="font-semibold mb-6">Aperçu des Revenus (7 jours)</h3>
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
@@ -330,8 +381,8 @@ const Dashboard = () => {
                 </div>
 
                 {/* Orders by City */}
-                <div className="col-span-3 bg-card rounded-xl border border-border p-6">
-                    <h3 className="font-semibold mb-6">Commandes par Ville</h3>
+                <div className="lg:col-span-3 bg-card rounded-xl border border-border p-6 shadow-sm">
+                    <h3 className="font-semibold mb-6">Performance par Géographie</h3>
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={cityData} layout="vertical">
@@ -343,8 +394,12 @@ const Dashboard = () => {
                                     axisLine={false}
                                     tickLine={false}
                                     width={80}
+                                    tick={{ fontSize: 12, fontWeight: 'bold' }}
                                 />
-                                <Tooltip />
+                                <Tooltip
+                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', borderRadius: '8px' }}
+                                />
                                 <Bar dataKey="value" fill="#9b87f5" radius={[0, 4, 4, 0]} barSize={20} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -352,8 +407,38 @@ const Dashboard = () => {
                 </div>
             </div>
 
+            {/* Financial Health Chart (Stock vs Profit) */}
+            {isStaff && (
+                <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+                    <div className="mb-6">
+                        <h3 className="font-semibold">Santé Financière : Stock vs Profit (Mensuel)</h3>
+                        <p className="text-xs text-muted-foreground mt-1">Comparaison des revenus et bénéfices nets par mois.</p>
+                    </div>
+                    <div className="h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={summary?.monthlyStats || []}>
+                                <defs>
+                                    <linearGradient id="dashProfitGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#22c55e" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="#22c55e" stopOpacity={0.2} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10 }} tickFormatter={(val) => `${val}${currency}`} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                                />
+                                <Bar dataKey="revenue" name="CA Total" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={15} />
+                                <Bar dataKey="profit" name="Profit Est." fill="url(#dashProfitGradient)" radius={[4, 4, 0, 0]} barSize={15} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            )}
+
             {/* Recent Orders */}
-            <div className="bg-card rounded-xl border border-border p-6">
+            <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="font-semibold">Commandes Récentes</h3>
                     <Link to="/admin/orders">
@@ -364,48 +449,41 @@ const Dashboard = () => {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-border text-left">
-                                <th className="pb-3 font-medium text-sm text-muted-foreground">ID Commande</th>
-                                <th className="pb-3 font-medium text-sm text-muted-foreground">Client</th>
-                                <th className="pb-3 font-medium text-sm text-muted-foreground">Produit</th>
-                                <th className="pb-3 font-medium text-sm text-muted-foreground">Montant</th>
-                                <th className="pb-3 font-medium text-sm text-muted-foreground">Status</th>
-                                <th className="pb-3 font-medium text-sm text-muted-foreground">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-sm">
+                    <Table>
+                        <TableHeader className="bg-muted/30">
+                            <TableRow>
+                                <TableHead>ID Commande</TableHead>
+                                <TableHead>Client</TableHead>
+                                <TableHead>Produit</TableHead>
+                                <TableHead>Montant</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Date</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {filteredOrders.slice(0, 5).map((order) => (
-                                <tr key={order.id} className="border-b border-border/50 last:border-0 hover:bg-muted/50 transition-colors">
-                                    <td className="py-4 font-mono">{order.orderNumber}</td>
-                                    <td className="py-4 font-medium">{order.customerName}</td>
-                                    <td className="py-4">
+                                <TableRow key={order.id} className="hover:bg-muted/5 transition-colors">
+                                    <TableCell className="font-mono font-medium">{order.orderNumber}</TableCell>
+                                    <TableCell>{order.customerName}</TableCell>
+                                    <TableCell>
                                         {order.items.length > 1
                                             ? `${order.items[0]?.product?.name} (+${order.items.length - 1})`
                                             : order.items[0]?.product?.name || '---'}
-                                    </td>
-                                    <td className="py-4 font-bold">{order.total.toLocaleString()} {currency}</td>
-                                    <td className="py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${order.status === 'delivered' ? 'bg-success/10 text-success' :
-                                            order.status === 'pending' ? 'bg-warning/10 text-warning' :
-                                                order.status === 'cancelled' ? 'bg-destructive/10 text-destructive' :
-                                                    'bg-secondary text-secondary-foreground'
-                                            }`}>
-                                            {order.status === 'pending' && <Clock className="w-3 h-3 mr-1" />}
-                                            {order.status === 'delivered' && <CheckCircle2 className="w-3 h-3 mr-1" />}
-                                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td className="py-4 text-muted-foreground">
-                                        {new Date(order.createdAt).toLocaleDateString()}
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                    <TableCell className="font-bold">{order.total.toLocaleString()} {currency}</TableCell>
+                                    <TableCell>
+                                        <StatusBadge status={order.status} />
+                                    </TableCell>
+                                    <TableCell className="text-right text-muted-foreground">
+                                        {format(new Date(order.createdAt), 'dd MMM', { locale: fr })}
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
+
         </div>
     );
 };

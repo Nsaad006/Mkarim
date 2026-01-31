@@ -21,6 +21,13 @@ export interface TopProduct {
     category: string;
     sales: number;
     revenue: number;
+    profit?: number;
+}
+
+export interface MonthlyStat {
+    name: string;
+    revenue: number;
+    profit: number;
 }
 
 export interface StatsSummary {
@@ -29,6 +36,7 @@ export interface StatsSummary {
     topProducts: TopProduct[];
     lowStock: Product[];
     outOfStock: Product[];  // Products marked as out of stock
+    monthlyStats?: MonthlyStat[];
     stats: {
         totalRevenue: number;
         totalOrders: number;
@@ -37,6 +45,10 @@ export interface StatsSummary {
         totalProducts: number;
         totalCustomers: number;
         totalCities: number;
+        totalCapitalInvested?: number;
+        currentInventoryValue?: number;
+        availableCapital?: number;
+        totalProfit?: number;
     };
 }
 
@@ -50,7 +62,7 @@ export interface PublicStats {
 }
 
 export const statsApi = {
-    getSummary: async (days: number = 7, dateRange?: { from?: Date; to?: Date }, lowStockThreshold?: number): Promise<StatsSummary> => {
+    getSummary: async (days: number = 7, dateRange?: { from?: Date; to?: Date }, lowStockThreshold?: number, year?: number): Promise<StatsSummary> => {
         let query = `days=${days}`;
         if (dateRange?.from && dateRange?.to) {
             query += `&from=${dateRange.from.toISOString()}&to=${dateRange.to.toISOString()}`;
@@ -58,12 +70,20 @@ export const statsApi = {
         if (lowStockThreshold !== undefined) {
             query += `&lowStockThreshold=${lowStockThreshold}`;
         }
+        if (year) {
+            query += `&year=${year}`;
+        }
         const { data } = await apiClient.get<StatsSummary>(`/api/stats/analytics?${query}`);
         return data;
     },
 
     getPublicSummary: async (): Promise<PublicStats> => {
         const { data } = await apiClient.get<PublicStats>('/api/stats/summary');
+        return data;
+    },
+
+    getDashboardStats: async (): Promise<any> => {
+        const { data } = await apiClient.get('/api/stats');
         return data;
     }
 };

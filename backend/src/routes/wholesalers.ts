@@ -1,0 +1,331 @@
+import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
+import prisma from '../lib/prisma';
+import { authenticate, authorize } from './auth';
+
+const router = Router();
+
+// GET /api/wholesalers - List all wholesalers with optional search
+router.get('/', authenticate, authorize(['super_admin', 'editor']), async (req, res) => {
+    try {
+        const { search } = req.query;
+        const where: any = {};
+
+        if (search) {
+            const searchStr = String(search).toLowerCase();
+            where.OR = [
+                { name: { contains: searchStr, mode: 'insensitive' } },
+                { phone: { contains: searchStr, mode: 'insensitive' } }
+            ];
+        }
+
+        const wholesalers = await prisma.wholesaler.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            include: {
+                _count: {
+                    select: { orders: true }
+                }
+            }
+        });
+
+        res.json(wholesalers);
+    } catch (error) {
+        console.error('Error fetching wholesalers:', error);
+        res.status(500).json({ error: 'Failed to fetch wholesalers' });
+    }
+});
+
+// GET /api/wholesalers/orders - List all orders flat
+router.get('/orders', authenticate, authorize(['super_admin', 'editor']), async (req, res) => {
+    try {
+        const orders = await prisma.wholesaleOrder.findMany({
+            include: {
+                wholesaler: true,
+                items: {
+                    include: {
+                        product: {
+                            include: {
+                                procurements: {
+                                    select: {
+                                        unitCostPrice: true,
+                                        quantityPurchased: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(orders);
+    } catch (error) {
+        console.error('Error fetching wholesale orders:', error);
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+});
+
+// GET /api/wholesalers/:id - Get details (with orders)
+router.get('/:id', authenticate, authorize(['super_admin', 'editor']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const wholesaler = await prisma.wholesaler.findUnique({
+            where: { id },
+            include: {
+                orders: {
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        items: {
+                            include: {
+                                product: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!wholesaler) return res.status(404).json({ error: 'Wholesaler not found' });
+        res.json(wholesaler);
+    } catch (error) {
+        console.error('Error fetching wholesaler:', error);
+        res.status(500).json({ error: 'Failed to fetch wholesaler' });
+    }
+});
+
+// POST /api/wholesalers - Create wholesaler
+router.post('/', authenticate, authorize(['super_admin', 'editor']), async (req, res) => {
+    try {
+        const { name, address, phone, email } = req.body;
+
+        if (!name || !phone) return res.status(400).json({ error: 'Name and phone are required' });
+
+        const wholesaler = await prisma.wholesaler.create({
+            data: { name, address, phone, email }
+        });
+        res.status(201).json(wholesaler);
+    } catch (error) {
+        console.error('Error creating wholesaler:', error);
+        if ((error as any).code === 'P2002') return res.status(400).json({ error: 'Phone number already exists' });
+        res.status(500).json({ error: 'Failed to create wholesaler' });
+    }
+});
+
+// POST /api/wholesalers/:id/orders - Create Order
+router.post('/:id/orders', authenticate, authorize(['super_admin', 'editor']), async (req: any, res: Response) => {
+    try {
+        const { id: wholesalerId } = req.params;
+        // items: { productId, quantity, unitPrice }[]
+        const { items, advanceAmount } = req.body;
+        const adminId = req.user?.id;
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'Items are required' });
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            let totalAmount = 0;
+
+            // 1. Calculate Total & Validate Stock
+            for (const item of items) {
+                totalAmount += (Number(item.quantity) * Number(item.unitPrice));
+
+                // Decrement stock logic
+                const product = await tx.product.findUnique({ where: { id: item.productId } });
+                if (!product) throw new Error(`Product ${item.productId} not found`);
+                if (product.quantity < item.quantity) {
+                    throw new Error(`Insufficient stock for product ${product.name}`);
+                }
+
+                await tx.product.update({
+                    where: { id: item.productId },
+                    data: { quantity: { decrement: item.quantity } }
+                });
+            }
+
+            // 2. Determine Status
+            const advance = Number(advanceAmount) || 0;
+            const remaining = totalAmount - advance;
+            const status = remaining <= 0 ? 'PAID' : 'PENDING';
+
+            // 3. Create Order
+            // Generate Order Number: WO-{YYYY}-{Count} (simple logic)
+            const count = await tx.wholesaleOrder.count();
+            const orderNumber = `WO-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+
+            const order = await tx.wholesaleOrder.create({
+                data: {
+                    wholesalerId,
+                    orderNumber,
+                    totalAmount,
+                    advanceAmount: advance,
+                    status,
+                    items: {
+                        create: items.map((item: any) => ({
+                            productId: item.productId,
+                            quantity: Number(item.quantity),
+                            unitPrice: Number(item.unitPrice)
+                        }))
+                    }
+                },
+                include: { items: true }
+            });
+
+            return order;
+        });
+
+        res.status(201).json(result);
+    } catch (error: any) {
+        console.error('Error creating wholesale order:', error);
+        res.status(400).json({ error: error.message || 'Failed to create order' });
+    }
+});
+
+// PATCH /api/wholesalers/orders/:orderId - Update Advance / Status
+router.patch('/orders/:orderId', authenticate, authorize(['super_admin', 'editor']), async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { advanceAmount } = req.body;
+
+        if (advanceAmount === undefined) return res.status(400).json({ error: 'Advance amount required' });
+
+        const order = await prisma.wholesaleOrder.findUnique({ where: { id: orderId } });
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+
+        const newAdvance = Number(advanceAmount);
+        const remaining = order.totalAmount - newAdvance;
+        const status = remaining <= 0 ? 'PAID' : 'PENDING';
+
+        const updatedOrder = await prisma.wholesaleOrder.update({
+            where: { id: orderId },
+            data: {
+                advanceAmount: newAdvance,
+                status
+            }
+        });
+
+        res.json(updatedOrder);
+    } catch (error) {
+        console.error('Error updating order:', error);
+        res.status(500).json({ error: 'Failed to update order' });
+    }
+});
+
+// PUT /api/wholesalers/orders/:id - Update Full Order
+router.put('/orders/:id', authenticate, authorize(['super_admin', 'editor']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { items, advanceAmount } = req.body;
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'Items are required' });
+        }
+
+        await prisma.$transaction(async (tx) => {
+            // 1. Get existing order to restore stock
+            const existingOrder = await tx.wholesaleOrder.findUnique({
+                where: { id },
+                include: { items: true }
+            });
+
+            if (!existingOrder) throw new Error('Order not found');
+
+            // 2. Restore Stock from OLD items
+            for (const item of existingOrder.items) {
+                await tx.product.update({
+                    where: { id: item.productId },
+                    data: { quantity: { increment: item.quantity } }
+                });
+            }
+
+            // 3. Delete OLD items
+            await tx.wholesaleOrderItem.deleteMany({ where: { wholesaleOrderId: id } });
+
+            // 4. Create NEW items & Decrement Stock
+            let totalAmount = 0;
+            for (const item of items) {
+                const qty = Number(item.quantity);
+                const price = Number(item.unitPrice);
+                totalAmount += (qty * price);
+
+                // Check Stock
+                const product = await tx.product.findUnique({ where: { id: item.productId } });
+                if (!product) throw new Error(`Product ${item.productId} not found`);
+
+                if (product.quantity < qty) {
+                    throw new Error(`Insufficient stock for product ${product.name}. Available: ${product.quantity}`);
+                }
+
+                // Decrement
+                await tx.product.update({
+                    where: { id: item.productId },
+                    data: { quantity: { decrement: qty } }
+                });
+
+                // Create Item
+                await tx.wholesaleOrderItem.create({
+                    data: {
+                        wholesaleOrderId: id,
+                        productId: item.productId,
+                        quantity: qty,
+                        unitPrice: price
+                    }
+                });
+            }
+
+            // 5. Update Order Master Record
+            const advance = Number(advanceAmount);
+            const remaining = totalAmount - advance;
+            const status = remaining <= 0 ? 'PAID' : 'PENDING';
+
+            await tx.wholesaleOrder.update({
+                where: { id },
+                data: {
+                    totalAmount,
+                    advanceAmount: advance,
+                    status
+                }
+            });
+        });
+
+        res.json({ success: true });
+    } catch (error: any) {
+        console.error('Error updating order:', error);
+        res.status(400).json({ error: error.message || 'Failed to update order' });
+    }
+});
+
+// DELETE /api/wholesalers/orders/:id - Cancel Order
+router.delete('/orders/:id', authenticate, authorize(['super_admin', 'editor']), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await prisma.$transaction(async (tx) => {
+            const order = await tx.wholesaleOrder.findUnique({
+                where: { id },
+                include: { items: true }
+            });
+
+            if (!order) throw new Error('Order not found');
+
+            // Restore Stock
+            for (const item of order.items) {
+                await tx.product.update({
+                    where: { id: item.productId },
+                    data: { quantity: { increment: item.quantity } }
+                });
+            }
+
+            // Delete Order (Cascade will delete items)
+            await tx.wholesaleOrder.delete({ where: { id } });
+        });
+
+        res.status(204).send();
+    } catch (error: any) {
+        console.error('Error deleting order:', error);
+        res.status(500).json({ error: error.message || 'Failed to delete order' });
+    }
+});
+
+export default router;
