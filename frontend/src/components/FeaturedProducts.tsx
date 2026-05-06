@@ -29,7 +29,7 @@ const FeaturedProducts = () => {
       <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
 
       <div className="container-custom relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-4 mb-8 lg:mb-16">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 lg:mb-16">
           <div className="max-w-2xl">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
