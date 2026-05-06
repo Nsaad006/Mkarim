@@ -95,7 +95,7 @@ const CartPage = () => {
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-white">
             <Navbar />
-            <div className="container-custom pt-20 lg:pt-24 pb-24 lg:pb-16 flex-1">
+            <div className="container-custom pt-[90px] lg:pt-24 pb-24 lg:pb-16 flex-1">
                 <div className="flex items-center gap-3 lg:gap-4 mb-4 lg:mb-6">
                     <div className="w-1 h-6 lg:w-2 lg:h-10 bg-primary skew-x-[-15deg]" />
                     <h1 className="font-display text-xl lg:text-4xl font-black text-foreground italic uppercase tracking-tighter">Votre <span className="text-primary">Panier</span></h1>

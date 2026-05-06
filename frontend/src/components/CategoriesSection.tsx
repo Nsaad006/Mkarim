@@ -32,7 +32,7 @@ const CategoriesSection = () => {
     queryFn: () => categoriesApi.getAll(),
   });
 
-  const sectionTitle = settings?.categoriesTitle || "Nos Catégories";
+  const sectionTitle = settings?.categoriesTitle || "Catégories";
   const sectionSubtitle = settings?.categoriesSubtitle || "Découvrez notre large sélection de produits IT et gaming de qualité supérieure";
 
   if (isLoading) return (
@@ -56,7 +56,7 @@ const CategoriesSection = () => {
   );
 
   return (
-    <section className="section-padding relative overflow-hidden bg-background">
+    <section className="px-4 sm:px-6 lg:px-8 py-6 md:py-20 relative overflow-hidden bg-background">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0 opacity-20">
         <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full" />
@@ -64,14 +64,14 @@ const CategoriesSection = () => {
       </div>
 
       <div className="container-custom relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-8 lg:mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="font-display text-4xl md:text-5xl font-black mb-4 tracking-tight">
+            <h2 className="font-display text-2xl md:text-5xl font-black mb-4 tracking-tight">
               {sectionTitle.includes("<") ? (
                 <span dangerouslySetInnerHTML={{ __html: sectionTitle }} />
               ) : (
@@ -79,7 +79,7 @@ const CategoriesSection = () => {
               )}
             </h2>
             <div className="w-24 h-1.5 bg-primary mx-auto mb-6 rounded-full" />
-            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-lg">
               {sectionSubtitle}
             </p>
           </motion.div>

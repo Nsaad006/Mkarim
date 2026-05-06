@@ -258,8 +258,8 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                         </div>
                     </div>
 
-                    {/* Sorting (Optional: When passed down) */}
-                    {onSortChange && currentSort && (
+                    {/* Sorting (Optional: When passed down) - Desktop only in mobile filter sheet */}
+                    {onSortChange && currentSort && !onClose && (
                         <div className="pb-8 border-b border-border">
                             <h3 className="px-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-4">{settings?.filterSortTitle || "Ordre de Tri"}</h3>
                             <Select value={currentSort} onValueChange={onSortChange}>
@@ -276,29 +276,31 @@ export const FilterSidebar = ({ products, categories, activeFilters, updateFilte
                         </div>
                     )}
 
-                    {/* Stock Status (Added) */}
-                    <div className="pb-4 border-b border-border">
-                        <div
-                            onClick={() => updateFilters({ ...activeFilters, inStockOnly: !activeFilters.inStockOnly })}
-                            className={`flex items-center justify-between px-4 py-4 rounded-xl cursor-pointer border transition-all duration-300 ${activeFilters.inStockOnly
-                                ? 'bg-green-500/10 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.2)]'
-                                : 'bg-card border-border hover:border-primary/50'
-                                }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${activeFilters.inStockOnly ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}`}>
-                                    <LucideIcons.PackageCheck className="w-4 h-4" />
+                    {/* Stock Status - Desktop only in mobile filter sheet */}
+                    {!onClose && (
+                        <div className="pb-4 border-b border-border">
+                            <div
+                                onClick={() => updateFilters({ ...activeFilters, inStockOnly: !activeFilters.inStockOnly })}
+                                className={`flex items-center justify-between px-4 py-4 rounded-xl cursor-pointer border transition-all duration-300 ${activeFilters.inStockOnly
+                                    ? 'bg-green-500/10 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.2)]'
+                                    : 'bg-card border-border hover:border-primary/50'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${activeFilters.inStockOnly ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}`}>
+                                        <LucideIcons.PackageCheck className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <p className={`text-xs font-black uppercase tracking-wider ${activeFilters.inStockOnly ? 'text-green-500' : 'text-foreground'}`}>En Stock Uniquement</p>
+                                        <p className="text-[10px] text-muted-foreground font-medium">Masquer les ruptures</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className={`text-xs font-black uppercase tracking-wider ${activeFilters.inStockOnly ? 'text-green-500' : 'text-foreground'}`}>En Stock Uniquement</p>
-                                    <p className="text-[10px] text-muted-foreground font-medium">Masquer les ruptures</p>
+                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${activeFilters.inStockOnly ? 'bg-green-500 border-green-500' : 'border-muted-foreground'}`}>
+                                    {activeFilters.inStockOnly && <Check className="w-3 h-3 text-white" />}
                                 </div>
-                            </div>
-                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${activeFilters.inStockOnly ? 'bg-green-500 border-green-500' : 'border-muted-foreground'}`}>
-                                {activeFilters.inStockOnly && <Check className="w-3 h-3 text-white" />}
                             </div>
                         </div>
-                    </div>
+                    )}
 
 
 

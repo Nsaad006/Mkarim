@@ -66,9 +66,9 @@ const AboutPage = () => {
         description="Découvrez l'histoire de MKARIM SOLUTION, votre expert e-commerce spécialisé dans le matériel informatique et gaming au Maroc."
       />
       <Navbar />
-      <main className="pt-20 lg:pt-24">
+      <main className="pt-[90px] lg:pt-24">
         {/* Hero Section */}
-        <section className="relative px-4 sm:px-6 lg:px-8 py-10 md:py-20 overflow-hidden min-h-[40vh] md:min-h-[50vh] flex items-center">
+        <section className="relative px-4 sm:px-6 lg:px-8 py-6 md:py-20 overflow-hidden min-h-[35vh] md:min-h-[50vh] flex items-center">
           {/* Background Image with Overlay */}
           <div className="absolute inset-0 z-0">
             <img
@@ -95,7 +95,7 @@ const AboutPage = () => {
                 <span className="skew-x-[12deg]">NOTRE HISTOIRE</span>
               </div>
               <h1
-                className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 tracking-tighter text-white uppercase italic leading-[1.1]"
+                className="font-display text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-3 md:mb-6 tracking-tighter text-white uppercase italic leading-[1.1]"
                 style={{ textShadow: '0 4px 20px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.8), 0 0 40px rgba(0,0,0,0.5)' }}
               >
                 {settings?.aboutTitle || (
@@ -115,7 +115,7 @@ const AboutPage = () => {
         </section>
 
         {/* Mission Section */}
-        <section className="section-padding relative">
+        <section className="px-4 sm:px-6 lg:px-8 py-8 md:py-20 relative">
           <div className="container-custom">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <motion.div
@@ -174,10 +174,10 @@ const AboutPage = () => {
         </section>
 
         {/* Values Section */}
-        <section className="section-padding relative overflow-hidden">
+        <section className="px-4 sm:px-6 lg:px-8 py-8 md:py-20 relative overflow-hidden">
           <div className="absolute inset-0 bg-muted/30" />
           <div className="container-custom relative z-10">
-            <div className="text-center mb-16">
+            <div className="text-center mb-8 lg:mb-16">
               <h2 className="font-display text-4xl md:text-6xl font-black text-foreground uppercase italic tracking-tighter mb-6">
                 {settings?.aboutValuesTitle ? (
                   <>
@@ -190,7 +190,7 @@ const AboutPage = () => {
               <div className="w-24 h-1 bg-primary mx-auto" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
               {displayValues.map((value: any, index: number) => (
                 <motion.div
                   key={index}
@@ -198,14 +198,14 @@ const AboutPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="p-8 rounded-3xl bg-card border border-border hover:border-primary/50 transition-all duration-500 group relative overflow-hidden"
+                  className="p-4 md:p-8 rounded-3xl bg-card border border-border hover:border-primary/50 transition-all duration-500 group relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
-                  <div className="w-16 h-16 rounded-2xl bg-muted border border-border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                    <value.icon className="w-8 h-8 text-primary" />
+                  <div className="w-10 h-10 md:w-16 md:h-16 rounded-2xl bg-muted border border-border flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-500">
+                    <value.icon className="w-5 h-5 md:w-8 md:h-8 text-primary" />
                   </div>
-                  <h3 className="font-display font-black text-foreground text-xl uppercase italic tracking-tighter mb-4">{value.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed font-medium">{value.description}</p>
+                  <h3 className="font-display font-black text-foreground text-base md:text-xl uppercase italic tracking-tighter mb-2 md:mb-4">{value.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed font-medium text-xs md:text-base">{value.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -213,7 +213,7 @@ const AboutPage = () => {
         </section>
 
         {/* Stats Section */}
-        <section className="section-padding relative">
+        <section className="px-4 sm:px-6 lg:px-8 py-8 md:py-20 relative">
           <div className="container-custom">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
               {[

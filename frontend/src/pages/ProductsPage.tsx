@@ -302,37 +302,41 @@ const ProductsPage = () => {
         description="Explorez notre arsenal de PC Gamers, composants et accessoires. Trouvez le meilleur matériel informatique au Maroc avec livraison express."
       />
       <Navbar />
-      <main className="pt-24 lg:pt-32">
+      <main className="pt-[90px] lg:pt-32">
         {/* Simplified Header */}
-        <section className="relative py-8 lg:py-12 border-b border-border">
+        <section className="relative py-4 lg:py-12 border-b border-border">
           <div className="container-custom relative z-10">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-8 group"
+                  className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-3 lg:mb-8 group"
                 >
                   <ArrowLeft className="w-3 h-3 transition-transform group-hover:-translate-x-1" />
                   Accueil
                 </Link>
 
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1.5 h-6 bg-primary skew-x-[-15deg]" />
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">{settings?.productsPageSubtitle || "ARSYENAL MKARIM"}</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1.5 h-5 bg-primary skew-x-[-15deg]" />
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">
+                    {filters.category !== 'all'
+                      ? (categories.find(c => c.slug === filters.category || c.id === filters.category)?.name || filters.category).toUpperCase()
+                      : "NOS PRODUITS"}
+                  </span>
                 </div>
-                <h1 className="font-display text-5xl md:text-6xl font-black text-foreground italic uppercase tracking-tighter">
+                <h1 className="hidden md:block font-display text-3xl md:text-6xl font-black text-foreground italic uppercase tracking-tighter">
                   {settings?.productsPageTitle ? (
                     <>
                       {settings.productsPageTitle.split(' ').slice(0, -1).join(' ')} <span className="text-primary tracking-tight">{settings.productsPageTitle.split(' ').slice(-1)}</span>
                     </>
                   ) : (
-                    <>Catalogue <span className="text-primary tracking-tight">Tech</span></>
+                    <>Nos <span className="text-primary tracking-tight">Produits</span></>
                   )}
                 </h1>
               </div>
 
 
-              {/* Desktop Count Card */}
+              {/* Desktop Count Card - hidden on mobile */}
               <div className="hidden lg:block relative group overflow-hidden bg-card/50 backdrop-blur-xl p-1 rounded-2xl border border-border shadow-lg">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative flex items-center gap-4 px-6 py-3">
@@ -349,8 +353,8 @@ const ProductsPage = () => {
                 </div>
               </div>
 
-              {/* Mobile Count Card */}
-              <div className="lg:hidden w-full relative overflow-hidden bg-card/50 backdrop-blur-xl rounded-2xl border border-border">
+              {/* Mobile Count Card - hidden on mobile */}
+              <div className="hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
 
                 <div className="relative p-5 flex items-center justify-between">
@@ -385,7 +389,7 @@ const ProductsPage = () => {
           </div>
         </section>
 
-        <div className="container-custom py-12">
+        <div className="container-custom py-4 lg:py-12">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
 
             {/* Desktop Sidebar */}

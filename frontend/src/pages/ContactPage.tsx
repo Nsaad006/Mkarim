@@ -109,7 +109,7 @@ const ContactPage = () => {
         description="Une question ? Un projet ? Contactez MKARIM SOLUTION. Notre équipe est à votre écoute pour vous fournir les meilleures solutions informatiques au Maroc."
       />
       <Navbar />
-      <main className="pt-24 lg:pt-32">
+      <main className="pt-[90px] lg:pt-32">
         {/* Header */}
         <section className="relative py-8 sm:py-12 lg:py-20 overflow-hidden">
           <div className="container-custom relative z-10">

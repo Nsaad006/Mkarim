@@ -131,7 +131,7 @@ export const HeroCarousel = () => {
 
     return (
         <div className="dark">
-            <div className="relative h-[520px] sm:h-[650px] md:h-[85vh] lg:h-[90vh] w-full overflow-hidden bg-[#070708]">
+            <div className="relative h-[360px] sm:h-[520px] md:h-[85vh] lg:h-[90vh] w-full overflow-hidden bg-[#070708]">
                 <div className="overflow-hidden h-full" ref={emblaRef}>
                     <div className="flex h-full">
                         {slides.map((slide, index) => (
@@ -148,7 +148,6 @@ export const HeroCarousel = () => {
                                         alt={slide.title}
                                         className="w-[101%] h-full max-w-none object-cover object-center transition-transform duration-[10s] scale-105 hover:scale-100"
                                         style={{ filter: `blur(${settings?.homeHeroBlur ?? 0}px)` }}
-                                        fetchPriority={index === 0 ? 'high' : 'low'}
                                         loading={index === 0 ? 'eager' : 'lazy'}
                                         decoding={index === 0 ? 'sync' : 'async'}
                                     />
@@ -161,29 +160,33 @@ export const HeroCarousel = () => {
 
                                 {/* ── Robust Flexbox Layout Overlay ── */}
                                 {/* This ensures top and bottom are pinned, and middle text flexes/centers without pushing them out */}
-                                <div className="absolute inset-0 z-20 pointer-events-none container-custom flex flex-col pt-[5.5rem] md:pt-[100px] pb-10 md:pb-20">
+                                <div className="absolute inset-0 z-20 pointer-events-none container-custom flex flex-col pt-[90px] md:pt-[100px] pb-10 md:pb-20">
 
                                     {/* ── TOP: Badges ── */}
-                                    <div className="flex-none pointer-events-auto">
-                                        <div className="flex items-center justify-start gap-2 md:gap-4 flex-wrap">
+                                    <div className="flex-none pointer-events-auto pt-5 md:pt-0">
+                                        <div className="flex items-center justify-start gap-2 md:gap-3 flex-wrap">
                                             {slide.badge && (
-                                                <div className="relative group">
-                                                    <div className="absolute inset-0 bg-primary blur-lg opacity-60 group-hover:opacity-100 transition-opacity" />
-                                                    <span className="relative px-3 py-1 md:px-5 md:py-2 bg-primary text-white text-[10px] md:text-sm font-black uppercase tracking-[0.2em] md:tracking-[0.25em] rounded-md transform -skew-x-12 inline-block border-l-[3px] md:border-l-4 border-white shadow-2xl">
+                                                <div className="relative group inline-block">
+                                                    {/* Glow behind badge */}
+                                                    <div className="absolute inset-0 bg-primary blur-md opacity-70 rounded-sm" />
+                                                    <span className="relative inline-flex items-center px-2.5 py-1 md:px-5 md:py-2 bg-primary text-white text-[10px] md:text-sm font-black uppercase tracking-[0.2em] transform -skew-x-12 shadow-2xl border-l-[3px] border-white/40">
                                                         <span className="transform skew-x-12 inline-block">{slide.badge}</span>
                                                     </span>
                                                 </div>
                                             )}
                                             {slide.subtitle && (
-                                                <span className="text-white tracking-[0.2em] md:tracking-[0.25em] text-[10px] md:text-sm font-bold uppercase bg-zinc-900/90 backdrop-blur-sm px-3 py-1 md:px-5 md:py-2 rounded-md border border-zinc-700 shadow-lg">
-                                                    {slide.subtitle}
-                                                </span>
+                                                <div className="relative inline-flex items-center gap-1.5 transform -skew-x-6">
+                                                    <div className="w-[2px] h-4 md:h-5 bg-primary" />
+                                                    <span className="transform skew-x-6 text-white text-[10px] md:text-sm font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] bg-black/40 backdrop-blur-sm px-2.5 py-1 md:px-4 md:py-1.5 border border-white/15 shadow-lg">
+                                                        {slide.subtitle}
+                                                    </span>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
 
-                                    {/* ── MIDDLE: Title & Description ── */}
-                                    <div className="flex-1 min-h-0 flex flex-col justify-center max-w-4xl text-left pl-2 md:pl-0 pointer-events-auto py-4">
+                                    {/* ── MIDDLE: Title ── */}
+                                    <div className="flex-1 min-h-0 flex flex-col justify-center max-w-4xl text-left pointer-events-auto py-1 md:py-4">
                                         <AnimatePresence mode="wait">
                                             {selectedIndex === index && (
                                                 <motion.div
@@ -194,7 +197,7 @@ export const HeroCarousel = () => {
                                                     className="max-h-full overflow-hidden flex flex-col justify-center"
                                                 >
                                                     <h1
-                                                        className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-black mb-3 md:mb-6 leading-[1.05] tracking-tight text-white drop-shadow-2xl"
+                                                        className="font-display text-lg sm:text-4xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-black mb-1 md:mb-6 leading-tight tracking-tight text-white drop-shadow-2xl"
                                                         style={{ textShadow: '0 4px 15px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.8)' }}
                                                     >
                                                         {(() => {
@@ -258,7 +261,7 @@ export const HeroCarousel = () => {
 
                                                     {slide.description && (
                                                         <p
-                                                            className="text-sm md:text-xl text-white font-medium md:font-semibold leading-snug md:leading-relaxed line-clamp-2 md:line-clamp-3 max-w-2xl drop-shadow-xl"
+                                                            className="text-[11px] md:text-xl text-white/90 font-medium md:font-semibold leading-snug md:leading-relaxed line-clamp-2 md:line-clamp-3 max-w-2xl drop-shadow-xl mt-1 md:mt-2"
                                                             style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}
                                                         >
                                                             {slide.description}
@@ -269,21 +272,23 @@ export const HeroCarousel = () => {
                                         </AnimatePresence>
                                     </div>
 
-                                    {/* ── BOTTOM: Buttons ── */}
-                                    <div className="flex-none pointer-events-auto shrink-0 pt-2">
-                                        <div className="flex flex-col sm:flex-row gap-4 items-start justify-start">
-                                            <Link to={slide.buttonLink} className="w-full sm:w-auto">
-                                                <Button variant="gaming" size="xl" className="w-full sm:w-auto px-10 shadow-lg shadow-primary/20">
+                                    {/* ── BOTTOM: CTA Button ── */}
+                                    <div className="flex-none pointer-events-auto shrink-0">
+                                        {/* Mobile: compact inline pill button */}
+                                        <Link to={slide.buttonLink} className="inline-flex md:hidden items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-[10px] font-black uppercase tracking-[0.15em] rounded-full shadow-lg shadow-primary/30 transition-all active:scale-95">
+                                            {slide.buttonText}
+                                            <ArrowRight className="w-3 h-3" />
+                                        </Link>
+                                        {/* Desktop: full size buttons */}
+                                        <div className="hidden md:flex flex-row gap-4 items-center">
+                                            <Link to={slide.buttonLink}>
+                                                <Button variant="gaming" size="xl" className="px-10 shadow-lg shadow-primary/20">
                                                     {slide.buttonText}
                                                     <ArrowRight />
                                                 </Button>
                                             </Link>
-                                            <Link to="/products" className="w-full sm:w-auto">
-                                                <Button
-                                                    size="xl"
-                                                    variant="outline"
-                                                    className="w-full sm:w-auto border-white/20 bg-white/5 backdrop-blur-sm hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 group"
-                                                >
+                                            <Link to="/products">
+                                                <Button size="xl" variant="outline" className="border-white/20 bg-white/5 backdrop-blur-sm hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 group">
                                                     <ShoppingBag className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
                                                     Découvrir la Boutique
                                                 </Button>

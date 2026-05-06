@@ -42,7 +42,7 @@ const Footer = () => {
           onClick={() => toggleSection(id)}
           aria-label={isOpen ? `Fermer la section ${title}` : `Ouvrir la section ${title}`}
           aria-expanded={isOpen}
-          className="w-full py-6 flex justify-between items-center lg:hidden"
+          className="w-full py-3 lg:py-6 flex justify-between items-center lg:hidden"
         >
           <h3 className="font-display font-bold text-foreground text-base uppercase tracking-widest">{title}</h3>
           {isOpen ? <ChevronUp className="w-4 h-4 text-primary" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
@@ -57,11 +57,11 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-background border-t border-border pt-16 pb-12">
+    <footer className="bg-background border-t border-border pt-8 lg:pt-16 pb-6 lg:pb-12">
       <div className="container-custom">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-0 lg:gap-12 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-0 lg:gap-12 mb-8 lg:mb-16">
           {/* Brand */}
-          <div className="space-y-8 mb-12 lg:mb-0">
+          <div className="space-y-4 lg:space-y-8 mb-6 lg:mb-12">
             <Link to="/" className="inline-block">
               <span className="font-display text-3xl font-black tracking-tighter">
                 {storeName.split(" ").length > 1 ? (
@@ -160,7 +160,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-12 border-t border-border flex flex-col lg:flex-row justify-between items-center gap-8">
+        <div className="pt-6 lg:pt-12 border-t border-border flex flex-col lg:flex-row justify-between items-center gap-4 lg:gap-8">
           <p className="text-muted-foreground text-sm text-center lg:text-left">
             {settings?.footerCopyright || `© 2025 ${storeName} – Engineered for Gamers`}
           </p>

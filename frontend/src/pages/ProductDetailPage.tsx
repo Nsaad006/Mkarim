@@ -144,7 +144,7 @@ const ProductDetailPage = () => {
         keywords={`${product.name}, ${product.category?.name}, gaming maroc, pc gamer`}
       />
       <Navbar />
-      <main className="pt-24 lg:pt-32">
+      <main className="pt-[90px] lg:pt-32">
         <div className="container-custom py-8 lg:py-16">
           {/* Breadcrumb */}
           <button

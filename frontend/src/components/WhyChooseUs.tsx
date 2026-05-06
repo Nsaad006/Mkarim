@@ -63,7 +63,7 @@ const WhyChooseUs = () => {
     : features;
 
   return (
-    <section className="section-padding relative overflow-hidden bg-background">
+    <section className="px-4 sm:px-6 lg:px-8 py-6 md:py-20 relative overflow-hidden bg-background">
       {/* Background Decorative elements */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 blur-[150px] rounded-full pointer-events-none" />
 
@@ -74,7 +74,7 @@ const WhyChooseUs = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-3xl md:text-5xl font-black mb-4 tracking-tight uppercase px-4">
+            <h2 className="font-display text-2xl md:text-5xl font-black mb-3 md:mb-4 tracking-tight uppercase px-4">
               {sectionTitle}
             </h2>
             <p className="text-foreground/80 max-w-2xl mx-auto text-base md:text-lg px-6 font-medium">
