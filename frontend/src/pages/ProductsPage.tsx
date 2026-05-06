@@ -419,7 +419,11 @@ const ProductsPage = () => {
                     </div>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="p-0 bg-transparent border-none w-[300px] sm:w-[350px]">
+                <SheetContent 
+                  side="left" 
+                  className="p-0 bg-transparent border-none w-[300px] sm:w-[350px]"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
                   <SheetTitle className="sr-only">Filtres</SheetTitle>
                   <SheetDescription className="sr-only">Options de filtrage pour le catalogue produits</SheetDescription>
                   <FilterSidebar
