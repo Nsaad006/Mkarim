@@ -302,7 +302,7 @@ const ProductsPage = () => {
         description="Explorez notre arsenal de PC Gamers, composants et accessoires. Trouvez le meilleur matériel informatique au Maroc avec livraison express."
       />
       <Navbar />
-      <main className="pt-[70px] lg:pt-20">
+      <main className="pt-[60px] lg:pt-[65px]">
         {/* Simplified Header */}
         <section className="relative py-3 lg:py-6 border-b border-border">
           <div className="container-custom relative z-10">

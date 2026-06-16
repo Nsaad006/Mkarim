@@ -144,7 +144,7 @@ const ProductDetailPage = () => {
         keywords={`${product.name}, ${product.category?.name}, gaming maroc, pc gamer`}
       />
       <Navbar />
-      <main className="pt-[70px] lg:pt-20">
+      <main className="pt-[60px] lg:pt-[65px]">
         <div className="container-custom py-8 lg:py-16">
           {/* Breadcrumb */}
           <button
@@ -198,88 +198,88 @@ const ProductDetailPage = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="space-y-10"
+              className="space-y-7"
             >
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-muted border border-border text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-4 skew-x-[-12deg]">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-muted border border-border text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-3 skew-x-[-12deg]">
                   <span className="skew-x-[12deg]">{product.category?.name || product.categoryId.replace("-", " ")}</span>
                 </div>
-                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground italic tracking-tighter leading-[0.9] mb-6 uppercase">
+                <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-black text-foreground italic tracking-tighter leading-[0.95] mb-4 uppercase">
                   {product.name}
                 </h1>
+                <div className={`inline-flex items-center gap-2 font-black uppercase tracking-[0.2em] text-[10px] ${product.inStock ? "text-green-500" : "text-red-500"}`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${product.inStock ? "bg-green-500" : "bg-red-500"} animate-pulse`} />
+                  {product.inStock ? "EN STOCK · PRÊT À EXPÉDIER" : "EN RUPTURE DE STOCK"}
+                </div>
               </div>
 
-              {/* Price & Stock */}
-              <div className="flex flex-wrap items-center gap-8 bg-card backdrop-blur-md p-8 rounded-3xl border border-border relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-colors" />
-                <div className="relative z-10">
-                  <div className="flex flex-col gap-1 mb-2">
-                    <span className="text-5xl lg:text-6xl font-black text-foreground italic tracking-tighter">
-                      {product.price.toLocaleString()} <span className="text-primary text-2xl lg:text-3xl ml-1">{currency}</span>
+              {/* Price & Actions */}
+              <div className="bg-card border border-border rounded-2xl p-5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none" />
+
+                <div className="relative z-10 flex items-end justify-between gap-4 flex-wrap mb-5">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl lg:text-4xl font-black text-foreground italic tracking-tighter">
+                      {product.price.toLocaleString()}
                     </span>
+                    <span className="text-primary text-lg font-black">{currency}</span>
                     {product.originalPrice && (
-                      <span className="text-xl lg:text-2xl text-muted-foreground/40 line-through font-bold tracking-tighter italic ml-1">
+                      <span className="text-sm text-muted-foreground/40 line-through font-bold italic ml-1">
                         {product.originalPrice.toLocaleString()} {currency}
                       </span>
                     )}
                   </div>
-                  <div className={`mt-4 inline-flex items-center gap-2 font-black uppercase tracking-[0.2em] text-[10px] ${product.inStock ? "text-green-500" : "text-red-500"}`}>
-                    <div className={`w-2 h-2 rounded-full ${product.inStock ? "bg-green-500" : "bg-red-500"} animate-pulse`} />
-                    {product.inStock ? "UNITÉ PRÊTE POUR EXPÉDITION" : "EN RUPTURE"}
-                  </div>
-                </div>
-              </div>
 
-              {/* CTA Buttons & Quantity */}
-              <div className="flex flex-col gap-4">
-                {!storeAvailability ? (
-                  <div className="p-6 bg-primary/5 text-primary border border-primary/20 rounded-2xl text-center flex-1 font-black uppercase tracking-widest text-sm italic">
-                    ACCÈS AUX LOGISTIQUES TEMPORAIREMENT SUSPENDU.
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-4 bg-muted/40 border border-border rounded-xl p-1.5 w-fit">
+                  {storeAvailability && (
+                    <div className="flex items-center gap-2 bg-muted/40 border border-border rounded-lg p-1 w-fit">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 hover:bg-background shrink-0 rounded-lg"
+                        className="h-8 w-8 hover:bg-background shrink-0 rounded-md"
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                         disabled={!product.inStock || quantity <= 1}
                       >
                         -
                       </Button>
-                      <span className="w-8 text-center font-bold text-lg select-none">{quantity}</span>
+                      <span className="w-6 text-center font-bold text-sm select-none">{quantity}</span>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 hover:bg-background shrink-0 rounded-lg"
+                        className="h-8 w-8 hover:bg-background shrink-0 rounded-md"
                         onClick={() => setQuantity(quantity + 1)}
                         disabled={!product.inStock}
                       >
                         +
                       </Button>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <Button
-                        size="xl"
-                        className="w-full sm:flex-[1.5] shrink-0 italic tracking-tighter sm:tracking-normal px-2 text-sm sm:text-lg shadow-[0_4px_20px_rgba(235,68,50,0.25)]"
-                        onClick={handleOrderNow}
-                        disabled={!product.inStock}
-                      >
-                        COMMANDER
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="xl"
-                        className="w-full sm:flex-1 shrink-0 px-2 text-sm sm:text-lg"
-                        onClick={handleAddToCart}
-                        disabled={!product.inStock}
-                      >
-                        <ShoppingCart className="w-5 h-5" />
-                        PANIER
-                      </Button>
-                    </div>
-                  </>
+                  )}
+                </div>
+
+                {!storeAvailability ? (
+                  <div className="p-4 bg-primary/5 text-primary border border-primary/20 rounded-xl text-center font-black uppercase tracking-widest text-xs italic relative z-10">
+                    ACCÈS AUX LOGISTIQUES TEMPORAIREMENT SUSPENDU.
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+                    <Button
+                      size="lg"
+                      className="w-full sm:flex-[1.5] shrink-0 italic tracking-tighter sm:tracking-normal px-2 text-sm sm:text-base shadow-[0_4px_20px_rgba(235,68,50,0.25)]"
+                      onClick={handleOrderNow}
+                      disabled={!product.inStock}
+                    >
+                      COMMANDER
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:flex-1 shrink-0 px-2 text-sm sm:text-base"
+                      onClick={handleAddToCart}
+                      disabled={!product.inStock}
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      PANIER
+                    </Button>
+                  </div>
                 )}
               </div>
 
@@ -305,9 +305,13 @@ const ProductDetailPage = () => {
 
               {/* Specs */}
               {product.specs && product.specs.length > 0 && (
-                <div className="space-y-4 pt-4">
-                  <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-2">SPECIFICATIONS TECHNIQUES</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="pt-2">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-1 h-6 bg-primary rounded-full" />
+                    <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">SPECIFICATIONS TECHNIQUES</h3>
+                  </div>
+                  <div className="bg-muted/20 rounded-2xl border border-border p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-8 -mt-8 blur-2xl pointer-events-none" />
                     {product.specs.map((spec, index) => {
                       // Parse the {key}: value format
                       const match = spec.match(/^\{([^}]+)\}:\s*(.+)$/);
@@ -347,15 +351,15 @@ const ProductDetailPage = () => {
                       const label = key ? (labels[key.toLowerCase()] || key) : 'Général';
 
                       return (
-                        <div key={index} className="flex items-center gap-4 bg-muted/40 border border-border p-4 rounded-xl group hover:border-primary/30 transition-all duration-300">
-                          <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center border border-border shrink-0 group-hover:bg-primary/5 transition-colors">
-                            <Icon className="w-5 h-5 text-primary" />
+                        <div key={index} className="flex items-center gap-3 bg-background/60 border border-border/60 p-3 rounded-xl group hover:border-primary/30 transition-all duration-300 relative z-10">
+                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center border border-border shrink-0 group-hover:bg-primary/5 transition-colors">
+                            <Icon className="w-4 h-4 text-primary" />
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none mb-1">
+                            <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none mb-1">
                               {label}
                             </span>
-                            <span className="text-sm font-bold text-foreground uppercase tracking-tight truncate">
+                            <span className="text-xs font-bold text-foreground uppercase tracking-tight truncate">
                               {displayValue}
                             </span>
                           </div>
@@ -367,7 +371,7 @@ const ProductDetailPage = () => {
               )}
 
               {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-6 pt-10 border-t border-border mt-20">
+              <div className="grid grid-cols-3 gap-6 pt-8 border-t border-border mt-4">
                 {[
                   { icon: Truck, label: "EXPRESS LOGISTICS", sub: "24-72H MAROC" },
                   { icon: ShieldCheck, label: "CERTIFIED GEAR", sub: "FULL WARRANTY" },

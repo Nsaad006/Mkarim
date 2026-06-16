@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { ShoppingCart, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/data/products";
@@ -39,11 +38,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4 }}
+    <div
       className="group relative flex flex-col h-full bg-card/40 border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_30px_rgba(235,68,50,0.15)] hover:-translate-y-1 cursor-pointer"
       onClick={handleCardClick}
     >
@@ -105,7 +100,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         </div>
 
-        <h3 className="font-display text-[13px] md:text-lg font-black text-foreground italic tracking-tighter leading-tight mb-1 md:mb-2 line-clamp-2 min-h-[2.2rem] md:min-h-[3.5rem] uppercase group-hover:text-primary transition-colors">
+        <h3 className="font-display text-[13px] md:text-lg font-black text-foreground italic tracking-tighter leading-tight mb-1 md:mb-2 truncate uppercase group-hover:text-primary transition-colors">
           {product.name}
         </h3>
 
@@ -150,7 +145,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </Link>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
