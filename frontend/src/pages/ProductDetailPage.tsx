@@ -144,7 +144,7 @@ const ProductDetailPage = () => {
         keywords={`${product.name}, ${product.category?.name}, gaming maroc, pc gamer`}
       />
       <Navbar />
-      <main className="pt-[90px] lg:pt-32">
+      <main className="pt-[70px] lg:pt-20">
         <div className="container-custom py-8 lg:py-16">
           {/* Breadcrumb */}
           <button
@@ -169,13 +169,22 @@ const ProductDetailPage = () => {
                 badge={product.badge}
               />
 
-              {/* Desktop Description (Moved) */}
-              <div className="hidden lg:block mt-12 pt-8 border-t border-border space-y-4">
-                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-2">DESCRIPTION</h3>
-                <div className="text-muted-foreground text-lg font-medium leading-relaxed space-y-2">
+              {/* Desktop Description */}
+              <div className="hidden lg:block mt-10 pt-8 border-t border-border">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-1 h-6 bg-primary rounded-full" />
+                  <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">DESCRIPTION</h3>
+                </div>
+                <div className="bg-muted/20 rounded-2xl border border-border p-6 space-y-3 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-8 -mt-8 blur-2xl pointer-events-none" />
                   {product.description?.split(/;|\n/).map((line, index) => {
                     const trimmedLine = line.trim();
-                    return trimmedLine ? <p key={index}>{trimmedLine}</p> : null;
+                    return trimmedLine ? (
+                      <div key={index} className="flex items-start gap-3">
+                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+                        <p className="text-muted-foreground text-base font-medium leading-relaxed">{trimmedLine}</p>
+                      </div>
+                    ) : null;
                   })}
                 </div>
               </div>
@@ -274,13 +283,22 @@ const ProductDetailPage = () => {
                 )}
               </div>
 
-              {/* Mobile Description (Moved) */}
-              <div className="lg:hidden space-y-4 pt-4">
-                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-2">DESCRIPTION</h3>
-                <div className="text-muted-foreground text-base font-medium leading-relaxed bg-muted/20 p-6 rounded-2xl border border-border">
+              {/* Mobile Description */}
+              <div className="lg:hidden pt-4">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-1 h-6 bg-primary rounded-full" />
+                  <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">DESCRIPTION</h3>
+                </div>
+                <div className="bg-muted/20 rounded-2xl border border-border p-5 space-y-3 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-6 -mt-6 blur-2xl pointer-events-none" />
                   {product.description?.split(/;|\n/).map((line, index) => {
                     const trimmedLine = line.trim();
-                    return trimmedLine ? <p key={index}>{trimmedLine}</p> : null;
+                    return trimmedLine ? (
+                      <div key={index} className="flex items-start gap-3">
+                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+                        <p className="text-muted-foreground text-base font-medium leading-relaxed">{trimmedLine}</p>
+                      </div>
+                    ) : null;
                   })}
                 </div>
               </div>

@@ -103,6 +103,20 @@ router.put('/:id', authenticate, authorize(['super_admin', 'editor'], [PERMISSIO
     }
 });
 
+// DELETE /api/categories - Bulk delete categories
+router.delete('/', authenticate, authorize(['super_admin', 'editor'], [PERMISSIONS.CATEGORIES_DELETE, PERMISSIONS.CATEGORIES_MANAGE]), async (req: Request, res: Response) => {
+    try {
+        const { ids } = req.body as { ids: string[] };
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'No IDs provided' });
+        }
+        await prisma.category.deleteMany({ where: { id: { in: ids } } });
+        res.json({ message: `${ids.length} category(ies) deleted` });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete categories' });
+    }
+});
+
 // DELETE /api/categories/:id - Delete category (super_admin/editor/manage)
 router.delete('/:id', authenticate, authorize(['super_admin', 'editor'], [PERMISSIONS.CATEGORIES_DELETE, PERMISSIONS.CATEGORIES_MANAGE]), async (req: Request, res: Response) => {
     try {

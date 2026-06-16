@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Search, Loader2, Phone, Mail, MapPin, Package, DollarSign, History, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, Phone, Mail, MapPin, Package, DollarSign, History, ExternalLink, AlertTriangle } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -28,6 +28,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { suppliersApi } from "@/api/suppliers";
 import { toast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -37,6 +38,8 @@ const Suppliers = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [detailId, setDetailId] = useState<string | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const queryClient = useQueryClient();
 
     const [formData, setFormData] = useState({
@@ -139,6 +142,28 @@ const Suppliers = () => {
         setIsDialogOpen(true);
     };
 
+    const deleteManyMutation = useMutation({
+        mutationFn: (ids: string[]) => suppliersApi.deleteMany(ids),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+            setSelectedIds(new Set());
+            setIsDeleteConfirmOpen(false);
+            toast({ title: "Supprimé", description: "Les fournisseurs sélectionnés ont été supprimés." });
+        },
+        onError: (err: any) => {
+            toast({ title: "Erreur", description: err.response?.data?.error || "Impossible de supprimer.", variant: "destructive" });
+        }
+    });
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === filteredSuppliers.length) setSelectedIds(new Set());
+        else setSelectedIds(new Set(filteredSuppliers.map((s: any) => s.id)));
+    };
+
     const handleDelete = (id: string) => {
         if (confirm("Supprimer ce fournisseur ?")) {
             deleteMutation.mutate(id);
@@ -157,9 +182,16 @@ const Suppliers = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold tracking-tight">Suppliers</h1>
-                <Button onClick={openCreateDialog}>
-                    <Plus className="mr-2 h-4 w-4" /> Ajouter
-                </Button>
+                <div className="flex gap-2">
+                    {selectedIds.size > 0 && (
+                        <Button variant="destructive" size="sm" onClick={() => setIsDeleteConfirmOpen(true)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer ({selectedIds.size})
+                        </Button>
+                    )}
+                    <Button onClick={openCreateDialog}>
+                        <Plus className="mr-2 h-4 w-4" /> Ajouter
+                    </Button>
+                </div>
             </div>
 
             <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
@@ -176,6 +208,9 @@ const Suppliers = () => {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead className="w-10">
+                                <Checkbox checked={filteredSuppliers.length > 0 && selectedIds.size === filteredSuppliers.length} onCheckedChange={toggleSelectAll} />
+                            </TableHead>
                             <TableHead>Nom</TableHead>
                             <TableHead>Contact</TableHead>
                             <TableHead>Ville</TableHead>
@@ -185,7 +220,8 @@ const Suppliers = () => {
                     </TableHeader>
                     <TableBody>
                         {filteredSuppliers.map((supplier: any) => (
-                            <TableRow key={supplier.id} className="hover:bg-muted/50 transition-colors">
+                            <TableRow key={supplier.id} className={`hover:bg-muted/50 transition-colors ${selectedIds.has(supplier.id) ? 'bg-muted/20' : ''}`}>
+                                <TableCell><Checkbox checked={selectedIds.has(supplier.id)} onCheckedChange={() => toggleSelect(supplier.id)} /></TableCell>
                                 <TableCell className="font-bold">{supplier.name}</TableCell>
                                 <TableCell>
                                     <div className="flex flex-col text-xs gap-1">
@@ -231,6 +267,22 @@ const Suppliers = () => {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Bulk Delete Confirmation */}
+            <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-destructive" /> Confirmer la suppression</DialogTitle>
+                        <DialogDescription>Supprimer <strong>{selectedIds.size}</strong> fournisseur(s) ? Action irréversible.</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteConfirmOpen(false)}>Annuler</Button>
+                        <Button variant="destructive" disabled={deleteManyMutation.isPending} onClick={() => deleteManyMutation.mutate(Array.from(selectedIds))}>
+                            {deleteManyMutation.isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null} Supprimer
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Create/Edit Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

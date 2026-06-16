@@ -148,6 +148,34 @@ export const authorize = (allowedRoles: string[], requiredPermission?: string | 
     };
 };
 
+// POST /api/auth/change-password - Change own password (any authenticated admin)
+router.post('/change-password', authenticate, async (req: Request, res: Response) => {
+    try {
+        const userId = (req as AuthenticatedRequest).user?.id;
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'Current and new password are required' });
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'New password must be at least 6 characters' });
+        }
+
+        const admin = await prisma.admin.findUnique({ where: { id: userId } });
+        if (!admin) return res.status(404).json({ error: 'Admin not found' });
+
+        const match = await bcrypt.compare(currentPassword, admin.password);
+        if (!match) return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await prisma.admin.update({ where: { id: userId }, data: { password: hashed } });
+
+        res.json({ message: 'Mot de passe mis à jour avec succès' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to change password' });
+    }
+});
+
 // GET /api/auth/me - Get current user info
 router.get('/me', authenticate, async (req: Request, res: Response) => {
     try {

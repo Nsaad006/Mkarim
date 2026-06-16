@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, AlertTriangle } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import {
     Table,
@@ -25,6 +25,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { categoriesApi } from "@/api/categories";
 import { Category } from "@/data/mock-admin-data";
 import { toast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ImageUpload } from "@/components/ImageUpload";
 import { getImageUrl } from "@/lib/image-utils";
 import { PERMISSIONS } from "@/constants/permissions";
@@ -33,6 +34,8 @@ const Categories = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const queryClient = useQueryClient();
     const [formData, setFormData] = useState({
         name: "",
@@ -125,6 +128,29 @@ const Categories = () => {
         setIsDialogOpen(true);
     };
 
+    const deleteManyMutation = useMutation({
+        mutationFn: (ids: string[]) => categoriesApi.deleteMany(ids),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+            setSelectedIds(new Set());
+            setIsDeleteConfirmOpen(false);
+            toast({ title: "Supprimé", description: "Les catégories sélectionnées ont été supprimées." });
+        },
+        onError: () => {
+            toast({ title: "Erreur", description: "Impossible de supprimer.", variant: "destructive" });
+        }
+    });
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === filteredCategories.length) setSelectedIds(new Set());
+        else setSelectedIds(new Set(filteredCategories.map(c => c.id)));
+    };
+
     const handleDelete = (id: string) => {
         if (confirm("Supprimer cette catégorie ?")) {
             deleteMutation.mutate(id);
@@ -151,11 +177,18 @@ const Categories = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold tracking-tight">Catégories</h1>
-                {canCreate && (
-                    <Button onClick={openCreateDialog}>
-                        <Plus className="mr-2 h-4 w-4" /> Ajouter
-                    </Button>
-                )}
+                <div className="flex gap-2">
+                    {selectedIds.size > 0 && canDelete && (
+                        <Button variant="destructive" size="sm" onClick={() => setIsDeleteConfirmOpen(true)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer ({selectedIds.size})
+                        </Button>
+                    )}
+                    {canCreate && (
+                        <Button onClick={openCreateDialog}>
+                            <Plus className="mr-2 h-4 w-4" /> Ajouter
+                        </Button>
+                    )}
+                </div>
             </div>
 
             <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
@@ -173,6 +206,9 @@ const Categories = () => {
                     <Table>
                         <TableHeader className="bg-muted/30">
                             <TableRow>
+                                <TableHead className="w-10">
+                                    <Checkbox checked={filteredCategories.length > 0 && selectedIds.size === filteredCategories.length} onCheckedChange={toggleSelectAll} />
+                                </TableHead>
                                 <TableHead>Nom</TableHead>
                                 <TableHead>Slug</TableHead>
                                 <TableHead>Image</TableHead>
@@ -184,7 +220,8 @@ const Categories = () => {
                         </TableHeader>
                         <TableBody>
                             {filteredCategories.map((category) => (
-                                <TableRow key={category.id} className="hover:bg-muted/5 transition-colors">
+                                <TableRow key={category.id} className={`hover:bg-muted/5 transition-colors ${selectedIds.has(category.id) ? 'bg-muted/20' : ''}`}>
+                                    <TableCell><Checkbox checked={selectedIds.has(category.id)} onCheckedChange={() => toggleSelect(category.id)} /></TableCell>
                                     <TableCell className="font-medium">{category.name}</TableCell>
                                     <TableCell className="text-muted-foreground font-mono text-xs">{category.slug}</TableCell>
                                     <TableCell className="text-muted-foreground text-xs">
@@ -253,6 +290,22 @@ const Categories = () => {
                     </Table>
                 </div>
             </div>
+
+            {/* Bulk Delete Confirmation */}
+            <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-destructive" /> Confirmer la suppression</DialogTitle>
+                        <DialogDescription>Supprimer <strong>{selectedIds.size}</strong> catégorie(s) ? Action irréversible.</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteConfirmOpen(false)}>Annuler</Button>
+                        <Button variant="destructive" disabled={deleteManyMutation.isPending} onClick={() => deleteManyMutation.mutate(Array.from(selectedIds))}>
+                            {deleteManyMutation.isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null} Supprimer
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent>

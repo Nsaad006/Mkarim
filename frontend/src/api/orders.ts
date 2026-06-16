@@ -58,6 +58,12 @@ export const ordersApi = {
         return data;
     },
 
+    // Bulk delete orders
+    deleteMany: async (ids: string[]) => {
+        const { data } = await apiClient.delete('/api/orders', { data: { ids } });
+        return data;
+    },
+
     // Send invoice email
     sendInvoiceEmail: async (id: string, pdfBlob: Blob) => {
         const formData = new FormData();

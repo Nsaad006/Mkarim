@@ -47,7 +47,7 @@ const Footer = () => {
           <h3 className="font-display font-bold text-foreground text-base uppercase tracking-widest">{title}</h3>
           {isOpen ? <ChevronUp className="w-4 h-4 text-primary" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </button>
-        <h3 className="hidden lg:block font-display font-bold text-foreground text-lg mb-8 uppercase tracking-widest">{title}</h3>
+        <h3 className="hidden lg:block font-display font-bold text-foreground text-lg mb-4 uppercase tracking-widest">{title}</h3>
 
         <div className={`lg:block ${isOpen ? 'block pb-6' : 'hidden'}`}>
           {children}
@@ -57,11 +57,11 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-background border-t border-border pt-8 lg:pt-16 pb-6 lg:pb-12">
+    <footer className="bg-background border-t border-border pt-6 lg:pt-10 pb-4 lg:pb-8">
       <div className="container-custom">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-0 lg:gap-12 mb-8 lg:mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-0 lg:gap-12 mb-6 lg:mb-10">
           {/* Brand */}
-          <div className="space-y-4 lg:space-y-8 mb-6 lg:mb-12">
+          <div className="space-y-4 lg:space-y-6 mb-4 lg:mb-6">
             <Link to="/" className="inline-block">
               <span className="font-display text-3xl font-black tracking-tighter">
                 {storeName.split(" ").length > 1 ? (
@@ -160,7 +160,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 lg:pt-12 border-t border-border flex flex-col lg:flex-row justify-between items-center gap-4 lg:gap-8">
+        <div className="pt-4 lg:pt-6 border-t border-border flex flex-col lg:flex-row justify-between items-center gap-3 lg:gap-6">
           <p className="text-muted-foreground text-sm text-center lg:text-left">
             {settings?.footerCopyright || `© 2025 ${storeName} – Engineered for Gamers`}
           </p>

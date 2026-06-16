@@ -20,5 +20,9 @@ export const suppliersApi = {
     delete: async (id: string) => {
         const response = await apiClient.delete(`/api/suppliers/${id}`);
         return response.data;
+    },
+    deleteMany: async (ids: string[]) => {
+        const { data } = await apiClient.delete('/api/suppliers', { data: { ids } });
+        return data;
     }
 };

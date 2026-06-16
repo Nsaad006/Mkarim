@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, Loader2, Package, Truck, Calendar, DollarSign, History, ArrowUpCircle } from "lucide-react";
+import { Plus, Search, Loader2, Package, Truck, Calendar, DollarSign, History, ArrowUpCircle, Trash2, AlertTriangle } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -19,6 +19,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
     SelectContent,
@@ -41,6 +42,8 @@ const Procurements = () => {
     const { currency } = useSettings();
     const [searchTerm, setSearchTerm] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const queryClient = useQueryClient();
 
     // Pagination state
@@ -108,6 +111,35 @@ const Procurements = () => {
         }
     });
 
+    const deleteManyMutation = useMutation({
+        mutationFn: (ids: string[]) => procurementsApi.deleteMany(ids),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['procurements'] });
+            setSelectedIds(new Set());
+            setIsDeleteConfirmOpen(false);
+            toast({ title: "Supprimé", description: "Les approvisionnements sélectionnés ont été supprimés." });
+        },
+        onError: () => {
+            toast({ title: "Erreur", description: "Impossible de supprimer.", variant: "destructive" });
+        }
+    });
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === paginatedProcurements.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(paginatedProcurements.map((p: any) => p.id)));
+        }
+    };
+
     const resetForm = () => {
         setFormData({
             productId: "",
@@ -144,9 +176,16 @@ const Procurements = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold tracking-tight">Approvisionnements</h1>
-                <Button onClick={() => setIsDialogOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" /> Ajouter
-                </Button>
+                <div className="flex gap-2">
+                    {selectedIds.size > 0 && (
+                        <Button variant="destructive" size="sm" onClick={() => setIsDeleteConfirmOpen(true)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer ({selectedIds.size})
+                        </Button>
+                    )}
+                    <Button onClick={() => setIsDialogOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" /> Ajouter
+                    </Button>
+                </div>
             </div>
 
             <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
@@ -164,6 +203,12 @@ const Procurements = () => {
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-muted/50">
+                                <TableHead className="w-10">
+                                    <Checkbox
+                                        checked={paginatedProcurements.length > 0 && selectedIds.size === paginatedProcurements.length}
+                                        onCheckedChange={toggleSelectAll}
+                                    />
+                                </TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead>Produit</TableHead>
                                 <TableHead>Fournisseur</TableHead>
@@ -176,7 +221,7 @@ const Procurements = () => {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-32 text-center">
+                                    <TableCell colSpan={8} className="h-32 text-center">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
                                             <span className="text-muted-foreground">Chargement de l'historique...</span>
@@ -185,7 +230,13 @@ const Procurements = () => {
                                 </TableRow>
                             ) : paginatedProcurements.length > 0 ? (
                                 paginatedProcurements.map((proc: any) => (
-                                    <TableRow key={proc.id} className="hover:bg-muted/30 transition-colors">
+                                    <TableRow key={proc.id} className={`hover:bg-muted/30 transition-colors ${selectedIds.has(proc.id) ? 'bg-muted/20' : ''}`}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedIds.has(proc.id)}
+                                                onCheckedChange={() => toggleSelect(proc.id)}
+                                            />
+                                        </TableCell>
                                         <TableCell className="font-medium whitespace-nowrap text-xs">
                                             <div className="flex flex-col">
                                                 <span>{format(new Date(proc.purchaseDate), 'dd MMM yyyy', { locale: fr })}</span>
@@ -226,7 +277,7 @@ const Procurements = () => {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                                    <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                                         Aucun approvisionnement trouvé.
                                     </TableCell>
                                 </TableRow>
@@ -247,6 +298,32 @@ const Procurements = () => {
                 }}
                 totalItems={filteredProcurements.length}
             />
+
+            {/* Bulk Delete Confirmation Dialog */}
+            <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-destructive" />
+                            Confirmer la suppression
+                        </DialogTitle>
+                        <DialogDescription>
+                            Vous êtes sur le point de supprimer <strong>{selectedIds.size}</strong> approvisionnement(s). Cette action est irréversible.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteConfirmOpen(false)}>Annuler</Button>
+                        <Button
+                            variant="destructive"
+                            disabled={deleteManyMutation.isPending}
+                            onClick={() => deleteManyMutation.mutate(Array.from(selectedIds))}
+                        >
+                            {deleteManyMutation.isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                            Supprimer
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Creation Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

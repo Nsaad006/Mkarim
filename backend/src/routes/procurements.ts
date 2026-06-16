@@ -75,4 +75,18 @@ router.post('/', authenticate, authorize(['super_admin', 'editor'], PERMISSIONS.
     }
 });
 
+// DELETE /api/procurements - Bulk delete procurements (super_admin only)
+router.delete('/', authenticate, authorize(['super_admin'], PERMISSIONS.LOGISTICS_MANAGE), async (req: any, res) => {
+    try {
+        const { ids } = req.body as { ids: string[] };
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'No IDs provided' });
+        }
+        await prisma.procurement.deleteMany({ where: { id: { in: ids } } });
+        res.json({ message: `${ids.length} procurement(s) deleted` });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete procurements' });
+    }
+});
+
 export default router;

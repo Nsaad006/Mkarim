@@ -17,12 +17,25 @@ import {
     Search,
     Truck,
     Briefcase,
-    BookOpen
+    BookOpen,
+    KeyRound,
+    Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authApi } from "@/api/auth";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
 
 import { PERMISSIONS } from "@/constants/permissions";
 
@@ -46,6 +59,8 @@ const sidebarItems = [
 const AdminLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isChangePwOpen, setIsChangePwOpen] = useState(false);
+    const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -60,6 +75,31 @@ const AdminLayout = () => {
     // Get current user from localStorage
     const userStr = localStorage.getItem("user");
     const user = userStr ? JSON.parse(userStr) : { name: "Admin", role: "super_admin", permissions: [] };
+
+    const changePwMutation = useMutation({
+        mutationFn: () => authApi.changePassword(pwForm.current, pwForm.next),
+        onSuccess: () => {
+            toast({ title: "Mot de passe modifié", description: "Votre mot de passe a été mis à jour." });
+            setIsChangePwOpen(false);
+            setPwForm({ current: "", next: "", confirm: "" });
+        },
+        onError: (err: any) => {
+            toast({ title: "Erreur", description: err.response?.data?.error || "Impossible de changer le mot de passe.", variant: "destructive" });
+        }
+    });
+
+    const handleChangePw = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (pwForm.next !== pwForm.confirm) {
+            toast({ title: "Erreur", description: "Les nouveaux mots de passe ne correspondent pas.", variant: "destructive" });
+            return;
+        }
+        if (pwForm.next.length < 6) {
+            toast({ title: "Erreur", description: "Le mot de passe doit contenir au moins 6 caractères.", variant: "destructive" });
+            return;
+        }
+        changePwMutation.mutate();
+    };
 
     const handleLogout = () => {
         authApi.logout();
@@ -190,6 +230,62 @@ const AdminLayout = () => {
                     onClick={() => setIsSidebarOpen(false)}
                 />
             )}
+
+            {/* Change Password Dialog */}
+            <Dialog open={isChangePwOpen} onOpenChange={setIsChangePwOpen}>
+                <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <KeyRound className="w-5 h-5 text-primary" />
+                            Changer mon mot de passe
+                        </DialogTitle>
+                        <DialogDescription>
+                            Saisissez votre mot de passe actuel puis le nouveau.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleChangePw} className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <Label>Mot de passe actuel</Label>
+                            <Input
+                                type="password"
+                                required
+                                value={pwForm.current}
+                                onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
+                                placeholder="••••••••"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Nouveau mot de passe</Label>
+                            <Input
+                                type="password"
+                                required
+                                value={pwForm.next}
+                                onChange={(e) => setPwForm({ ...pwForm, next: e.target.value })}
+                                placeholder="Minimum 6 caractères"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Confirmer le nouveau mot de passe</Label>
+                            <Input
+                                type="password"
+                                required
+                                value={pwForm.confirm}
+                                onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
+                                placeholder="••••••••"
+                            />
+                        </div>
+                        <DialogFooter className="pt-2">
+                            <Button type="button" variant="outline" onClick={() => setIsChangePwOpen(false)}>
+                                Annuler
+                            </Button>
+                            <Button type="submit" disabled={changePwMutation.isPending}>
+                                {changePwMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Enregistrer
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

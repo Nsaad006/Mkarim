@@ -173,18 +173,23 @@ const AdminUsers = () => {
         createMutation.mutate(formData);
     };
 
+    const currentUserStr = localStorage.getItem("user");
+    const currentUserId = currentUserStr ? JSON.parse(currentUserStr).id : null;
+
     const handleUpdateUser = async () => {
         if (!editingUser) return;
 
+        const isSelf = editingUser.id === currentUserId;
+
         try {
-            // Update role
-            const rolePayload = editingUser.roleId || editingUser.role;
-            await updateRoleMutation.mutateAsync({ id: editingUser.id, role: rolePayload });
+            if (!isSelf) {
+                // Update role and categories only for other users
+                const rolePayload = editingUser.roleId || editingUser.role;
+                await updateRoleMutation.mutateAsync({ id: editingUser.id, role: rolePayload });
+                await updateCategoriesMutation.mutateAsync({ id: editingUser.id, allowedCategories: editingUser.allowedCategories || [] });
+            }
 
-            // Update categories
-            await updateCategoriesMutation.mutateAsync({ id: editingUser.id, allowedCategories: editingUser.allowedCategories || [] });
-
-            // Update password if provided
+            // Update password if provided (allowed for self and others)
             if (newPassword.trim()) {
                 await updatePasswordMutation.mutateAsync({ id: editingUser.id, password: newPassword });
             }

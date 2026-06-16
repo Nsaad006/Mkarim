@@ -111,6 +111,20 @@ router.put('/:id', authenticate, authorize(['super_admin', 'editor'], PERMISSION
     }
 });
 
+// DELETE /api/suppliers - Bulk delete suppliers
+router.delete('/', authenticate, authorize(['super_admin', 'editor'], PERMISSIONS.LOGISTICS_MANAGE), async (req, res) => {
+    try {
+        const { ids } = req.body as { ids: string[] };
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'No IDs provided' });
+        }
+        await prisma.supplier.deleteMany({ where: { id: { in: ids } } });
+        res.json({ message: `${ids.length} supplier(s) deleted` });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete suppliers' });
+    }
+});
+
 // DELETE /api/suppliers/:id - Delete supplier
 router.delete('/:id', authenticate, authorize(['super_admin', 'editor'], PERMISSIONS.LOGISTICS_MANAGE), async (req, res) => {
     try {

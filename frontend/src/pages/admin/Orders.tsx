@@ -20,7 +20,8 @@ import {
     Minus,
     Trash2,
     Edit2,
-    ChevronsUpDown
+    ChevronsUpDown,
+    AlertTriangle
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -90,6 +91,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useOutletContext } from "react-router-dom";
 import { ordersApi } from "@/api/orders";
@@ -120,6 +122,10 @@ const Orders = () => {
     const [returnReason, setReturnReason] = useState("");
     const [orderToReturn, setOrderToReturn] = useState<string | null>(null);
     const [returnItems, setReturnItems] = useState<{ productId: string, name: string, quantity: number, maxQuantity: number }[]>([]);
+
+    // Bulk selection state
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
     // Edit Order State
     const [isEditingOrder, setIsEditingOrder] = useState(false);
@@ -224,6 +230,36 @@ const Orders = () => {
             });
         }
     });
+
+    const deleteManyMutation = useMutation({
+        mutationFn: (ids: string[]) => ordersApi.deleteMany(ids),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            queryClient.invalidateQueries({ queryKey: ['stats-summary'] });
+            setSelectedIds(new Set());
+            setIsDeleteConfirmOpen(false);
+            toast({ title: "Supprimé", description: "Les commandes sélectionnées ont été supprimées." });
+        },
+        onError: () => {
+            toast({ title: "Erreur", description: "Impossible de supprimer les commandes.", variant: "destructive" });
+        }
+    });
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === paginatedOrders.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(paginatedOrders.map(o => o.id)));
+        }
+    };
 
     const handleSaveEditOrder = () => {
         if (!selectedOrder) return;
@@ -543,6 +579,11 @@ const Orders = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h1 className="text-2xl font-bold tracking-tight">Commandes</h1>
                 <div className="flex gap-2">
+                    {selectedIds.size > 0 && (
+                        <Button variant="destructive" size="sm" onClick={() => setIsDeleteConfirmOpen(true)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer ({selectedIds.size})
+                        </Button>
+                    )}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm">
@@ -623,6 +664,12 @@ const Orders = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-10">
+                                    <Checkbox
+                                        checked={paginatedOrders.length > 0 && selectedIds.size === paginatedOrders.length}
+                                        onCheckedChange={toggleSelectAll}
+                                    />
+                                </TableHead>
                                 <TableHead>Numéro</TableHead>
                                 <TableHead>Client</TableHead>
                                 <TableHead>Ville</TableHead>
@@ -635,7 +682,7 @@ const Orders = () => {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
+                                    <TableCell colSpan={8} className="h-24 text-center">
                                         <div className="flex items-center justify-center gap-2">
                                             <Loader2 className="h-4 w-4 animate-spin" />
                                             <span>Chargement des commandes...</span>
@@ -644,7 +691,13 @@ const Orders = () => {
                                 </TableRow>
                             ) : paginatedOrders.length > 0 ? (
                                 paginatedOrders.map((order) => (
-                                    <TableRow key={order.id} className="cursor-pointer hover:bg-muted/5 transition-colors">
+                                    <TableRow key={order.id} className={`cursor-pointer hover:bg-muted/5 transition-colors ${selectedIds.has(order.id) ? 'bg-muted/20' : ''}`}>
+                                        <TableCell onClick={(e) => e.stopPropagation()}>
+                                            <Checkbox
+                                                checked={selectedIds.has(order.id)}
+                                                onCheckedChange={() => toggleSelect(order.id)}
+                                            />
+                                        </TableCell>
                                         <TableCell className="font-mono font-medium">{order.orderNumber}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
@@ -767,7 +820,7 @@ const Orders = () => {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
+                                    <TableCell colSpan={8} className="h-24 text-center">
                                         Aucune commande trouvée.
                                     </TableCell>
                                 </TableRow>
@@ -1091,6 +1144,32 @@ const Orders = () => {
                     )}
                 </SheetContent>
             </Sheet>
+
+            {/* Bulk Delete Confirmation Dialog */}
+            <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-destructive" />
+                            Confirmer la suppression
+                        </DialogTitle>
+                        <DialogDescription>
+                            Vous êtes sur le point de supprimer <strong>{selectedIds.size}</strong> commande(s). Cette action est irréversible.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteConfirmOpen(false)}>Annuler</Button>
+                        <Button
+                            variant="destructive"
+                            disabled={deleteManyMutation.isPending}
+                            onClick={() => deleteManyMutation.mutate(Array.from(selectedIds))}
+                        >
+                            {deleteManyMutation.isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                            Supprimer
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Return Reason Dialog */}
             <Dialog open={isReturnDialogOpen} onOpenChange={setIsReturnDialogOpen}>

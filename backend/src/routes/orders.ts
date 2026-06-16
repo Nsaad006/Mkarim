@@ -745,4 +745,29 @@ router.post('/:id/email-invoice', authenticate, authorize(['super_admin', 'edito
     }
 });
 
+// DELETE /api/orders/:id - Delete a single order (super_admin only)
+router.delete('/:id', authenticate, authorize(['super_admin'], PERMISSIONS.ORDERS_MANAGE), async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        await prisma.order.delete({ where: { id } });
+        res.json({ message: 'Order deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete order' });
+    }
+});
+
+// DELETE /api/orders - Bulk delete orders (super_admin only)
+router.delete('/', authenticate, authorize(['super_admin'], PERMISSIONS.ORDERS_MANAGE), async (req: Request, res: Response) => {
+    try {
+        const { ids } = req.body as { ids: string[] };
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'No IDs provided' });
+        }
+        await prisma.order.deleteMany({ where: { id: { in: ids } } });
+        res.json({ message: `${ids.length} order(s) deleted` });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete orders' });
+    }
+});
+
 export default router;

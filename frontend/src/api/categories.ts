@@ -25,5 +25,10 @@ export const categoriesApi = {
     // Delete category
     delete: async (id: string): Promise<void> => {
         await apiClient.delete(`/api/categories/${id}`);
+    },
+
+    // Bulk delete categories
+    deleteMany: async (ids: string[]): Promise<void> => {
+        await apiClient.delete('/api/categories', { data: { ids } });
     }
 };

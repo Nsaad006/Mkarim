@@ -32,6 +32,12 @@ export const authApi = {
         return data;
     },
 
+    // Change own password
+    changePassword: async (currentPassword: string, newPassword: string) => {
+        const { data } = await apiClient.post('/api/auth/change-password', { currentPassword, newPassword });
+        return data;
+    },
+
     // Logout
     logout: () => {
         localStorage.removeItem('auth_token');

@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { getImageUrl } from '@/lib/image-utils';
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from './ui/dialog';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
+import { motion } from 'framer-motion';
 
 interface ProductImageGalleryProps {
     images: string[];
@@ -13,8 +13,6 @@ interface ProductImageGalleryProps {
 
 export function ProductImageGallery({ images, productName, badge }: ProductImageGalleryProps) {
     const [selectedIndex, setSelectedIndex] = useState(0);
-    const [isZoomed, setIsZoomed] = useState(false);
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -39,48 +37,23 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
         setSelectedIndex((prev) => (prev === imageList.length - 1 ? 0 : prev + 1));
     };
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!containerRef.current) return;
-        const { left, top, width, height } = containerRef.current.getBoundingClientRect();
-        const x = ((e.clientX - left) / width) * 100;
-        const y = ((e.clientY - top) / height) * 100;
-        setMousePos({ x, y });
-    };
-
     return (
         <div className="space-y-4">
             {/* Main Image Container */}
             <div className="relative overflow-hidden">
                 <div
                     ref={containerRef}
-                    className="relative aspect-square rounded-2xl overflow-hidden bg-card border border-border cursor-zoom-in group"
-                    onMouseEnter={() => {
-                        if (window.innerWidth >= 1024) setIsZoomed(true);
-                    }}
-                    onMouseLeave={() => setIsZoomed(false)}
-                    onMouseMove={(e) => {
-                        if (window.innerWidth >= 1024) handleMouseMove(e);
-                    }}
+                    className="relative aspect-square rounded-2xl overflow-hidden bg-card border border-border cursor-pointer group"
                     onClick={() => setIsLightboxOpen(true)}
                 >
                     <motion.img
                         key={selectedIndex}
                         initial={{ opacity: 0 }}
-                        animate={{
-                            opacity: 1,
-                            scale: (isZoomed && window.innerWidth >= 1024) ? 2 : 1,
-                            x: (isZoomed && window.innerWidth >= 1024) ? `${(50 - mousePos.x) * 0.5}%` : 0,
-                            y: (isZoomed && window.innerWidth >= 1024) ? `${(50 - mousePos.y) * 0.5}%` : 0,
-                        }}
-                        transition={{
-                            opacity: { duration: 0.3 },
-                            scale: { duration: 0.1 },
-                            x: { duration: 0.1 },
-                            y: { duration: 0.1 }
-                        }}
+                        animate={{ opacity: 1 }}
+                        transition={{ opacity: { duration: 0.3 } }}
                         src={getImageUrl(imageList[selectedIndex])}
                         alt={`${productName} - Image ${selectedIndex + 1}`}
-                        className="w-full h-full object-cover origin-center"
+                        className="w-full h-full object-cover"
                     />
 
                     {/* Magnifier Icon - Desktop Only */}
@@ -103,13 +76,6 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
                                 size="icon"
                                 className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full shadow-lg z-20 hover:bg-background transition-opacity"
                                 onClick={handlePrevious}
-                                onMouseEnter={(e) => {
-                                    e.stopPropagation();
-                                    setIsZoomed(false);
-                                }}
-                                onMouseLeave={() => {
-                                    if (window.innerWidth >= 1024) setIsZoomed(true);
-                                }}
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </Button>
@@ -118,13 +84,6 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
                                 size="icon"
                                 className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full shadow-lg z-20 hover:bg-background transition-opacity"
                                 onClick={handleNext}
-                                onMouseEnter={(e) => {
-                                    e.stopPropagation();
-                                    setIsZoomed(false);
-                                }}
-                                onMouseLeave={() => {
-                                    if (window.innerWidth >= 1024) setIsZoomed(true);
-                                }}
                             >
                                 <ChevronRight className="w-5 h-5" />
                             </Button>
@@ -133,7 +92,7 @@ export function ProductImageGallery({ images, productName, badge }: ProductImage
 
                     {/* Image Counter */}
                     {imageList.length > 1 && (
-                        <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium z-20 border border-border transition-opacity ${(isZoomed && window.innerWidth >= 1024) ? 'opacity-0' : 'opacity-100'}`}>
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium z-20 border border-border">
                             {selectedIndex + 1} / {imageList.length}
                         </div>
                     )}
